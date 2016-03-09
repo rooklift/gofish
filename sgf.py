@@ -1,3 +1,4 @@
+import copy
 import sys
 
 EMPTY = 0
@@ -39,11 +40,28 @@ class Node():
         self.board = None
         self.parent = None
 
+    def update_board(self):
+        if "B" in self.properties:
+            movestring = self.properties["B"][0]
+            x = ord(movestring[0]) - 96
+            y = ord(movestring[1]) - 96
+            self.board.state[x][y] = BLACK
+        elif "W" in self.properties:
+            movestring = self.properties["W"][0]
+            x = ord(movestring[0]) - 96
+            y = ord(movestring[1]) - 96
+            self.board.state[x][y] = WHITE
+
+    def update_board_recursive(self):
+        self.update_board()
+        for child in self.children:
+            child.board = copy.deepcopy(self.board)
+            child.update_board_recursive()
+
     def dump(self):
         print(";", end="")
         for key, value in self.properties.items():
             print("{}{}".format(key, value))
-
 
     def dump_recursive(self):
         self.dump()
@@ -103,7 +121,8 @@ def main():
         last_node.children.append(new_node)
         last_node = new_node
 
-    root.dump_recursive()
+    root.update_board_recursive()
+    last_node.board.dump()
 
     input()
 
