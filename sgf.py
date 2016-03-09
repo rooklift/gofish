@@ -239,6 +239,9 @@ def main():
         except IndexError:
             break
 
+    print("\n  End of game... press return to quit.")
+    input()
+
 
 if __name__ == "__main__":
     main()
