@@ -228,7 +228,7 @@ def main():
     filename = sys.argv[1]
     node = load(filename)
 
-    print("\nSimple minded SGF reader. Press return to jump through the moves.")
+    print("\n  Simple minded SGF reader. Press return to jump through the moves.")
 
     while 1:
         input()
