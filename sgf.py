@@ -13,6 +13,8 @@ stars = [
     (16,4),(16,10),(16,16),
 ]
 
+class OffBoard(Exception):
+    pass
 
 def adjacent_points(x, y):
     result = set()
@@ -65,11 +67,12 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
             print()
 
     def group_has_liberties(self, x, y):
+        assert(x >= 1 and x <= 19 and y >= 1 and y <= 19)
         self.stones_checked = set()
         return self.__group_has_liberties(x, y)
 
     def __group_has_liberties(self, x, y):
-
+        assert(x >= 1 and x <= 19 and y >= 1 and y <= 19)
         colour = self.state[x][y]
         assert(colour in [BLACK, WHITE])
 
@@ -82,12 +85,14 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
                 if (i,j) not in self.stones_checked:
                     if self.__group_has_liberties(i, j):
                         return True
-
         return False
 
     def play_move(self, colour, x, y):
         assert(colour in [BLACK, WHITE])
         opponent = BLACK if colour == WHITE else WHITE
+
+        if x < 1 or x > 19 or y < 1 or y > 19:
+            raise OffBoard
 
         self.state[x][y] = colour
 
@@ -122,14 +127,24 @@ class Node():
     def update_board(self):
         if "B" in self.properties:
             movestring = self.properties["B"][0]
-            x = ord(movestring[0]) - 96
-            y = ord(movestring[1]) - 96
-            self.board.play_move(BLACK, x, y)
+            try:
+                x = ord(movestring[0]) - 96
+                y = ord(movestring[1]) - 96
+                self.board.play_move(BLACK, x, y)
+            except IndexError:
+                pass
+            except OffBoard:
+                pass
         elif "W" in self.properties:
             movestring = self.properties["W"][0]
-            x = ord(movestring[0]) - 96
-            y = ord(movestring[1]) - 96
-            self.board.play_move(WHITE, x, y)
+            try:
+                x = ord(movestring[0]) - 96
+                y = ord(movestring[1]) - 96
+                self.board.play_move(WHITE, x, y)
+            except IndexError:
+                pass
+            except OffBoard:
+                pass
 
     def update_board_recursive(self):
         self.update_board()
@@ -150,14 +165,20 @@ class Node():
     def what_was_the_move(self):
         if "B" in self.properties:
             movestring = self.properties["B"][0]
-            x = ord(movestring[0]) - 96
-            y = ord(movestring[1]) - 96
-            return (x, y)
+            try:
+                x = ord(movestring[0]) - 96
+                y = ord(movestring[1]) - 96
+                return (x, y)
+            except IndexError:
+                pass
         elif "W" in self.properties:
             movestring = self.properties["W"][0]
-            x = ord(movestring[0]) - 96
-            y = ord(movestring[1]) - 96
-            return (x, y)
+            try:
+                x = ord(movestring[0]) - 96
+                y = ord(movestring[1]) - 96
+                return (x, y)
+            except IndexError:
+                pass
         return None
 
     def add_properties(self, s):    # s is some string like "B[cn]LB[dn:A][po:B]C[dada: other ideas are 'A' (d6) or 'B' (q5)]"
