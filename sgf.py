@@ -13,9 +13,26 @@ stars = [
     (16,4),(16,10),(16,16),
 ]
 
+
+def adjacent_points(x, y):
+    result = set()
+
+    for i, j in [
+        (x - 1, y),
+        (x + 1, y),
+        (x, y - 1),
+        (x, y + 1),
+    ]:
+        if i >= 1 and i <= 19 and j >= 1 and j <= 19:
+            result.add((i, j))
+
+    return result
+
+
 class Board():                  # Internally the arrays are size 20x20, with 0 indexes being ignored (so we can use indexes 1-19)
     def __init__(self):
         self.state = []
+        self.stones_checked = set()     # Used when searching for liberties
         for x in range(20):
             ls = list()
             for y in range(20):
@@ -25,13 +42,59 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
     def dump(self):
         for row in range(1, 20):
             for col in range(1, 20):
-
                 if self.state[col][row] == EMPTY and (col, row) in stars:
                     print("+", end=" ")
                 else:
                     print(pieces[self.state[col][row]], end=" ")
             print()
 
+    def group_has_liberties(self, x, y):
+        self.stones_checked = set()
+        return self.__group_has_liberties(x, y)
+
+    def __group_has_liberties(self, x, y):
+
+        colour = self.state[x][y]
+        assert(colour in [BLACK, WHITE])
+
+        self.stones_checked.add((x,y))
+
+        for i, j in adjacent_points(x, y):
+            if self.state[i][j] == EMPTY:
+                return True
+            if self.state[i][j] == colour:
+                if (i,j) not in self.stones_checked:
+                    if self.__group_has_liberties(i, j):
+                        return True
+
+        return False
+
+    def play_move(self, colour, x, y):
+        assert(colour in [BLACK, WHITE])
+        opponent = BLACK if colour == WHITE else WHITE
+
+        self.state[x][y] = colour
+
+        for i, j in adjacent_points(x, y):
+            if self.state[i][j] == opponent:
+                if not self.group_has_liberties(i, j):
+                    self.destroy_group(i, j)
+
+        # Check for and deal with suicide:
+
+        if not self.group_has_liberties(x, y):
+            self.destroy_group(x, y)
+
+    def destroy_group(self, x, y):
+        colour = self.state[x][y]
+        assert(colour in [BLACK, WHITE])
+        assert(x >= 1 and x <= 19 and y >= 1 and y <= 19)
+
+        self.state[x][y] = EMPTY
+
+        for i, j in adjacent_points(x, y):
+            if self.state[i][j] == colour:
+                self.destroy_group(i, j)
 
 class Node():
     def __init__(self):
@@ -45,12 +108,12 @@ class Node():
             movestring = self.properties["B"][0]
             x = ord(movestring[0]) - 96
             y = ord(movestring[1]) - 96
-            self.board.state[x][y] = BLACK
+            self.board.play_move(BLACK, x, y)
         elif "W" in self.properties:
             movestring = self.properties["W"][0]
             x = ord(movestring[0]) - 96
             y = ord(movestring[1]) - 96
-            self.board.state[x][y] = WHITE
+            self.board.play_move(WHITE, x, y)
 
     def update_board_recursive(self):
         self.update_board()
