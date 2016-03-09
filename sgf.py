@@ -183,69 +183,60 @@ class Node():
                 pass
         return None
 
-    def add_properties(self, s):    # s is some string like "B[cn]LB[dn:A][po:B]C[dada: other ideas are 'A' (d6) or 'B' (q5)]"
-
-        inside = False
-        key = ""
-        value = ""
-        key_complete = False
-
-        for c in s:
-
-            if c == "[":
-                inside = True
-                value = ""
-                if key not in self.properties:
-                    self.properties[key] = []
-
-            elif c == "]":
-                inside = False
-                self.properties[key].append(value)
-
-            else:
-                if not inside:
-                    if not c.isspace():
-                        if key_complete:    # So we need to start a new key, we finished learning the old one
-                            key = ""
-                            key_complete = False
-                        key += c
-                else:
-                    value += c
-                    key_complete = True
-
 
 def load(filename):
 
     with open(filename) as infile:
         sgf = infile.read()
 
-    sgf = sgf.replace("\]", "}")    # The only escape that really matters, deal with it crudely
+    root = load_tree(sgf)
+    root.board = Board()
+    root.update_board_recursive()
+    return root
 
-    main_line = sgf.strip("()")     # This isn't at all a valid way of getting the main line if there are variations, FIXME
-    strings = main_line.split(";")
+
+def load_tree(sgf):
 
     root = Node()
-    root.board = Board()
 
-    last_node = root
+    node = root
+    inside = False
+    value = ""
+    key = ""
+    keycomplete = False
 
-    for s in strings:
-        if s.isspace() or s == "":
-            continue
-        new_node = Node()
-        new_node.add_properties(s)
-        new_node.parent = last_node
-        last_node.children.append(new_node)
-        last_node = new_node
+    for i, c in enumerate(sgf):
 
-    root.update_board_recursive()
+        if inside:
+            if c == "]" and sgf[i - 1] != "\\":
+                inside = False
+                if key not in node.properties:
+                    node.properties[key] = []
+                node.properties[key].append(value)
+            else:
+                value += c
+        else:
+            if c == "[":
+                value = ""
+                inside = True
+                keycomplete = True
+            elif c == "(":
+                pass
+            elif c == ")":
+                pass
+            elif c == ";":
+                newnode = Node()
+                node.children.append(newnode)
+                newnode.parent = node
+                node = newnode
+            else:
+                if not c.isspace():
+                    if keycomplete:
+                        key = ""
+                        keycomplete = False
+                    key += c
 
-    try:
-        node = root.children[0]
-    except IndexError:
-        node = root
-
-    return node
+    return root
 
 
 def main():
