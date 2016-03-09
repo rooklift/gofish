@@ -120,11 +120,14 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
 
 
 class Node():
-    def __init__(self):
+    def __init__(self, parent):
         self.properties = dict()
         self.children = []
         self.board = None
-        self.parent = None
+        self.parent = parent
+
+        if parent:
+            parent.children.append(self)
 
     def update_board(self):
         if "B" in self.properties:
@@ -189,18 +192,18 @@ def load(filename):
     with open(filename) as infile:
         sgf = infile.read()
 
-    root = load_tree(sgf)
+    root = load_tree(sgf, None)
     root.board = Board()
     root.update_board_recursive()
     return root
 
 
-def load_tree(sgf):
+def load_tree(sgf, parent_of_local_root):
 
-    root = Node()
+    root = None
+    node = None
 
-    node = root
-    inside = False
+    inside = False      # Are we inside a value? i.e. in C[foo] the value is foo
     value = ""
     key = ""
     keycomplete = False
@@ -225,16 +228,22 @@ def load_tree(sgf):
             elif c == ")":
                 pass
             elif c == ";":
-                newnode = Node()
-                node.children.append(newnode)
-                newnode.parent = node
-                node = newnode
+                if node is None:
+                    newnode = Node(parent = parent_of_local_root)
+                    root = newnode
+                    node = newnode
+                else:
+                    newnode = Node(parent = node)
+                    node = newnode
             else:
                 if not c.isspace():
                     if keycomplete:
                         key = ""
                         keycomplete = False
                     key += c
+
+    if root is None:
+        root = Node(parent = parent_of_local_root)
 
     return root
 
