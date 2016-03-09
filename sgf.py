@@ -39,13 +39,29 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
                 ls.append(0)
             self.state.append(ls)
 
-    def dump(self):
+    def dump(self, highlight):
+
+        if highlight is None:
+            highlightx, highlighty = 1234, 1234
+        else:
+            highlightx, highlighty = highlight[0], highlight[1]
+
         for row in range(1, 20):
-            for col in range(1, 20):
-                if self.state[col][row] == EMPTY and (col, row) in stars:
-                    print("+", end=" ")
+            for col in range(0, 20):        # Start from 0 so we have space to print the highlight if it's at col 1
+
+                end = " "
+                if row == highlighty:
+                    if col + 1 == highlightx:
+                        end = "["
+                    elif col == highlightx:
+                        end = "]"
+
+                if col == 0:                # Remember that the real board starts at 1
+                    print(" ", end=end)
+                elif self.state[col][row] == EMPTY and (col, row) in stars:
+                    print("+", end=end)
                 else:
-                    print(pieces[self.state[col][row]], end=" ")
+                    print(pieces[self.state[col][row]], end=end)
             print()
 
     def group_has_liberties(self, x, y):
@@ -131,6 +147,19 @@ class Node():
         for child in self.children:
             child.dump_recursive()
 
+    def what_was_the_move(self):
+        if "B" in self.properties:
+            movestring = self.properties["B"][0]
+            x = ord(movestring[0]) - 96
+            y = ord(movestring[1]) - 96
+            return (x, y)
+        elif "W" in self.properties:
+            movestring = self.properties["W"][0]
+            x = ord(movestring[0]) - 96
+            y = ord(movestring[1]) - 96
+            return (x, y)
+        return None
+
     def add_properties(self, s):    # s is some string like "B[cn]LB[dn:A][po:B]C[dada: other ideas are 'A' (d6) or 'B' (q5)]"
 
         inside = False
@@ -162,8 +191,8 @@ class Node():
                     key_complete = True
 
 
-def main():
-    filename = sys.argv[1]
+def load(filename):
+
     with open(filename) as infile:
         sgf = infile.read()
 
@@ -191,11 +220,20 @@ def main():
     except IndexError:
         node = root
 
+    return node
+
+
+def main():
+
+    filename = sys.argv[1]
+    node = load(filename)
+
     print("\nSimple minded SGF reader. Press return to jump through the moves.")
 
     while 1:
         input()
-        node.board.dump()
+        m = node.what_was_the_move()
+        node.board.dump(highlight = m)
         try:
             node = node.children[0]
         except IndexError:
