@@ -42,7 +42,7 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
     def dump(self, highlight):
 
         if highlight is None:
-            highlightx, highlighty = 1234, 1234
+            highlightx, highlighty = None, None
         else:
             highlightx, highlighty = highlight[0], highlight[1]
 
