@@ -122,9 +122,21 @@ def main():
         last_node = new_node
 
     root.update_board_recursive()
-    last_node.board.dump()
 
-    input()
+    try:
+        node = root.children[0]
+    except IndexError:
+        node = root
+
+    print("\nSimple minded SGF reader. Press return to jump through the moves.")
+
+    while 1:
+        input()
+        node.board.dump()
+        try:
+            node = node.children[0]
+        except IndexError:
+            break
 
 
 if __name__ == "__main__":
