@@ -219,6 +219,8 @@ def load(filename):
     with open(filename) as infile:
         sgf = infile.read()
 
+    sgf = sgf.replace("\]", "}")    # The only escape that really matters, deal with it crudely
+
     main_line = sgf.strip("()")     # This isn't at all a valid way of getting the main line if there are variations, FIXME
     strings = main_line.split(";")
 
