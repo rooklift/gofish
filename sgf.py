@@ -16,6 +16,7 @@ stars = [
 class OffBoard(Exception):
     pass
 
+
 def adjacent_points(x, y):
     result = set()
 
@@ -107,15 +108,16 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
             self.destroy_group(x, y)
 
     def destroy_group(self, x, y):
+        assert(x >= 1 and x <= 19 and y >= 1 and y <= 19)
         colour = self.state[x][y]
         assert(colour in [BLACK, WHITE])
-        assert(x >= 1 and x <= 19 and y >= 1 and y <= 19)
 
         self.state[x][y] = EMPTY
 
         for i, j in adjacent_points(x, y):
             if self.state[i][j] == colour:
                 self.destroy_group(i, j)
+
 
 class Node():
     def __init__(self):
