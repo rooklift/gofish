@@ -192,13 +192,17 @@ def load(filename):
     with open(filename) as infile:
         sgf = infile.read()
 
-    root = load_tree(sgf, None)
+    sgf = sgf.strip()
+    sgf = sgf.lstrip("(")
+
+    root, __ = load_tree(sgf, None)
     root.board = Board()
     root.update_board_recursive()
+
     return root
 
 
-def load_tree(sgf, parent_of_local_root):
+def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is no leading "("
 
     root = None
     node = None
@@ -207,8 +211,13 @@ def load_tree(sgf, parent_of_local_root):
     value = ""
     key = ""
     keycomplete = False
+    chars_to_skip = 0
 
     for i, c in enumerate(sgf):
+
+        if chars_to_skip:
+            chars_to_skip -= 1
+            continue
 
         if inside:
             if c == "]" and sgf[i - 1] != "\\":
@@ -224,9 +233,11 @@ def load_tree(sgf, parent_of_local_root):
                 inside = True
                 keycomplete = True
             elif c == "(":
-                pass
+                assert(node is not None)
+                __, chars_to_skip = load_tree(sgf[i + 1:], node)
             elif c == ")":
-                pass
+                assert(root is not None)
+                return root, i + 1      # return characters read
             elif c == ";":
                 if node is None:
                     newnode = Node(parent = parent_of_local_root)
@@ -242,10 +253,8 @@ def load_tree(sgf, parent_of_local_root):
                         keycomplete = False
                     key += c
 
-    if root is None:
-        root = Node(parent = parent_of_local_root)
-
-    return root
+    assert(root is not None)
+    return root, i + 1      # return characters read
 
 
 def main():
@@ -253,7 +262,7 @@ def main():
     filename = sys.argv[1]
     node = load(filename)
 
-    print("\n  Simple minded SGF reader. Press return to jump through the moves.")
+    print("\n  SGF main line viewer. Press return to jump through the moves.")
 
     while 1:
         input()
