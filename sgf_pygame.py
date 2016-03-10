@@ -21,9 +21,10 @@ fpsClock = pygame.time.Clock()
 directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 os.chdir(directory)	# Set working dir to be same as infile.
 
-spriteGoban = pygame.image.load("gfx/goban.png")
+spriteGoban = pygame.image.load("gfx/goban.jpg")
 spriteBlack = pygame.image.load("gfx/black.png")
 spriteWhite = pygame.image.load("gfx/white.png")
+spriteCross = pygame.image.load("gfx/cross.png")
 
 # Initialise the window...
 
@@ -105,7 +106,8 @@ while 1:
 				node.print_comments()
 
 	if node.parent and len(node.parent.children) > 1:
-		pygame.display.set_caption("{} variations available (press Tab)".format(len(node.parent.children)))
+		index = node.parent.children.index(node)
+		pygame.display.set_caption("{} of {} variations available (press Tab)".format(index + 1, len(node.parent.children)))
 	else:
 		pygame.display.set_caption("Navigate with Arrow Keys")
 
@@ -116,6 +118,11 @@ while 1:
 				blit(virtue, spriteBlack, 30 * x, 30 * y)
 			elif node.board.state[x][y] == sgf.WHITE:
 				blit(virtue, spriteWhite, 30 * x, 30 * y)
+	move = node.what_was_the_move()
+	if move is not None:
+		mark_x = move[0]
+		mark_y = move[1]
+		blit(virtue, spriteCross, 30 * mark_x, 30 * mark_y)
 
 	pygame.display.update()
 	fpsClock.tick(30)

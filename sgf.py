@@ -197,7 +197,7 @@ class Node():
 
 def load(filename):
 
-    with open(filename) as infile:
+    with open(filename, encoding="utf8") as infile:
         sgf = infile.read()
 
     sgf = sgf.strip()
