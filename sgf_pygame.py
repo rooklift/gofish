@@ -51,6 +51,8 @@ def blit_without_adjust(target, source, x, y):
 # Game...
 
 node = sgf.load(sys.argv[1])
+if "C" in node.properties:
+	print(node.properties["C"][0])
 
 while 1:
 
@@ -79,6 +81,8 @@ while 1:
 		keyboard[K_DOWN] = 0
 		try:
 			node = node.children[0]
+			if "C" in node.properties:
+				print(node.properties["C"][0])
 		except:
 			pass
 
@@ -92,6 +96,8 @@ while 1:
 		for n in range(10):
 			try:
 				node = node.children[0]
+				if "C" in node.properties:
+					print(node.properties["C"][0])
 			except:
 				pass
 

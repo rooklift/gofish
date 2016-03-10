@@ -160,7 +160,10 @@ class Node():
     def dump(self):
         print(";", end="")
         for key, value in self.properties.items():
-            print("{}{}".format(key, value))
+            try:
+                print("{}{}".format(key, value))        # Sometimes fails on Windows to Unicode errors
+            except:
+                pass
 
     def dump_recursive(self):
         self.dump()
