@@ -170,6 +170,11 @@ class Node():
         for child in self.children:
             child.dump_recursive()
 
+    def print_comments(self):
+        if "C" in self.properties:
+            print(self.properties["C"][0].strip())
+            print()
+
     def what_was_the_move(self):
         if "B" in self.properties:
             movestring = self.properties["B"][0]
