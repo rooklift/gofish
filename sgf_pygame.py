@@ -28,7 +28,6 @@ spriteWhite = pygame.image.load("gfx/white.png")
 # Initialise the window...
 
 virtue = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pygame SGF (use arrow keys)")
 
 # Input device states...
 
@@ -58,23 +57,12 @@ while 1:
 	# Update keyboard states...
 
 	for event in pygame.event.get():
-
 		if event.type == QUIT:
 			cleanexit()
-
 		if event.type == KEYDOWN:
 			keyboard[event.key] = 1
 		if event.type == KEYUP:
 			keyboard[event.key] = 0
-
-	blit_without_adjust(virtue, spriteGoban, 0, 0)
-
-	for x in range(20):
-		for y in range(20):
-			if node.board.state[x][y] == sgf.BLACK:
-				blit(virtue, spriteBlack, 30 * x, 30 * y)
-			elif node.board.state[x][y] == sgf.WHITE:
-				blit(virtue, spriteWhite, 30 * x, 30 * y)
 
 	if keyboard.get(K_DOWN, 0):
 		keyboard[K_DOWN] = 0
@@ -103,6 +91,31 @@ while 1:
 		for n in range(10):
 			if node.parent:
 				node = node.parent
+
+	if keyboard.get(K_TAB, 0):
+		keyboard[K_TAB] = 0
+		if node.parent:
+			if len(node.parent.children) > 1:
+				index = node.parent.children.index(node)
+				if index < len(node.parent.children) - 1:
+					index += 1
+				else:
+					index = 0
+				node = node.parent.children[index]
+				node.print_comments()
+
+	if node.parent and len(node.parent.children) > 1:
+		pygame.display.set_caption("{} variations available (press Tab)".format(len(node.parent.children)))
+	else:
+		pygame.display.set_caption("Navigate with Arrow Keys")
+
+	blit_without_adjust(virtue, spriteGoban, 0, 0)
+	for x in range(20):
+		for y in range(20):
+			if node.board.state[x][y] == sgf.BLACK:
+				blit(virtue, spriteBlack, 30 * x, 30 * y)
+			elif node.board.state[x][y] == sgf.WHITE:
+				blit(virtue, spriteWhite, 30 * x, 30 * y)
 
 	pygame.display.update()
 	fpsClock.tick(30)
