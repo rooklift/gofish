@@ -1,5 +1,3 @@
 # sgf
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/fohristiwhirl/sgf/master/gfx/screenshot.png" width="619" />
-</p>
+A simple SGF reader in Python. The file `sgf.py` provides a simple ability to view the main variation. The PyGame GUI by contrast allows stepping backwards as well as looking at variations.
