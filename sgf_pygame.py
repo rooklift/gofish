@@ -65,6 +65,8 @@ while 1:
 		if event.type == KEYUP:
 			keyboard[event.key] = 0
 
+	# Handle input if a key is down. Set the key to be up to avoid repetitions...
+
 	if keyboard.get(K_DOWN, 0):
 		keyboard[K_DOWN] = 0
 		try:
@@ -105,11 +107,16 @@ while 1:
 				node = node.parent.children[index]
 				node.print_comments()
 
+	# Set the title...
+
 	if node.parent and len(node.parent.children) > 1:
 		index = node.parent.children.index(node)
 		pygame.display.set_caption("{} of {} variations available (press Tab)".format(index + 1, len(node.parent.children)))
 	else:
-		pygame.display.set_caption("Navigate with Arrow Keys")
+		move_string = "Move {}".format(node.moves_made)
+		pygame.display.set_caption("{}. Navigate with Arrow Keys".format(move_string))
+
+	# Draw the board...
 
 	blit_without_adjust(virtue, spriteGoban, 0, 0)
 	for x in range(20):
@@ -123,6 +130,8 @@ while 1:
 		mark_x = move[0]
 		mark_y = move[1]
 		blit(virtue, spriteCross, 30 * mark_x, 30 * mark_y)
+
+	# Update and wait...
 
 	pygame.display.update()
 	fpsClock.tick(30)

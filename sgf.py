@@ -124,6 +124,7 @@ class Node():
         self.properties = dict()
         self.children = []
         self.board = None
+        self.moves_made = 0
         self.parent = parent
 
         if parent:
@@ -136,6 +137,7 @@ class Node():
                 x = ord(movestring[0]) - 96
                 y = ord(movestring[1]) - 96
                 self.board.play_move(BLACK, x, y)
+                self.moves_made += 1
             except IndexError:
                 pass
             except OffBoard:
@@ -146,6 +148,7 @@ class Node():
                 x = ord(movestring[0]) - 96
                 y = ord(movestring[1]) - 96
                 self.board.play_move(WHITE, x, y)
+                self.moves_made += 1
             except IndexError:
                 pass
             except OffBoard:
@@ -155,6 +158,7 @@ class Node():
         self.update_board()
         for child in self.children:
             child.board = copy.deepcopy(self.board)
+            child.moves_made = self.moves_made
             child.update_board_recursive()
 
     def dump(self):
