@@ -223,7 +223,10 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
             continue
 
         if inside:
-            if c == "]" and sgf[i - 1] != "\\":
+            if c == "\\":
+                value += sgf[i + 1]
+                chars_to_skip = 1
+            elif c == "]":
                 inside = False
                 if key not in node.properties:
                     node.properties[key] = []
