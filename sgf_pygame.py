@@ -26,8 +26,14 @@ spriteGrid = pygame.image.load("gfx/grid.png")
 spriteHoshi = pygame.image.load("gfx/hoshi.png")
 spriteBlack = pygame.image.load("gfx/black.png")
 spriteWhite = pygame.image.load("gfx/white.png")
-spriteCross = pygame.image.load("gfx/cross.png")
+spriteMove = pygame.image.load("gfx/move.png")
 spriteVar =  pygame.image.load("gfx/var.png")
+spriteTriangle = pygame.image.load("gfx/triangle.png")
+spriteCircle = pygame.image.load("gfx/circle.png")
+spriteSquare = pygame.image.load("gfx/square.png")
+spriteMark = pygame.image.load("gfx/mark.png")
+
+markup_dict = {"TR": spriteTriangle, "CR": spriteCircle, "SQ": spriteSquare, "MA": spriteMark}
 
 # Initialise the window...
 
@@ -169,13 +175,13 @@ while 1:
 			elif node.board.state[x][y] == sgf.WHITE:
 				blit(virtue, spriteWhite, GAP * x, GAP * y)
 
-	# Draw a cross at the current move, if there is one...
+	# Draw a mark at the current move, if there is one...
 
 	move = node.what_was_the_move()
 	if move is not None:
 		mark_x = move[0]
 		mark_y = move[1]
-		blit(virtue, spriteCross, GAP * mark_x, GAP * mark_y)
+		blit(virtue, spriteMove, GAP * mark_x, GAP * mark_y)
 
 	# Draw a mark at variations, if there are any...
 
@@ -183,6 +189,18 @@ while 1:
 		mark_x = sib_move[0]
 		mark_y = sib_move[1]
 		blit(virtue, spriteVar, GAP * mark_x, GAP * mark_y)
+
+	# Draw the commonly used marks...
+
+	for mark in markup_dict:
+		if mark in node.properties:
+			points = set()
+			for value in node.properties[mark]:
+				points |= sgf.points_from_points_list(value)
+			for point in points:
+				mark_x = point[0]
+				mark_y = point[1]
+				blit(virtue, markup_dict[mark], GAP * mark_x, GAP * mark_y)
 
 	# Update and wait...
 
