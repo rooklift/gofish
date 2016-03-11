@@ -86,33 +86,37 @@ while 1:
 
 	# Handle input if a key is down. Set the key to be up to avoid repetitions...
 
-	if keyboard.get(K_DOWN, 0):
+	if keyboard.get(K_DOWN, 0) or keyboard.get(K_RIGHT, 0):
 		keyboard[K_DOWN] = 0
+		keyboard[K_RIGHT] = 0
 		try:
 			node = node.children[0]
 			node.print_comments()
-		except:
+		except IndexError:
 			pass
 
-	if keyboard.get(K_UP, 0):
+	if keyboard.get(K_UP, 0) or keyboard.get(K_LEFT, 0):
 		keyboard[K_UP] = 0
+		keyboard[K_LEFT] = 0
 		if node.parent:
 			node = node.parent
 
-	if keyboard.get(K_RIGHT, 0):
-		keyboard[K_RIGHT] = 0
+	if keyboard.get(K_PAGEDOWN, 0):
+		keyboard[K_PAGEDOWN] = 0
 		for n in range(10):
 			try:
 				node = node.children[0]
 				node.print_comments()
-			except:
-				pass
+			except IndexError:
+				break
 
-	if keyboard.get(K_LEFT, 0):
-		keyboard[K_LEFT] = 0
+	if keyboard.get(K_PAGEUP, 0):
+		keyboard[K_PAGEUP] = 0
 		for n in range(10):
 			if node.parent:
 				node = node.parent
+			else:
+				break
 
 	if keyboard.get(K_TAB, 0):
 		keyboard[K_TAB] = 0
