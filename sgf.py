@@ -267,8 +267,12 @@ class Node():
 
 def load(filename):
 
-    with open(filename, encoding="utf8") as infile:
-        sgf = infile.read()
+    try:
+        with open(filename, encoding="utf8") as infile:
+            sgf = infile.read()
+    except UnicodeDecodeError:
+        with open(filename, encoding="latin1") as infile:
+            sgf = infile.read()
 
     sgf = sgf.strip()
     sgf = sgf.lstrip("(")
