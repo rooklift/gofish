@@ -144,6 +144,7 @@ class Node():
         self.children = []
         self.board = None
         self.moves_made = 0
+        self.is_main_line = False
         self.parent = parent
 
         if parent:
@@ -208,7 +209,9 @@ class Node():
 
     def update_board_recursive(self):
         self.update_board()
-        for child in self.children:
+        for n, child in enumerate(self.children):
+            if self.is_main_line and n == 0:
+                child.is_main_line = True
             child.board = copy.deepcopy(self.board)
             child.moves_made = self.moves_made
             child.update_board_recursive()
@@ -228,6 +231,7 @@ class Node():
 
     def print_comments(self):
         if "C" in self.properties:
+            print("[{}] ".format(self.moves_made), end="")
             for value in self.properties["C"]:
                 try:
                     print(value.strip())
@@ -303,6 +307,7 @@ def load(filename):
 
     root, __ = load_tree(sgf, None)
     root.board = Board()
+    root.is_main_line = True
     root.update_board_recursive()
 
     return root

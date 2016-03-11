@@ -130,6 +130,15 @@ while 1:
 				node = node.parent.children[index]
 				node.print_comments()
 
+	if keyboard.get(K_BACKSPACE, 0):		# Return to the main line
+		keyboard[K_BACKSPACE] = 0
+		while 1:
+			if node.is_main_line:
+				break
+			if node.parent is None:
+				break
+			node = node.parent
+
 	if keyboard.get(K_HOME, 0):
 		keyboard[K_HOME] = 0
 		node = node.get_root_node()
