@@ -213,23 +213,27 @@ class Node():
             child.moves_made = self.moves_made
             child.update_board_recursive()
 
-    def dump(self):
+    def dump(self):                 # For debugging
         print(";", end="")
         for key, value in self.properties.items():
             try:
                 print("{}{}".format(key, value))        # Sometimes fails on Windows to Unicode errors
-            except:
-                pass
+            except Exception as err:
+                print("Exception: {}".format(err))
 
-    def dump_recursive(self):
+    def dump_recursive(self):       # For debugging
         self.dump()
         for child in self.children:
             child.dump_recursive()
 
     def print_comments(self):
         if "C" in self.properties:
-            print(self.properties["C"][0].strip())
-            print()
+            for value in self.properties["C"]:
+                try:
+                    print(value.strip())
+                except Exception as err:
+                    print("Exception: {}".format(err))
+                print()
 
     def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on
         if "B" in self.properties:
