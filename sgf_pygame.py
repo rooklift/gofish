@@ -128,12 +128,11 @@ while 1:
 
 	# Set the title...
 
-	if node.parent and len(node.parent.children) > 1:
+	title = "Move {}".format(node.moves_made)
+	if node.sibling_moves():
 		index = node.parent.children.index(node)
-		pygame.display.set_caption("{} of {} variations available (press Tab)".format(index + 1, len(node.parent.children)))
-	else:
-		move_string = "Move {}".format(node.moves_made)
-		pygame.display.set_caption("{}. Navigate with Arrow Keys".format(move_string))
+		title += " ({} of {} variations)".format(index + 1, len(node.sibling_moves()) + 1)
+	pygame.display.set_caption(title)
 
 	# Draw the board...
 
