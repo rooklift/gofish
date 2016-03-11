@@ -17,6 +17,25 @@ class OffBoard(Exception):
     pass
 
 
+def points_from_points_list(s):     # convert "aa" or "cd:jf" into set of points
+
+    ret = set()
+
+    if len(s) < 2:
+        return ret
+
+    left = ord(s[0]) - 96
+    top = ord(s[1]) - 96
+    right = ord(s[-2]) - 96         # This works regardless of
+    bottom = ord(s[-1]) - 96        # the format ("aa" or "cd:jf")
+
+    for x in range(left, right + 1):
+        for y in range(top, bottom + 1):
+            ret.add((x,y))
+
+    return ret
+
+
 def adjacent_points(x, y):
     result = set()
 
@@ -130,7 +149,10 @@ class Node():
         if parent:
             parent.children.append(self)
 
-    def update_board(self):
+    def update_board(self):             # Use the properties to modify the board
+
+        # A node "should" have only 1 of "B" or "W"
+
         if "B" in self.properties:
             movestring = self.properties["B"][0]
             try:
@@ -142,7 +164,8 @@ class Node():
                 pass
             except OffBoard:
                 pass
-        elif "W" in self.properties:
+
+        if "W" in self.properties:
             movestring = self.properties["W"][0]
             try:
                 x = ord(movestring[0]) - 96
@@ -153,6 +176,35 @@ class Node():
                 pass
             except OffBoard:
                 pass
+
+        # A node can have all of "AB", "AW" and "AE"
+        # Note that adding a stone doesn't count as "playing" it and can
+        # result in illegal positions (the specs allow this explicitly)
+
+        if "AB" in self.properties:
+            for value in self.properties["AB"]:
+                for point in points_from_points_list(value):
+                    x, y = point[0], point[1]
+                    try:
+                        self.board.state[x][y] = BLACK
+                    except IndexError:
+                        pass
+        if "AW" in self.properties:
+            for value in self.properties["AW"]:
+                for point in points_from_points_list(value):
+                    x, y = point[0], point[1]
+                    try:
+                        self.board.state[x][y] = WHITE
+                    except IndexError:
+                        pass
+        if "AE" in self.properties:
+            for value in self.properties["AE"]:
+                for point in points_from_points_list(value):
+                    x, y = point[0], point[1]
+                    try:
+                        self.board.state[x][y] = EMPTY
+                    except IndexError:
+                        pass
 
     def update_board_recursive(self):
         self.update_board()
@@ -249,10 +301,10 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
                 keycomplete = True
             elif c == "(":
                 assert(node is not None)
-                __, chars_to_skip = load_tree(sgf[i + 1:], node)
+                __, chars_to_skip = load_tree(sgf[i + 1:], node)    # The child function will append the new tree to the node
             elif c == ")":
                 assert(root is not None)
-                return root, i + 1      # return characters read
+                return root, i + 1          # return characters read
             elif c == ";":
                 if node is None:
                     newnode = Node(parent = parent_of_local_root)
@@ -269,7 +321,7 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
                     key += c
 
     assert(root is not None)
-    return root, i + 1      # return characters read
+    return root, i + 1          # return characters read
 
 
 def main():
