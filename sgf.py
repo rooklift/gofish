@@ -269,6 +269,7 @@ class Node():
                     moves.add(move)
         return moves
 
+
 def load(filename):
 
     try:
