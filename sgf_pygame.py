@@ -22,7 +22,6 @@ directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 os.chdir(directory)	# Set working dir to be same as infile.
 
 spriteGoban = pygame.image.load("gfx/texture.jpg")
-spriteGrid = pygame.image.load("gfx/grid.png")
 spriteHoshi = pygame.image.load("gfx/hoshi.png")
 spriteBlack = pygame.image.load("gfx/black.png")
 spriteWhite = pygame.image.load("gfx/white.png")
@@ -69,7 +68,10 @@ def blit_without_adjust(target, source, x, y):
 
 # Patch up the board with the grid and hoshi points drawn...
 
-blit_without_adjust(spriteGoban, spriteGrid, 0, 0)
+for n in range(1, 20):
+	pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (n * GAP, GAP), (n * GAP, 19 * GAP), 1)
+	pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (GAP, n * GAP), (19 * GAP, n * GAP), 1)
+
 for star in sgf.STAR_POINTS:
 	blit(spriteGoban, spriteHoshi, star[0] * GAP, star[1] * GAP)
 
