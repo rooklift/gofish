@@ -7,7 +7,7 @@ WHITE = 2
 
 pieces = {EMPTY: ".", BLACK: "*", WHITE: "O"}
 
-stars = [
+STAR_POINTS = [
     (4, 4),(10, 4),(16, 4),
     (4,10),(10,10),(16,10),
     (4,16),(10,16),(16,16),
@@ -80,7 +80,7 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
 
                 if col == 0:                # Remember that the real board starts at 1
                     print(" ", end=end)
-                elif self.state[col][row] == EMPTY and (col, row) in stars:
+                elif self.state[col][row] == EMPTY and (col, row) in STAR_POINTS:
                     print("+", end=end)
                 else:
                     print(pieces[self.state[col][row]], end=end)
@@ -231,7 +231,7 @@ class Node():
             print(self.properties["C"][0].strip())
             print()
 
-    def what_was_the_move(self):
+    def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on
         if "B" in self.properties:
             movestring = self.properties["B"][0]
             try:
@@ -250,6 +250,20 @@ class Node():
                 pass
         return None
 
+    def sibling_moves(self):
+        p = self.parent
+        if p is None:
+            return set()
+        if len(p.children) == 1:
+            return set()
+        moves = set()
+        index = p.children.index(self)
+        for n, node in enumerate(p.children):
+            if n != index:
+                move = node.what_was_the_move()
+                if move is not None:
+                    moves.add(move)
+        return moves
 
 def load(filename):
 
