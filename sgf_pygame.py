@@ -129,9 +129,10 @@ while 1:
 	# Set the title...
 
 	title = "Move {}".format(node.moves_made)
-	if node.sibling_moves():
-		index = node.parent.children.index(node)
-		title += " ({} of {} variations)".format(index + 1, len(node.sibling_moves()) + 1)
+	if node.parent:
+		if len(node.parent.children) > 1:
+			index = node.parent.children.index(node)
+			title += " ({} of {} variations)".format(index + 1, len(node.parent.children))
 	pygame.display.set_caption(title)
 
 	# Draw the board...

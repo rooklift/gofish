@@ -250,7 +250,7 @@ class Node():
                 pass
         return None
 
-    def sibling_moves(self):
+    def sibling_moves(self):    # Don't use this to check for variations - a node might not have any moves
         p = self.parent
         if p is None:
             return set()
