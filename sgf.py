@@ -269,6 +269,24 @@ class Node():
                     moves.add(move)
         return moves
 
+    def get_end_node(self):         # Iterate down the (local) main line and return the end node
+        node = self
+        while 1:
+            if len(node.children) > 0:
+                node = node.children[0]
+            else:
+                break
+        return node
+
+    def get_root_node(self):        # Iterate up to the root and return it
+        node = self
+        while 1:
+            if node.parent:
+                node = node.parent
+            else:
+                break
+        return node
+
 
 def load(filename):
 

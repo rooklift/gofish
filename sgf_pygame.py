@@ -126,6 +126,14 @@ while 1:
 				node = node.parent.children[index]
 				node.print_comments()
 
+	if keyboard.get(K_HOME, 0):
+		keyboard[K_HOME] = 0
+		node = node.get_root_node()
+
+	if keyboard.get(K_END, 0):
+		keyboard[K_END] = 0
+		node = node.get_end_node()
+
 	# Set the title...
 
 	title = "Move {}".format(node.moves_made)
