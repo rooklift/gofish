@@ -276,6 +276,7 @@ def load(filename):
         with open(filename, encoding="utf8") as infile:
             sgf = infile.read()
     except UnicodeDecodeError:
+        print("Opening as UTF-8 failed, trying Latin-1\n")
         with open(filename, encoding="latin1") as infile:
             sgf = infile.read()
 
