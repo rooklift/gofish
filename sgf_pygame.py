@@ -3,7 +3,7 @@ from pygame.locals import *
 import sgf
 
 if len(sys.argv) != 2:
-	os.exit(1)
+	sys.exit(1)
 
 WIDTH, HEIGHT = 621, 621
 GAP = 31
