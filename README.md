@@ -11,7 +11,7 @@ The GUI `sgf_pygame.py` also allows stepping backwards and variations:
 
 ## Notes on SGF as I understand it
 
-* An SGF file is a tree of nodes.
+* An SGF file is a tree of nodes
 * The start of a node is indicated with a colon **;**
 * Each node is a dictionary of keys and values
 * A key is a string of uppercase letters, usually just 1 or 2 characters long
@@ -20,4 +20,4 @@ The GUI `sgf_pygame.py` also allows stepping backwards and variations:
 * If a key has multiple values, they are given like so: **KY[exa][mple][val][ues]**
 * When a node has two or more children, each branch is contained within parentheses **()**
 * A branch will always have a node right at the start, e.g. **(** is always followed by **;**
-* The whole tree is itself contained in parentheses.
+* The whole tree is itself contained in parentheses **()**
