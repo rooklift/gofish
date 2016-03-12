@@ -64,10 +64,10 @@ def adjacent_points(x, y, boardsize):
 
 
 class Board():                          # Internally the arrays are 1 too big, with 0 indexes being ignored (so we can use indexes 1 to 19)
-    def __init__(self, boardsize = 19):
-        self.state = []
+    def __init__(self, boardsize):
         self.boardsize = boardsize
         self.stones_checked = set()     # Used when searching for liberties
+        self.state = []
         for x in range(self.boardsize + 1):
             ls = list()
             for y in range(self.boardsize + 1):
@@ -181,7 +181,8 @@ class Node():
                     pass
                 except OffBoard:
                     pass
-                self.moves_made += 1        # Consider off-board or passing moves as moves for counting purposes
+                self.moves_made += 1        # Consider off-board / passing moves as moves for counting purposes
+                                            # (incidentally, old SGF sometimes uses an off-board move to mean pass)
 
         # A node can have all of "AB", "AW" and "AE"
         # Note that adding a stone doesn't count as "playing" it and can
@@ -231,13 +232,14 @@ class Node():
                     print("Exception: {}".format(err))
                 print()
 
-    def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on
+    def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on.
         if "B" in self.properties:
             movestring = self.properties["B"][0]
             try:
                 x = ord(movestring[0]) - 96
                 y = ord(movestring[1]) - 96
-                return (x, y)
+                if 1 <= x <= self.board.boardsize and 1 <= y <= self.board.boardsize:
+                    return (x, y)
             except IndexError:
                 pass
         elif "W" in self.properties:
@@ -245,7 +247,8 @@ class Node():
             try:
                 x = ord(movestring[0]) - 96
                 y = ord(movestring[1]) - 96
-                return (x, y)
+                if 1 <= x <= self.board.boardsize and 1 <= y <= self.board.boardsize:
+                    return (x, y)
             except IndexError:
                 pass
         return None
@@ -298,7 +301,13 @@ def load(filename):
     sgf = sgf.lstrip("(")
 
     root, __ = load_tree(sgf, None)
-    root.board = Board()
+
+    if "SZ" in root.properties:
+        size = int(root.properties["SZ"][0])
+    else:
+        size = 19
+
+    root.board = Board(size)
     root.is_main_line = True
     root.update_board_recursive()
 

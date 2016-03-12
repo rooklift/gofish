@@ -66,21 +66,24 @@ def blit(target, source, x, y):
 def blit_without_adjust(target, source, x, y):
 	target.blit(source, (x, y))
 
-# Patch up the board with the grid and hoshi points drawn...
 
-for n in range(1, 20):
-	pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (n * GAP, GAP), (n * GAP, 19 * GAP), 1)
-	pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (GAP, n * GAP), (19 * GAP, n * GAP), 1)
+# ----------------------------------------------------------------------------------------------
 
-for x in range(20):
-	for y in range(20):
-		if sgf.is_star_point(x, y, 19):
-			blit(spriteGoban, spriteHoshi, x * GAP, y * GAP)
-
-# Game...
+# Load the game...
 
 node = sgf.load(sys.argv[1])
 node.print_comments()
+
+# Patch up the board with the grid and hoshi points drawn...
+
+for n in range(1, node.board.boardsize + 1):
+	pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (n * GAP, GAP), (n * GAP, node.board.boardsize * GAP), 1)
+	pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (GAP, n * GAP), (node.board.boardsize * GAP, n * GAP), 1)
+
+for x in range(node.board.boardsize + 1):
+	for y in range(node.board.boardsize + 1):
+		if sgf.is_star_point(x, y, node.board.boardsize):
+			blit(spriteGoban, spriteHoshi, x * GAP, y * GAP)
 
 while 1:
 
@@ -172,8 +175,8 @@ while 1:
 
 	# Draw the stones...
 
-	for x in range(1, 20):
-		for y in range(1, 20):
+	for x in range(1, node.board.boardsize + 1):
+		for y in range(1, node.board.boardsize + 1):
 			if node.board.state[x][y] == sgf.BLACK:
 				blit(virtue, spriteBlack, GAP * x, GAP * y)
 			elif node.board.state[x][y] == sgf.WHITE:
