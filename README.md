@@ -12,7 +12,7 @@ The GUI `sgf_pygame.py` also allows stepping backwards and variations:
 ## Notes on SGF as I understand it
 
 * An SGF file is a tree of nodes
-* The start of a node is indicated with a colon **;**
+* The start of a node is indicated with a semi-colon **;**
 * Each node is a dictionary that maps a key to a list of values
 * A key is a string of uppercase letters, usually just 1 or 2 characters long
 * Following the key, a value is a string contained within **[]** characters
