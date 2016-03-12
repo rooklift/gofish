@@ -2,9 +2,6 @@ import os, pygame, sys
 from pygame.locals import *
 import sgf
 
-if len(sys.argv) != 2:
-	sys.exit(1)
-
 WIDTH, HEIGHT = 621, 621
 GAP = 31
 
@@ -91,10 +88,15 @@ def board_pos_from_screen_pos(x, y, boardsize):		# Inverse of the above
 
 def main():
 
+	print()
+
 	# Load the game...
 
-	node = sgf.load(sys.argv[1])
-	node.print_comments()
+	if len(sys.argv) > 1:
+		node = sgf.load(sys.argv[1])
+		node.print_comments()
+	else:
+		node = sgf.new_tree(19)
 
 	# Patch up the board with the grid and hoshi points drawn...
 
@@ -195,6 +197,10 @@ def main():
 			keyboard[K_END] = 0
 			node = node.get_end_node()
 
+		if keyboard.get(K_d, 0):
+			keyboard[K_d] = 0
+			node.debug()
+
 		# The following is the logic for adding a move...
 
 		if mousebuttons.get(1, 0):
@@ -211,7 +217,7 @@ def main():
 					if switched_node == False:
 						node = node.add_and_return_child()
 						mycolour = "W" if node.previous_colour_played() == sgf.BLACK else "B"		# if it was None we get "W"
-						node.properties[mycolour] = [sgf.string_from_point(x, y)]
+						node.add_value(mycolour, sgf.string_from_point(x, y))
 						node.board.play_move(mycolour, x, y)
 						node.moves_made += 1
 

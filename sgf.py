@@ -93,7 +93,7 @@ class Board():                          # Internally the arrays are 1 too big, w
                 ls.append(0)
             self.state.append(ls)
 
-    def dump(self, highlight):
+    def dump(self, highlight = None):
 
         if highlight is None:
             highlightx, highlighty = None, None
@@ -235,12 +235,14 @@ class Node():
             child.update_board_recursive()
 
     def dump(self):                 # For debugging
-        print(";", end="")
-        for key, value in self.properties.items():
-            try:
-                print("{}{}".format(key, value))        # Sometimes fails on Windows to Unicode errors
-            except Exception as err:
-                print("Exception: {}".format(err))
+        for key, values in self.properties.items():
+            print("  {}".format(key), end="")
+            for value in values:
+                try:
+                    print("[{}]".format(value), end="")        # Sometimes fails on Windows to Unicode errors
+                except Exception as err:
+                    print("Exception: {}".format(err))
+            print()
 
     def dump_recursive(self):       # For debugging
         self.dump()
@@ -258,24 +260,16 @@ class Node():
                 print()
 
     def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on.
-        if "B" in self.properties:
-            movestring = self.properties["B"][0]
-            try:
-                x = ord(movestring[0]) - 96
-                y = ord(movestring[1]) - 96
-                if 1 <= x <= self.board.boardsize and 1 <= y <= self.board.boardsize:
-                    return (x, y)
-            except IndexError:
-                pass
-        elif "W" in self.properties:
-            movestring = self.properties["W"][0]
-            try:
-                x = ord(movestring[0]) - 96
-                y = ord(movestring[1]) - 96
-                if 1 <= x <= self.board.boardsize and 1 <= y <= self.board.boardsize:
-                    return (x, y)
-            except IndexError:
-                pass
+        for key in ["B", "W"]:
+            if key in self.properties:
+                movestring = self.properties[key][0]
+                try:
+                    x = ord(movestring[0]) - 96
+                    y = ord(movestring[1]) - 96
+                    if 1 <= x <= self.board.boardsize and 1 <= y <= self.board.boardsize:
+                        return (x, y)
+                except IndexError:
+                    pass
         return None
 
     def sibling_moves(self):    # Don't use this to check for variations - a node might not have any moves
@@ -330,6 +324,18 @@ class Node():
             if "W" in node.properties:
                 return WHITE
 
+    def add_value(self, key, value):
+        if key not in self.properties:
+            self.properties[key] = []
+        self.properties[key].append(str(value))       # Strings are what are loaded from files, so just keep everything as so
+
+    def debug(self):
+        self.board.dump()
+        print()
+        self.dump()
+        print()
+
+
 def load(filename):
 
     try:
@@ -361,6 +367,21 @@ def load(filename):
     return root
 
 
+def new_tree(size):
+    if size > 19 or size < 1:
+        print("SZ (board size) was not in range 1:19")
+        sys.exit(1)
+
+    root = Node(parent = None)
+    root.board = Board(size)
+    root.is_main_line = True
+    root.add_value("FF", 4)
+    root.add_value("GM", 1)
+    root.add_value("SZ", size)
+    root.add_value("CA", "UTF-8")
+    return root
+
+
 def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is no leading "("
 
     root = None
@@ -384,9 +405,7 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
                 chars_to_skip = 1
             elif c == "]":
                 inside = False
-                if key not in node.properties:
-                    node.properties[key] = []
-                node.properties[key].append(value)
+                node.add_value(key, value)
             else:
                 value += c
         else:
