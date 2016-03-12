@@ -26,7 +26,7 @@ spriteHoshi = pygame.image.load("gfx/hoshi.png")
 spriteBlack = pygame.image.load("gfx/black.png")
 spriteWhite = pygame.image.load("gfx/white.png")
 spriteMove = pygame.image.load("gfx/move.png")
-spriteVar =  pygame.image.load("gfx/var.png")
+spriteVar = pygame.image.load("gfx/var.png")
 spriteTriangle = pygame.image.load("gfx/triangle.png")
 spriteCircle = pygame.image.load("gfx/circle.png")
 spriteSquare = pygame.image.load("gfx/square.png")
@@ -72,8 +72,10 @@ for n in range(1, 20):
 	pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (n * GAP, GAP), (n * GAP, 19 * GAP), 1)
 	pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (GAP, n * GAP), (19 * GAP, n * GAP), 1)
 
-for star in sgf.STAR_POINTS:
-	blit(spriteGoban, spriteHoshi, star[0] * GAP, star[1] * GAP)
+for x in range(20):
+	for y in range(20):
+		if sgf.is_star_point(x, y, 19):
+			blit(spriteGoban, spriteHoshi, x * GAP, y * GAP)
 
 # Game...
 

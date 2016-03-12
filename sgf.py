@@ -1,20 +1,26 @@
-import copy
-import sys
+import copy, sys
 
-EMPTY = 0
-BLACK = 1
-WHITE = 2
 
+EMPTY, BLACK, WHITE = 0, 1, 2
 pieces = {EMPTY: ".", BLACK: "*", WHITE: "O"}
 
-STAR_POINTS = [
-    (4, 4),(10, 4),(16, 4),
-    (4,10),(10,10),(16,10),
-    (4,16),(10,16),(16,16),
-]
 
 class OffBoard(Exception):
     pass
+
+
+def is_star_point(x, y, boardsize):
+    good_x, good_y = False, False
+
+    if x == (boardsize + 1) / 2 or x == 4 or x + 4 == boardsize + 1:
+        good_x = True
+    if y == (boardsize + 1) / 2 or y == 4 or y + 4 == boardsize + 1:
+        good_y = True
+
+    if good_x and good_y:
+        return True
+    else:
+        return False
 
 
 def points_from_points_list(s):     # convert "aa" or "cd:jf" into set of points
@@ -29,6 +35,11 @@ def points_from_points_list(s):     # convert "aa" or "cd:jf" into set of points
     right = ord(s[-2]) - 96         # This works regardless of
     bottom = ord(s[-1]) - 96        # the format ("aa" or "cd:jf")
 
+    if left > right:
+        left, right = right, left
+    if top > bottom:
+        top, bottom = bottom, top
+
     for x in range(left, right + 1):
         for y in range(top, bottom + 1):
             ret.add((x,y))
@@ -36,7 +47,7 @@ def points_from_points_list(s):     # convert "aa" or "cd:jf" into set of points
     return ret
 
 
-def adjacent_points(x, y):
+def adjacent_points(x, y, boardsize):
     result = set()
 
     for i, j in [
@@ -45,19 +56,20 @@ def adjacent_points(x, y):
         (x, y - 1),
         (x, y + 1),
     ]:
-        if i >= 1 and i <= 19 and j >= 1 and j <= 19:
+        if i >= 1 and i <= boardsize and j >= 1 and j <= boardsize:
             result.add((i, j))
 
     return result
 
 
-class Board():                  # Internally the arrays are size 20x20, with 0 indexes being ignored (so we can use indexes 1-19)
-    def __init__(self):
+class Board():                          # Internally the arrays are 1 too big, with 0 indexes being ignored (so we can use indexes 1-19)
+    def __init__(self, boardsize = 19):
         self.state = []
+        self.boardsize = boardsize
         self.stones_checked = set()     # Used when searching for liberties
-        for x in range(20):
+        for x in range(self.boardsize + 1):
             ls = list()
-            for y in range(20):
+            for y in range(self.boardsize + 1):
                 ls.append(0)
             self.state.append(ls)
 
@@ -68,8 +80,8 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
         else:
             highlightx, highlighty = highlight[0], highlight[1]
 
-        for row in range(1, 20):
-            for col in range(0, 20):        # Start from 0 so we have space to print the highlight if it's at col 1
+        for row in range(1, self.boardsize + 1):
+            for col in range(0, self.boardsize + 1):        # Start from 0 so we have space to print the highlight if it's at col 1
 
                 end = " "
                 if row == highlighty:
@@ -80,25 +92,25 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
 
                 if col == 0:                # Remember that the real board starts at 1
                     print(" ", end=end)
-                elif self.state[col][row] == EMPTY and (col, row) in STAR_POINTS:
+                elif self.state[col][row] == EMPTY and is_star_point(col, row, self.boardsize):
                     print("+", end=end)
                 else:
                     print(pieces[self.state[col][row]], end=end)
             print()
 
     def group_has_liberties(self, x, y):
-        assert(x >= 1 and x <= 19 and y >= 1 and y <= 19)
+        assert(x >= 1 and x <= self.boardsize and y >= 1 and y <= self.boardsize)
         self.stones_checked = set()
         return self.__group_has_liberties(x, y)
 
     def __group_has_liberties(self, x, y):
-        assert(x >= 1 and x <= 19 and y >= 1 and y <= 19)
+        assert(x >= 1 and x <= self.boardsize and y >= 1 and y <= self.boardsize)
         colour = self.state[x][y]
         assert(colour in [BLACK, WHITE])
 
         self.stones_checked.add((x,y))
 
-        for i, j in adjacent_points(x, y):
+        for i, j in adjacent_points(x, y, self.boardsize):
             if self.state[i][j] == EMPTY:
                 return True
             if self.state[i][j] == colour:
@@ -111,12 +123,12 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
         assert(colour in [BLACK, WHITE])
         opponent = BLACK if colour == WHITE else WHITE
 
-        if x < 1 or x > 19 or y < 1 or y > 19:
+        if x < 1 or x > self.boardsize or y < 1 or y > self.boardsize:
             raise OffBoard
 
         self.state[x][y] = colour
 
-        for i, j in adjacent_points(x, y):
+        for i, j in adjacent_points(x, y, self.boardsize):
             if self.state[i][j] == opponent:
                 if not self.group_has_liberties(i, j):
                     self.destroy_group(i, j)
@@ -127,13 +139,13 @@ class Board():                  # Internally the arrays are size 20x20, with 0 i
             self.destroy_group(x, y)
 
     def destroy_group(self, x, y):
-        assert(x >= 1 and x <= 19 and y >= 1 and y <= 19)
+        assert(x >= 1 and x <= self.boardsize and y >= 1 and y <= self.boardsize)
         colour = self.state[x][y]
         assert(colour in [BLACK, WHITE])
 
         self.state[x][y] = EMPTY
 
-        for i, j in adjacent_points(x, y):
+        for i, j in adjacent_points(x, y, self.boardsize):
             if self.state[i][j] == colour:
                 self.destroy_group(i, j)
 
