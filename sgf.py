@@ -23,7 +23,7 @@ def is_star_point(x, y, boardsize):
         return False
 
 
-def points_from_points_list(s, boardsize):     # convert "aa" or "cd:jf" into set of points
+def points_from_points_string(s, boardsize):     # convert "aa" or "cd:jf" into set of points
 
     ret = set()
 
@@ -163,62 +163,41 @@ class Node():
         if parent:
             parent.children.append(self)
 
-    def update_board(self):             # Use the properties to modify the board
+    def update_board(self):             # Use the properties to modify the board...
 
-        # A node "should" have only 1 of "B" or "W"
+        # A node "should" have only 1 of "B" or "W", and only 1 value in the list.
+        # The result will be wrong if the specs are violated. Whatever.
 
-        if "B" in self.properties:
-            movestring = self.properties["B"][0]
-            try:
-                x = ord(movestring[0]) - 96
-                y = ord(movestring[1]) - 96
-                self.board.play_move(BLACK, x, y)
-                self.moves_made += 1
-            except IndexError:
-                pass
-            except OffBoard:
-                pass
+        movers = {"B": BLACK, "W": WHITE}
 
-        if "W" in self.properties:
-            movestring = self.properties["W"][0]
-            try:
-                x = ord(movestring[0]) - 96
-                y = ord(movestring[1]) - 96
-                self.board.play_move(WHITE, x, y)
-                self.moves_made += 1
-            except IndexError:
-                pass
-            except OffBoard:
-                pass
+        for mover in movers:
+            if mover in self.properties:
+                movestring = self.properties[mover][0]
+                try:
+                    x = ord(movestring[0]) - 96
+                    y = ord(movestring[1]) - 96
+                    self.board.play_move(movers[mover], x, y)
+                except IndexError:
+                    pass
+                except OffBoard:
+                    pass
+                self.moves_made += 1        # Consider off-board or passing moves as moves for counting purposes
 
         # A node can have all of "AB", "AW" and "AE"
         # Note that adding a stone doesn't count as "playing" it and can
         # result in illegal positions (the specs allow this explicitly)
 
-        if "AB" in self.properties:
-            for value in self.properties["AB"]:
-                for point in points_from_points_list(value, self.board.boardsize):
-                    x, y = point[0], point[1]
-                    try:
-                        self.board.state[x][y] = BLACK
-                    except IndexError:
-                        pass
-        if "AW" in self.properties:
-            for value in self.properties["AW"]:
-                for point in points_from_points_list(value, self.board.boardsize):
-                    x, y = point[0], point[1]
-                    try:
-                        self.board.state[x][y] = WHITE
-                    except IndexError:
-                        pass
-        if "AE" in self.properties:
-            for value in self.properties["AE"]:
-                for point in points_from_points_list(value, self.board.boardsize):
-                    x, y = point[0], point[1]
-                    try:
-                        self.board.state[x][y] = EMPTY
-                    except IndexError:
-                        pass
+        adders = {"AB": BLACK, "AW": WHITE, "AE": EMPTY}
+
+        for adder in adders:
+            if adder in self.properties:
+                for value in self.properties[adder]:
+                    for point in points_from_points_string(value, self.board.boardsize):
+                        x, y = point[0], point[1]
+                        try:
+                            self.board.state[x][y] = adders[adder]
+                        except IndexError:
+                            pass
 
     def update_board_recursive(self):
         self.update_board()
