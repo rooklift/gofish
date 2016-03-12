@@ -234,7 +234,7 @@ class Node():
             child.moves_made = self.moves_made
             child.update_board_recursive()
 
-    def dump(self):                 # For debugging
+    def dump(self):
         for key, values in self.properties.items():
             print("  {}".format(key), end="")
             for value in values:
@@ -244,7 +244,7 @@ class Node():
                     print("Exception: {}".format(err))
             print()
 
-    def dump_recursive(self):       # For debugging
+    def dump_recursive(self):
         self.dump()
         for child in self.children:
             child.dump_recursive()
@@ -333,6 +333,16 @@ class Node():
         self.board.dump()
         print()
         self.dump()
+        print()
+        print("  -- parent: {}".format(self.parent))
+        if self.parent is None:
+            siblings = 0
+        else:
+            siblings = len(self.parent.children) - 1
+        print("  -- siblings: {}".format(siblings))
+        print("  -- children: {}".format(len(self.children)))
+        print("  -- is main line: {}".format(self.is_main_line))
+        print("  -- moves made: {}".format(self.moves_made))
         print()
 
 
