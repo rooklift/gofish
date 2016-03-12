@@ -60,6 +60,13 @@ def points_from_points_string(s, boardsize):     # convert "aa" or "cd:jf" into 
     return ret
 
 
+def string_from_point(x, y):
+    s = ""
+    s += chr(x + 96)
+    s += chr(y + 96)
+    return s
+
+
 def adjacent_points(x, y, boardsize):
     result = set()
 
@@ -133,7 +140,13 @@ class Board():                          # Internally the arrays are 1 too big, w
         return False
 
     def play_move(self, colour, x, y):
-        assert(colour in [BLACK, WHITE])
+        assert(colour in [BLACK, WHITE, "B", "W"])
+
+        if colour == "B":
+            colour = BLACK
+        if colour == "W":
+            colour = WHITE
+
         opponent = BLACK if colour == WHITE else WHITE
 
         if x < 1 or x > self.boardsize or y < 1 or y > self.boardsize:
@@ -298,6 +311,24 @@ class Node():
                 break
         return node
 
+    def add_and_return_child(self):
+        child = Node(parent = self)     # This automatically appends the child to this node
+        child.board = copy.deepcopy(self.board)
+        child.moves_made = self.moves_made
+        if self.is_main_line and len(self.children) == 1:
+            child.is_main_line = True
+        return child
+
+    def previous_colour_played(self):
+        node = self
+        while 1:
+            if node.parent == None:
+                return None
+            node = node.parent
+            if "B" in node.properties:
+                return BLACK
+            if "W" in node.properties:
+                return WHITE
 
 def load(filename):
 

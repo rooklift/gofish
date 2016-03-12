@@ -41,6 +41,9 @@ virtue = pygame.display.set_mode((WIDTH, HEIGHT))
 # Input device states...
 
 keyboard = dict()
+mousebuttons = dict()
+mousex = 1
+mousey = 1
 
 # Utility functions...
 
@@ -75,6 +78,14 @@ def screen_pos_from_board_pos(x, y, boardsize):
 	margin = (WIDTH - gridsize) // 2
 	ret_x = (x - 1) * GAP + margin
 	ret_y = (y - 1) * GAP + margin
+	return ret_x, ret_y
+
+
+def board_pos_from_screen_pos(x, y, boardsize):		# Inverse of the above
+	gridsize = GAP * (boardsize - 1) + 1
+	margin = (WIDTH - gridsize) // 2
+	ret_x = round((x - margin) / GAP + 1)
+	ret_y = round((y - margin) / GAP + 1)
 	return ret_x, ret_y
 
 
@@ -114,6 +125,12 @@ def main():
 				keyboard[event.key] = 1
 			if event.type == KEYUP:
 				keyboard[event.key] = 0
+			if event.type == MOUSEBUTTONDOWN:		# Note: there are multiple mouse buttons
+				mousebuttons[event.button] = 1
+			if event.type == MOUSEBUTTONUP:
+				mousebuttons[event.button] = 0
+			if event.type == MOUSEMOTION:
+				mousex, mousey = event.pos
 
 		# Handle input if a key is down. Set the key to be up to avoid repetitions...
 
@@ -177,6 +194,26 @@ def main():
 		if keyboard.get(K_END, 0):
 			keyboard[K_END] = 0
 			node = node.get_end_node()
+
+		# The following is the logic for adding a move...
+
+		if mousebuttons.get(1, 0):
+			mousebuttons[1] = 0
+			x, y = board_pos_from_screen_pos(mousex, mousey, node.board.boardsize)
+			if 1 <= x <= node.board.boardsize and 1 <= y <= node.board.boardsize:
+				if node.board.state[x][y] == sgf.EMPTY:
+					switched_node = False
+					for child in node.children:
+						if child.what_was_the_move() == (x, y):
+							node = child
+							switched_node = True
+							break
+					if switched_node == False:
+						node = node.add_and_return_child()
+						mycolour = "W" if node.previous_colour_played() == sgf.BLACK else "B"		# if it was None we get "W"
+						node.properties[mycolour] = sgf.string_from_point(x, y)
+						node.board.play_move(mycolour, x, y)
+						node.moves_made += 1
 
 		# Set the title...
 
