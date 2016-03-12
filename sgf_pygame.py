@@ -86,6 +86,47 @@ def board_pos_from_screen_pos(x, y, boardsize):		# Inverse of the above
 	return ret_x, ret_y
 
 
+def draw_node(screen, node):
+
+	# Draw the board...
+
+	blit_without_adjust(screen, spriteGoban, 0, 0)
+
+	# Draw the stones...
+
+	for x in range(1, node.board.boardsize + 1):
+		for y in range(1, node.board.boardsize + 1):
+			screen_x, screen_y = screen_pos_from_board_pos(x, y, node.board.boardsize)
+			if node.board.state[x][y] == sgf.BLACK:
+				blit(screen, spriteBlack, screen_x, screen_y)
+			elif node.board.state[x][y] == sgf.WHITE:
+				blit(screen, spriteWhite, screen_x, screen_y)
+
+	# Draw a mark at the current move, if there is one...
+
+	move = node.what_was_the_move()
+	if move is not None:
+		screen_x, screen_y = screen_pos_from_board_pos(move[0], move[1], node.board.boardsize)
+		blit(screen, spriteMove, screen_x, screen_y)
+
+	# Draw a mark at variations, if there are any...
+
+	for sib_move in node.sibling_moves():
+		screen_x, screen_y = screen_pos_from_board_pos(sib_move[0], sib_move[1], node.board.boardsize)
+		blit(screen, spriteVar, screen_x, screen_y)
+
+	# Draw the commonly used marks...
+
+	for mark in markup_dict:
+		if mark in node.properties:
+			points = set()
+			for value in node.properties[mark]:
+				points |= sgf.points_from_points_string(value, node.board.boardsize)
+			for point in points:
+				screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], node.board.boardsize)
+				blit(screen, markup_dict[mark], screen_x, screen_y)
+
+
 def main():
 
 	print()
@@ -118,11 +159,9 @@ def main():
 
 	while 1:
 
-		# Update keyboard states...
+		# Handle events (update keyboard / mousebutton dicts, etc)
 
 		for event in pygame.event.get():
-			if event.type == QUIT:
-				cleanexit()
 			if event.type == KEYDOWN:
 				keyboard[event.key] = 1
 			if event.type == KEYUP:
@@ -133,6 +172,9 @@ def main():
 				mousebuttons[event.button] = 0
 			if event.type == MOUSEMOTION:
 				mousex, mousey = event.pos
+
+			if event.type == QUIT:
+				cleanexit()
 
 		# Handle input if a key is down. Set the key to be up to avoid repetitions...
 
@@ -230,43 +272,9 @@ def main():
 				title += " ({} of {} variations)".format(index + 1, len(node.parent.children))
 		pygame.display.set_caption(title)
 
-		# Draw the board...
+		# Draw the node...
 
-		blit_without_adjust(virtue, spriteGoban, 0, 0)
-
-		# Draw the stones...
-
-		for x in range(1, node.board.boardsize + 1):
-			for y in range(1, node.board.boardsize + 1):
-				screen_x, screen_y = screen_pos_from_board_pos(x, y, node.board.boardsize)
-				if node.board.state[x][y] == sgf.BLACK:
-					blit(virtue, spriteBlack, screen_x, screen_y)
-				elif node.board.state[x][y] == sgf.WHITE:
-					blit(virtue, spriteWhite, screen_x, screen_y)
-
-		# Draw a mark at the current move, if there is one...
-
-		move = node.what_was_the_move()
-		if move is not None:
-			screen_x, screen_y = screen_pos_from_board_pos(move[0], move[1], node.board.boardsize)
-			blit(virtue, spriteMove, screen_x, screen_y)
-
-		# Draw a mark at variations, if there are any...
-
-		for sib_move in node.sibling_moves():
-			screen_x, screen_y = screen_pos_from_board_pos(sib_move[0], sib_move[1], node.board.boardsize)
-			blit(virtue, spriteVar, screen_x, screen_y)
-
-		# Draw the commonly used marks...
-
-		for mark in markup_dict:
-			if mark in node.properties:
-				points = set()
-				for value in node.properties[mark]:
-					points |= sgf.points_from_points_string(value, node.board.boardsize)
-				for point in points:
-					screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], node.board.boardsize)
-					blit(virtue, markup_dict[mark], screen_x, screen_y)
+		draw_node(virtue, node)
 
 		# Update and wait...
 
