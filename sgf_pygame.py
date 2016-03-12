@@ -77,8 +77,6 @@ def screen_pos_from_board_pos(x, y, boardsize):
 	ret_y = (y - 1) * GAP + margin
 	return ret_x, ret_y
 
-def margin_from_boardsize(boardsize):
-	return (WIDTH - gridsize) // 2
 
 def main():
 
