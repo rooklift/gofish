@@ -20,3 +20,4 @@ The GUI `sgf_pygame.py` also allows stepping backwards and variations:
 * If a key has multiple values, they are given like so: **KY[exa][mple][val][ues]**
 * When a node has two or more children, each branch is contained within parentheses **()**
 * A branch will always have a node right at the start, e.g. **(** is always followed by **;**
+* The whole tree is itself contained in parentheses.
