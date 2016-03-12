@@ -70,6 +70,16 @@ def blit_without_adjust(target, source, x, y):
 # --------------------------------------------------------------------------------------------------------------------
 
 
+def screen_pos_from_board_pos(x, y, boardsize):
+	gridsize = GAP * (boardsize - 1) + 1
+	margin = (WIDTH - gridsize) // 2
+	ret_x = (x - 1) * GAP + margin
+	ret_y = (y - 1) * GAP + margin
+	return ret_x, ret_y
+
+def margin_from_boardsize(boardsize):
+	return (WIDTH - gridsize) // 2
+
 def main():
 
 	# Load the game...
@@ -80,13 +90,20 @@ def main():
 	# Patch up the board with the grid and hoshi points drawn...
 
 	for n in range(1, node.board.boardsize + 1):
-		pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (n * GAP, GAP), (n * GAP, node.board.boardsize * GAP), 1)
-		pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (GAP, n * GAP), (node.board.boardsize * GAP, n * GAP), 1)
+		start = screen_pos_from_board_pos(n, 1, node.board.boardsize)
+		end = screen_pos_from_board_pos(n, node.board.boardsize, node.board.boardsize)
+		pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), start, end)
+
+	for n in range(1, node.board.boardsize + 1):
+		start = screen_pos_from_board_pos(1, n, node.board.boardsize)
+		end = screen_pos_from_board_pos(node.board.boardsize, n, node.board.boardsize)
+		pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), start, end)
 
 	for x in range(3, node.board.boardsize - 1):
 		for y in range(node.board.boardsize - 1):
 			if sgf.is_star_point(x, y, node.board.boardsize):
-				blit(spriteGoban, spriteHoshi, x * GAP, y * GAP)
+				screen_x, screen_y = screen_pos_from_board_pos(x, y, node.board.boardsize)
+				blit(spriteGoban, spriteHoshi, screen_x, screen_y)
 
 	while 1:
 
@@ -180,25 +197,24 @@ def main():
 
 		for x in range(1, node.board.boardsize + 1):
 			for y in range(1, node.board.boardsize + 1):
+				screen_x, screen_y = screen_pos_from_board_pos(x, y, node.board.boardsize)
 				if node.board.state[x][y] == sgf.BLACK:
-					blit(virtue, spriteBlack, GAP * x, GAP * y)
+					blit(virtue, spriteBlack, screen_x, screen_y)
 				elif node.board.state[x][y] == sgf.WHITE:
-					blit(virtue, spriteWhite, GAP * x, GAP * y)
+					blit(virtue, spriteWhite, screen_x, screen_y)
 
 		# Draw a mark at the current move, if there is one...
 
 		move = node.what_was_the_move()
 		if move is not None:
-			mark_x = move[0]
-			mark_y = move[1]
-			blit(virtue, spriteMove, GAP * mark_x, GAP * mark_y)
+			screen_x, screen_y = screen_pos_from_board_pos(move[0], move[1], node.board.boardsize)
+			blit(virtue, spriteMove, screen_x, screen_y)
 
 		# Draw a mark at variations, if there are any...
 
 		for sib_move in node.sibling_moves():
-			mark_x = sib_move[0]
-			mark_y = sib_move[1]
-			blit(virtue, spriteVar, GAP * mark_x, GAP * mark_y)
+			screen_x, screen_y = screen_pos_from_board_pos(sib_move[0], sib_move[1], node.board.boardsize)
+			blit(virtue, spriteVar, screen_x, screen_y)
 
 		# Draw the commonly used marks...
 
@@ -208,7 +224,8 @@ def main():
 				for value in node.properties[mark]:
 					points |= sgf.points_from_points_string(value, node.board.boardsize)
 				for point in points:
-					blit(virtue, markup_dict[mark], GAP * point[0], GAP * point[1])
+					screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], node.board.boardsize)
+					blit(virtue, markup_dict[mark], screen_x, screen_y)
 
 		# Update and wait...
 
