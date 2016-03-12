@@ -211,7 +211,7 @@ def main():
 					if switched_node == False:
 						node = node.add_and_return_child()
 						mycolour = "W" if node.previous_colour_played() == sgf.BLACK else "B"		# if it was None we get "W"
-						node.properties[mycolour] = sgf.string_from_point(x, y)
+						node.properties[mycolour] = [sgf.string_from_point(x, y)]
 						node.board.play_move(mycolour, x, y)
 						node.moves_made += 1
 
