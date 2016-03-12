@@ -19,5 +19,5 @@ The GUI `sgf_pygame.py` also allows stepping backwards and variations:
 * An example node is **;B[pd]C[it begins]** - it has 2 keys with 1 value each
 * If a key has multiple values, they are given like so: **KY[exa][mple][val][ues]**
 * When a node has two or more children, each subtree is contained within parentheses **()**
-* A subtree will always have a node right at the start, e.g. **(** is always followed by **;**
+* A subtree will always have a node right at the start, i.e. **(** is always followed by **;**
 * The main tree is also contained in parentheses **()**
