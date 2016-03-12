@@ -200,11 +200,9 @@ while 1:
 		if mark in node.properties:
 			points = set()
 			for value in node.properties[mark]:
-				points |= sgf.points_from_points_list(value)
+				points |= sgf.points_from_points_list(value, node.board.boardsize)
 			for point in points:
-				mark_x = point[0]
-				mark_y = point[1]
-				blit(virtue, markup_dict[mark], GAP * mark_x, GAP * mark_y)
+				blit(virtue, markup_dict[mark], GAP * point[0], GAP * point[1])
 
 	# Update and wait...
 

@@ -23,7 +23,7 @@ def is_star_point(x, y, boardsize):
         return False
 
 
-def points_from_points_list(s):     # convert "aa" or "cd:jf" into set of points
+def points_from_points_list(s, boardsize):     # convert "aa" or "cd:jf" into set of points
 
     ret = set()
 
@@ -42,7 +42,8 @@ def points_from_points_list(s):     # convert "aa" or "cd:jf" into set of points
 
     for x in range(left, right + 1):
         for y in range(top, bottom + 1):
-            ret.add((x,y))
+            if 1 <= x <= boardsize and 1 <= y <= boardsize:
+                ret.add((x,y))
 
     return ret
 
@@ -62,7 +63,7 @@ def adjacent_points(x, y, boardsize):
     return result
 
 
-class Board():                          # Internally the arrays are 1 too big, with 0 indexes being ignored (so we can use indexes 1-19)
+class Board():                          # Internally the arrays are 1 too big, with 0 indexes being ignored (so we can use indexes 1 to 19)
     def __init__(self, boardsize = 19):
         self.state = []
         self.boardsize = boardsize
@@ -196,7 +197,7 @@ class Node():
 
         if "AB" in self.properties:
             for value in self.properties["AB"]:
-                for point in points_from_points_list(value):
+                for point in points_from_points_list(value, self.board.boardsize):
                     x, y = point[0], point[1]
                     try:
                         self.board.state[x][y] = BLACK
@@ -204,7 +205,7 @@ class Node():
                         pass
         if "AW" in self.properties:
             for value in self.properties["AW"]:
-                for point in points_from_points_list(value):
+                for point in points_from_points_list(value, self.board.boardsize):
                     x, y = point[0], point[1]
                     try:
                         self.board.state[x][y] = WHITE
@@ -212,7 +213,7 @@ class Node():
                         pass
         if "AE" in self.properties:
             for value in self.properties["AE"]:
-                for point in points_from_points_list(value):
+                for point in points_from_points_list(value, self.board.boardsize):
                     x, y = point[0], point[1]
                     try:
                         self.board.state[x][y] = EMPTY
