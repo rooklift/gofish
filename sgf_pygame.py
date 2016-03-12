@@ -80,8 +80,8 @@ for n in range(1, node.board.boardsize + 1):
 	pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (n * GAP, GAP), (n * GAP, node.board.boardsize * GAP), 1)
 	pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), (GAP, n * GAP), (node.board.boardsize * GAP, n * GAP), 1)
 
-for x in range(node.board.boardsize + 1):
-	for y in range(node.board.boardsize + 1):
+for x in range(3, node.board.boardsize - 1):
+	for y in range(node.board.boardsize - 1):
 		if sgf.is_star_point(x, y, node.board.boardsize):
 			blit(spriteGoban, spriteHoshi, x * GAP, y * GAP)
 

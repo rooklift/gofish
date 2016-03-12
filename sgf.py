@@ -12,10 +12,22 @@ class OffBoard(Exception):
 def is_star_point(x, y, boardsize):
     good_x, good_y = False, False
 
-    if x == (boardsize + 1) / 2 or x == 4 or x + 4 == boardsize + 1:
-        good_x = True
-    if y == (boardsize + 1) / 2 or y == 4 or y + 4 == boardsize + 1:
-        good_y = True
+    if boardsize >= 15 or x == y:
+        if x == (boardsize + 1) / 2:
+            good_x = True
+        if y == (boardsize + 1) / 2:
+            good_y = True
+
+    if boardsize >= 12:
+        if x == 4 or x + 4 == boardsize + 1:
+            good_x = True
+        if y == 4 or y + 4 == boardsize + 1:
+            good_y = True
+    else:
+        if x == 3 or x + 3 == boardsize + 1:
+            good_x = True
+        if y == 3 or y + 3 == boardsize + 1:
+            good_y = True
 
     if good_x and good_y:
         return True
@@ -306,6 +318,10 @@ def load(filename):
         size = int(root.properties["SZ"][0])
     else:
         size = 19
+
+    if size > 19 or size < 1:
+        print("SZ (board size) was not in range 1:19")
+        sys.exit(1)
 
     root.board = Board(size)
     root.is_main_line = True
