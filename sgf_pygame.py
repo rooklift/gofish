@@ -276,6 +276,8 @@ def main():
 					print("error while loading: file not found")
 				except sgf.BoardTooBig:
 					print("error while loading: SZ (board size) was not in range 1:19")
+				except sgf.ParserFail:
+					print("error while loading: parser failed (invalid SGF?)")
 
 		# Mouse clicks either add a new move, or descend to the child node if it's already there...
 

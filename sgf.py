@@ -6,6 +6,7 @@ EMPTY, BLACK, WHITE = 0, 1, 2
 
 class OffBoard(Exception): pass
 class BoardTooBig(Exception): pass
+class ParserFail(Exception): pass
 
 
 def is_star_point(x, y, boardsize):
@@ -502,10 +503,12 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
                 inside = True
                 keycomplete = True
             elif c == "(":
-                assert(node is not None)
+                if node is None:
+                    raise ParserFail
                 __, chars_to_skip = load_tree(sgf[i + 1:], node)    # The child function will append the new tree to the node
             elif c == ")":
-                assert(root is not None)
+                if root is None:
+                    raise ParserFail
                 return root, i + 1          # return characters read
             elif c == ";":
                 if node is None:
@@ -522,7 +525,8 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
                         keycomplete = False
                     key += c
 
-    assert(root is not None)
+    if root is None:
+        raise ParserFail
     return root, i + 1          # return characters read
 
 
