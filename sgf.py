@@ -225,11 +225,11 @@ class Node():
             child.update_recursive()
 
     def copy_state_to_child(self, child):
-        try:
-            if self.is_main_line and self.children.index(child) == 0:
-                child.is_main_line = True
-        except ValueError:                      # target isn't this node's child
-            pass
+        if len(self.children) > 0:
+            if child is self.children[0]:
+                if self.is_main_line:
+                    child.is_main_line = True
+
         child.board = copy.deepcopy(self.board)
         child.moves_made = self.moves_made
 
@@ -336,10 +336,13 @@ class Node():
                 return None
             node = node.parent
 
-    def make_child_from_move(self, colour, x, y):
+    def make_child_from_move(self, colour, x, y, append = True):
         assert(colour in [BLACK, WHITE])
 
-        child = Node(parent = self)     # This automatically appends the child to this node
+        if append:
+            child = Node(parent = self)             # This automatically appends the child to this node
+        else:
+            child = Node(parent = None)
         self.copy_state_to_child(child)
 
         key = "W" if colour == WHITE else "B"
@@ -347,7 +350,7 @@ class Node():
         child.update()
         return child
 
-    def try_move(self, x, y):                   # Try the move and, if it's legal, create and return the child
+    def try_move(self, x, y):       # Try the move and, if it's legal, create and return the child
 
         if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
             return None
@@ -356,16 +359,24 @@ class Node():
 
         # if the move already exists, just return the (first) relevant child...
 
-        if self.board.state[x][y] == EMPTY:
-            for child in self.children:
-                if child.what_was_the_move() == (x, y):
-                    return child
+        for child in self.children:
+            if child.what_was_the_move() == (x, y):
+                return child
 
         # Colour is auto-determined by what colour the last move was...
 
-        mycolour = WHITE if self.last_colour_played() == BLACK else BLACK       # if it was None we get BLACK
+        mycolour = WHITE if self.last_colour_played() == BLACK else BLACK       # If it was None we get BLACK
 
-        # TODO: ko checks and suicide checks
+        # Check for legality...
+
+        testchild = self.make_child_from_move(mycolour, x, y, append = False)   # Won't get appended to this node as a real child
+        if self.parent:
+            if testchild.board.state == self.parent.board.state:     # Ko
+                return None
+        if testchild.board.state[x][y] == EMPTY:     # Suicide
+            return None
+
+        # Make real child and return...
 
         child = self.make_child_from_move(mycolour, x, y)
         return child
