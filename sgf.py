@@ -140,12 +140,7 @@ class Board():                          # Internally the arrays are 1 too big, w
         return False
 
     def play_move(self, colour, x, y):
-        assert(colour in [BLACK, WHITE, "B", "W"])
-
-        if colour == "B":
-            colour = BLACK
-        if colour == "W":
-            colour = WHITE
+        assert(colour in [BLACK, WHITE])
 
         opponent = BLACK if colour == WHITE else WHITE
 
@@ -188,7 +183,7 @@ class Node():
         if parent:
             parent.children.append(self)
 
-    def update_board(self):             # Use the properties to modify the board...
+    def update(self):             # Use the properties to modify the board...
 
         # A node "should" have only 1 of "B" or "W", and only 1 value in the list.
         # The result will be wrong if the specs are violated. Whatever.
@@ -225,14 +220,20 @@ class Node():
                         except IndexError:
                             pass
 
-    def update_board_recursive(self):
-        self.update_board()
+    def update_recursive(self):
+        self.update()
         for n, child in enumerate(self.children):
-            if self.is_main_line and n == 0:
+            self.copy_state_to_child(child)
+            child.update_recursive()
+
+    def copy_state_to_child(self, child):
+        try:
+            if self.is_main_line and self.children.index(child) == 0:
                 child.is_main_line = True
-            child.board = copy.deepcopy(self.board)
-            child.moves_made = self.moves_made
-            child.update_board_recursive()
+        except ValueError:                      # target isn't this node's child
+            pass
+        child.board = copy.deepcopy(self.board)
+        child.moves_made = self.moves_made
 
     def dump(self):
         for key, values in self.properties.items():
@@ -305,24 +306,27 @@ class Node():
                 break
         return node
 
-    def add_and_return_child(self):
+    def make_child_from_move(self, colour, x, y):
+        assert(colour in [BLACK, WHITE])
+
         child = Node(parent = self)     # This automatically appends the child to this node
-        child.board = copy.deepcopy(self.board)
-        child.moves_made = self.moves_made
-        if self.is_main_line and len(self.children) == 1:
-            child.is_main_line = True
+        self.copy_state_to_child(child)
+
+        key = "W" if colour == WHITE else "B"
+        child.add_value(key, string_from_point(x, y))
+        child.update()
         return child
 
-    def previous_colour_played(self):
+    def last_colour_played(self):   # Return the most recent colour played in this node or any ancestor
         node = self
         while 1:
-            if node.parent == None:
-                return None
-            node = node.parent
             if "B" in node.properties:
                 return BLACK
             if "W" in node.properties:
                 return WHITE
+            if node.parent == None:
+                return None
+            node = node.parent
 
     def add_value(self, key, value):
         if key not in self.properties:
@@ -372,7 +376,7 @@ def load(filename):
 
     root.board = Board(size)
     root.is_main_line = True
-    root.update_board_recursive()
+    root.update_recursive()
 
     return root
 

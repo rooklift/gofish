@@ -244,24 +244,22 @@ def main():
 			node.debug()
 
 		# The following is the logic for adding a move...
+		# TODO: ko check, suicide check.
 
 		if mousebuttons.get(1, 0):
 			mousebuttons[1] = 0
 			x, y = board_pos_from_screen_pos(mousex, mousey, node.board.boardsize)
 			if 1 <= x <= node.board.boardsize and 1 <= y <= node.board.boardsize:
 				if node.board.state[x][y] == sgf.EMPTY:
-					switched_node = False
+					found_move = False
 					for child in node.children:
 						if child.what_was_the_move() == (x, y):
 							node = child
-							switched_node = True
+							found_move = True
 							break
-					if switched_node == False:
-						node = node.add_and_return_child()
-						mycolour = "W" if node.previous_colour_played() == sgf.BLACK else "B"		# if it was None we get "W"
-						node.add_value(mycolour, sgf.string_from_point(x, y))
-						node.board.play_move(mycolour, x, y)
-						node.moves_made += 1
+					if found_move == False:
+						mycolour = sgf.WHITE if node.last_colour_played() == sgf.BLACK else sgf.BLACK		# if it was None we get BLACK
+						node = node.make_child_from_move(mycolour, x, y)
 
 		# Set the title...
 
