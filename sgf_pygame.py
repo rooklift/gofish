@@ -1,6 +1,10 @@
 import os, pygame, sys
 from pygame.locals import *
+import tkinter
+import tkinter.filedialog
 import sgf
+
+tkinter.Tk().withdraw()		# tkinter is just used for its file dialog; suppress its window
 
 WIDTH, HEIGHT = 621, 621
 GAP = 31
@@ -242,6 +246,11 @@ def main():
 		if keyboard.get(K_d, 0):
 			keyboard[K_d] = 0
 			node.debug()
+
+		if keyboard.get(K_s, 0):
+			keyboard[K_s] = 0
+			outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
+			sgf.save_file(outfilename, node)
 
 		# Mouse clicks either add a new move, or descend to the child node if it's already there...
 

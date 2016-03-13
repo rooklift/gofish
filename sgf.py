@@ -81,6 +81,33 @@ def adjacent_points(x, y, boardsize):
     return result
 
 
+def save_file(filename, node):
+    node = node.get_root_node()
+    with open(filename, "w", encoding="utf-8") as outfile:
+        write_tree(outfile, node)
+
+
+def write_tree(outfile, node):
+    outfile.write("(")
+    while 1:
+        outfile.write(";")
+        for key in node.properties:
+            outfile.write(key)
+            for value in node.properties[key]:
+                outfile.write("[{}]".format(value))
+        if len(node.children) > 1:
+            for child in node.children:
+                write_tree(outfile, child)
+            break
+        elif len(node.children) == 1:
+            node = node.children[0]
+            continue
+        else:
+            break
+    outfile.write(")\n")
+    return
+
+
 class Board():                          # Internally the arrays are 1 too big, with 0 indexes being ignored (so we can use indexes 1 to 19)
     def __init__(self, boardsize):
         self.boardsize = boardsize
@@ -248,15 +275,23 @@ class Node():
         for child in self.children:
             child.dump_recursive()
 
-    def print_comments(self):
+    def print_comments(self):           # Print comments while dropping escape backslashes
         if "C" in self.properties:
             print("[{}] ".format(self.moves_made), end="")
             for value in self.properties["C"]:
-                try:
-                    print(value.strip())
-                except:
-                    print("--- Exception when trying to print comment ---")
+                escape_mode = False
+                for ch in value:
+                    if escape_mode:
+                        escape_mode = False
+                    elif ch == "\\":
+                        escape_mode = True
+                        continue
+                    try:
+                        print(ch, end="")
+                    except:
+                        print("?", end="")
                 print()
+            print()
 
     def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on.
         for key in ["B", "W"]:
@@ -271,7 +306,7 @@ class Node():
                     pass
         return None
 
-    def sibling_moves(self):    # Don't use this to check for variations - a node might not have any moves
+    def sibling_moves(self):        # Don't use this to check for variations - a node might not have any moves
         p = self.parent
         if p is None:
             return set()
@@ -413,6 +448,8 @@ def load(filename):
     root.is_main_line = True
     root.update_recursive()
 
+    root.properties["CA"] = ["UTF-8"]   # We don't append to the property list; we replace it with this; i.e. force UTF-8
+
     return root
 
 
@@ -449,7 +486,8 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
             continue
 
         if inside:
-            if c == "\\":
+            if c == "\\":               # Escape characters are saved
+                value += "\\"
                 value += sgf[i + 1]
                 chars_to_skip = 1
             elif c == "]":
