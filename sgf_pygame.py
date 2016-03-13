@@ -160,10 +160,13 @@ def main():
 
 	# Load the game...
 
-	if len(sys.argv) > 1:
+	try:
 		node = sgf.load(sys.argv[1])
+		print("<--- Loaded: {}\n".format(sys.argv[1]))
+		node.dump(include_comments = False)
+		print()
 		node.print_comments()
-	else:
+	except (IndexError, FileNotFoundError):
 		node = sgf.new_tree(19)
 
 	make_spriteGoban(node.board.boardsize)
