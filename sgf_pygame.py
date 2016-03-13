@@ -22,7 +22,6 @@ fpsClock = pygame.time.Clock()
 directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 os.chdir(directory)	# Set working dir to be same as infile.
 
-spriteGoban = pygame.image.load("gfx/texture.jpg")
 spriteHoshi = pygame.image.load("gfx/hoshi.png")
 spriteBlack = pygame.image.load("gfx/black.png")
 spriteWhite = pygame.image.load("gfx/white.png")
@@ -131,6 +130,30 @@ def draw_node(screen, node):
 				blit(screen, markup_dict[mark], screen_x, screen_y)
 
 
+def make_spriteGoban(boardsize):
+
+	global spriteGoban
+	spriteGoban = pygame.image.load("gfx/texture.jpg")
+
+	# Patch up spriteGoban with the grid and hoshi points drawn...
+
+	for n in range(1, boardsize + 1):
+		start = screen_pos_from_board_pos(n, 1, boardsize)
+		end = screen_pos_from_board_pos(n, boardsize, boardsize)
+		pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), start, end)
+
+	for n in range(1, boardsize + 1):
+		start = screen_pos_from_board_pos(1, n, boardsize)
+		end = screen_pos_from_board_pos(boardsize, n, boardsize)
+		pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), start, end)
+
+	for x in range(3, boardsize - 1):
+		for y in range(boardsize - 1):
+			if sgf.is_star_point(x, y, boardsize):
+				screen_x, screen_y = screen_pos_from_board_pos(x, y, boardsize)
+				blit(spriteGoban, spriteHoshi, screen_x, screen_y)
+
+
 def main():
 
 	print()
@@ -143,23 +166,7 @@ def main():
 	else:
 		node = sgf.new_tree(19)
 
-	# Patch up the board with the grid and hoshi points drawn...
-
-	for n in range(1, node.board.boardsize + 1):
-		start = screen_pos_from_board_pos(n, 1, node.board.boardsize)
-		end = screen_pos_from_board_pos(n, node.board.boardsize, node.board.boardsize)
-		pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), start, end)
-
-	for n in range(1, node.board.boardsize + 1):
-		start = screen_pos_from_board_pos(1, n, node.board.boardsize)
-		end = screen_pos_from_board_pos(node.board.boardsize, n, node.board.boardsize)
-		pygame.draw.line(spriteGoban, pygame.Color(0, 0, 0), start, end)
-
-	for x in range(3, node.board.boardsize - 1):
-		for y in range(node.board.boardsize - 1):
-			if sgf.is_star_point(x, y, node.board.boardsize):
-				screen_x, screen_y = screen_pos_from_board_pos(x, y, node.board.boardsize)
-				blit(spriteGoban, spriteHoshi, screen_x, screen_y)
+	make_spriteGoban(node.board.boardsize)
 
 	while 1:
 
@@ -250,7 +257,20 @@ def main():
 		if keyboard.get(K_s, 0):
 			keyboard[K_s] = 0
 			outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
-			sgf.save_file(outfilename, node)
+			if outfilename:
+				sgf.save_file(outfilename, node)
+
+		if keyboard.get(K_l, 0):
+			keyboard[K_l] = 0
+			infilename = tkinter.filedialog.askopenfilename()
+			if infilename:
+				try:
+					node = sgf.load(infilename)
+					make_spriteGoban(node.board.boardsize)
+				except FileNotFoundError:
+					print("error while loading: file not found")
+				except sgf.BoardTooBig:
+					print("error while loading: SZ (board size) was not in range 1:19")
 
 		# Mouse clicks either add a new move, or descend to the child node if it's already there...
 

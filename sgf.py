@@ -4,8 +4,8 @@ import copy, sys
 EMPTY, BLACK, WHITE = 0, 1, 2
 
 
-class OffBoard(Exception):
-    pass
+class OffBoard(Exception): pass
+class BoardTooBig(Exception): pass
 
 
 def is_star_point(x, y, boardsize):
@@ -427,8 +427,10 @@ def load(filename):
             sgf = infile.read()
     except UnicodeDecodeError:
         print("Opening as UTF-8 failed, trying Latin-1\n")
-        with open(filename, encoding="latin1") as infile:
+        with open(filename, encoding="latin1") as infile:       # I think this can't actually fail, but it might corrupt
             sgf = infile.read()
+
+    # FileNotFoundError is just allowed to bubble up
 
     sgf = sgf.strip()
     sgf = sgf.lstrip("(")       # the load_tree() function assumes the leading "(" has already been read and discarded
@@ -441,8 +443,7 @@ def load(filename):
         size = 19
 
     if size > 19 or size < 1:
-        print("SZ (board size) was not in range 1:19")
-        sys.exit(1)
+        raise BoardTooBig
 
     root.board = Board(size)
     root.is_main_line = True
@@ -455,8 +456,7 @@ def load(filename):
 
 def new_tree(size):
     if size > 19 or size < 1:
-        print("SZ (board size) was not in range 1:19")
-        sys.exit(1)
+        raise BoardTooBig
 
     root = Node(parent = None)
     root.board = Board(size)
