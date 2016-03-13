@@ -495,6 +495,8 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
                 chars_to_skip = 1
             elif c == "]":
                 inside = False
+                if node is None:
+                    raise ParserFail
                 node.add_value(key, value)
             else:
                 value += c
