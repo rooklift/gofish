@@ -262,14 +262,15 @@ class Node():
         child.moves_made = self.moves_made
 
     def dump(self, include_comments = True):
-        for key, values in self.properties.items():
+        for key in sorted(self.properties):
+            values = self.properties[key]
             if include_comments or key != "C":
                 print("  {}".format(key), end="")
                 for value in values:
                     try:
                         print("[{}]".format(value), end="")        # Sometimes fails on Windows to Unicode errors
                     except:
-                        print("[ --- Exception when trying to print value --- ]")
+                        print("[ --- Exception when trying to print value --- ]", end="")
                 print()
 
     def dump_recursive(self):
