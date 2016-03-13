@@ -351,6 +351,7 @@ class Node():
         return child
 
     def try_move(self, x, y):       # Try the move and, if it's legal, create and return the child
+                                    # Don't use this while reading SGF, as even illegal moves should be allowed there
 
         if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
             return None
@@ -393,7 +394,7 @@ def load(filename):
             sgf = infile.read()
 
     sgf = sgf.strip()
-    sgf = sgf.lstrip("(")
+    sgf = sgf.lstrip("(")       # the load_tree() function assumes the leading "(" has already been read and discarded
 
     root, __ = load_tree(sgf, None)
 
