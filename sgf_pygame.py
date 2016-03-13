@@ -1,8 +1,18 @@
 import os, pygame, sys
+import tkinter, tkinter.filedialog
 from pygame.locals import *
-import tkinter
-import tkinter.filedialog
+
 import sgf
+
+MOTD = """
+  Fohristiwhirl's SGF readwriter. Keys:
+
+  -- NAVIGATE: Arrows, Home, End, PageUp, PageDown
+  -- LOAD / SAVE: L, S
+  -- DEBUG INFO: D
+
+  -- MAKE MOVE: Mouse Button
+"""
 
 tkinter.Tk().withdraw()		# tkinter is just used for its file dialog; suppress its window
 
@@ -156,7 +166,7 @@ def make_spriteGoban(boardsize):
 
 def main():
 
-	print()
+	print(MOTD)
 
 	# Load the game...
 
