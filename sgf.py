@@ -246,11 +246,21 @@ class Node():
                         x, y = point[0], point[1]
                         self.board.state[x][y] = adders[adder]
 
-    def update_recursive(self):
-        self.update()
-        for n, child in enumerate(self.children):
-            self.copy_state_to_child(child)
-            child.update_recursive()
+    def update_recursive(self):     # Avoids unnecessary recursive calls by only going recursive if 2 or more children
+        node = self
+        while 1:
+            node.update()
+            if len(node.children) == 0:
+                return
+            elif len(node.children) == 1:                       # i.e. just iterate where possible
+                node.copy_state_to_child(node.children[0])
+                node = node.children[0]
+                continue
+            else:
+                for n, child in enumerate(node.children):
+                    node.copy_state_to_child(child)
+                    child.update_recursive()
+                return
 
     def copy_state_to_child(self, child):
         if len(self.children) > 0:
@@ -272,11 +282,6 @@ class Node():
                     except:
                         print("[ --- Exception when trying to print value --- ]", end="")
                 print()
-
-    def dump_recursive(self):
-        self.dump()
-        for child in self.children:
-            child.dump_recursive()
 
     def print_comments(self):           # Print comments while dropping escape backslashes
         if "C" in self.properties:
