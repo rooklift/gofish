@@ -87,7 +87,7 @@ def save_file(filename, node):
         write_tree(outfile, node)
 
 
-def write_tree(outfile, node):
+def write_tree(outfile, node):      # Relies on values already being correctly backslash-escaped
     outfile.write("(")
     while 1:
         outfile.write(";")
@@ -260,15 +260,16 @@ class Node():
         child.board = copy.deepcopy(self.board)
         child.moves_made = self.moves_made
 
-    def dump(self):
+    def dump(self, include_comments = True):
         for key, values in self.properties.items():
-            print("  {}".format(key), end="")
-            for value in values:
-                try:
-                    print("[{}]".format(value), end="")        # Sometimes fails on Windows to Unicode errors
-                except:
-                    print("[ --- Exception when trying to print value --- ]")
-            print()
+            if include_comments or key != "C":
+                print("  {}".format(key), end="")
+                for value in values:
+                    try:
+                        print("[{}]".format(value), end="")        # Sometimes fails on Windows to Unicode errors
+                    except:
+                        print("[ --- Exception when trying to print value --- ]")
+                print()
 
     def dump_recursive(self):
         self.dump()

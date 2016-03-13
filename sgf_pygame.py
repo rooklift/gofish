@@ -259,6 +259,7 @@ def main():
 			outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
 			if outfilename:
 				sgf.save_file(outfilename, node)
+				print("---> Saved: {}\n".format(outfilename))
 
 		if keyboard.get(K_l, 0):
 			keyboard[K_l] = 0
@@ -267,6 +268,10 @@ def main():
 				try:
 					node = sgf.load(infilename)
 					make_spriteGoban(node.board.boardsize)
+					print("<--- Loaded: {}\n".format(infilename))
+					node.dump(include_comments = False)
+					print()
+					node.print_comments()
 				except FileNotFoundError:
 					print("error while loading: file not found")
 				except sgf.BoardTooBig:
