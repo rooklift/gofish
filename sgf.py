@@ -286,6 +286,12 @@ class Node():
                     moves.add(move)
         return moves
 
+    def sibling_count(self):
+        if self.parent is None:
+            return 0
+        else:
+            return len(self.parent.children) - 1
+
     def get_end_node(self):         # Iterate down the (local) main line and return the end node
         node = self
         while 1:
@@ -315,11 +321,7 @@ class Node():
         self.dump()
         print()
         print("  -- parent: {}".format(self.parent))
-        if self.parent is None:
-            siblings = 0
-        else:
-            siblings = len(self.parent.children) - 1
-        print("  -- siblings: {}".format(siblings))
+        print("  -- siblings: {}".format(self.sibling_count()))
         print("  -- children: {}".format(len(self.children)))
         print("  -- is main line: {}".format(self.is_main_line))
         print("  -- moves made: {}".format(self.moves_made))
