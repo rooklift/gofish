@@ -2,7 +2,6 @@ import copy, sys
 
 
 EMPTY, BLACK, WHITE = 0, 1, 2
-pieces = {EMPTY: ".", BLACK: "*", WHITE: "O"}
 
 
 class OffBoard(Exception):
@@ -99,6 +98,8 @@ class Board():                          # Internally the arrays are 1 too big, w
             highlightx, highlighty = None, None
         else:
             highlightx, highlighty = highlight[0], highlight[1]
+
+        pieces = {EMPTY: ".", BLACK: "*", WHITE: "O"}
 
         for row in range(1, self.boardsize + 1):
             for col in range(0, self.boardsize + 1):        # Start from 0 so we have space to print the highlight if it's at col 1
@@ -213,12 +214,9 @@ class Node():
         for adder in adders:
             if adder in self.properties:
                 for value in self.properties[adder]:
-                    for point in points_from_points_string(value, self.board.boardsize):
+                    for point in points_from_points_string(value, self.board.boardsize):    # only returns points inside the board boundaries
                         x, y = point[0], point[1]
-                        try:
-                            self.board.state[x][y] = adders[adder]
-                        except IndexError:
-                            pass
+                        self.board.state[x][y] = adders[adder]
 
     def update_recursive(self):
         self.update()
@@ -241,8 +239,8 @@ class Node():
             for value in values:
                 try:
                     print("[{}]".format(value), end="")        # Sometimes fails on Windows to Unicode errors
-                except Exception as err:
-                    print("Exception: {}".format(err))
+                except:
+                    print("[ --- Exception when trying to print value --- ]")
             print()
 
     def dump_recursive(self):
@@ -256,8 +254,8 @@ class Node():
             for value in self.properties["C"]:
                 try:
                     print(value.strip())
-                except Exception as err:
-                    print("Exception: {}".format(err))
+                except:
+                    print("--- Exception when trying to print comment ---")
                 print()
 
     def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on.
@@ -306,32 +304,10 @@ class Node():
                 break
         return node
 
-    def make_child_from_move(self, colour, x, y):
-        assert(colour in [BLACK, WHITE])
-
-        child = Node(parent = self)     # This automatically appends the child to this node
-        self.copy_state_to_child(child)
-
-        key = "W" if colour == WHITE else "B"
-        child.add_value(key, string_from_point(x, y))
-        child.update()
-        return child
-
-    def last_colour_played(self):   # Return the most recent colour played in this node or any ancestor
-        node = self
-        while 1:
-            if "B" in node.properties:
-                return BLACK
-            if "W" in node.properties:
-                return WHITE
-            if node.parent == None:
-                return None
-            node = node.parent
-
     def add_value(self, key, value):
         if key not in self.properties:
             self.properties[key] = []
-        self.properties[key].append(str(value))       # Strings are what are loaded from files, so just keep everything as so
+        self.properties[key].append(str(value))         # Strings are what are loaded from files, so just keep everything as so
 
     def debug(self):
         self.board.dump()
@@ -348,6 +324,51 @@ class Node():
         print("  -- is main line: {}".format(self.is_main_line))
         print("  -- moves made: {}".format(self.moves_made))
         print()
+
+    def last_colour_played(self):   # Return the most recent colour played in this node or any ancestor
+        node = self
+        while 1:
+            if "B" in node.properties:
+                return BLACK
+            if "W" in node.properties:
+                return WHITE
+            if node.parent == None:
+                return None
+            node = node.parent
+
+    def make_child_from_move(self, colour, x, y):
+        assert(colour in [BLACK, WHITE])
+
+        child = Node(parent = self)     # This automatically appends the child to this node
+        self.copy_state_to_child(child)
+
+        key = "W" if colour == WHITE else "B"
+        child.add_value(key, string_from_point(x, y))
+        child.update()
+        return child
+
+    def try_move(self, x, y):                   # Try the move and, if it's legal, create and return the child
+
+        if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
+            return None
+        if self.board.state[x][y] != EMPTY:
+            return None
+
+        # if the move already exists, just return the (first) relevant child...
+
+        if self.board.state[x][y] == EMPTY:
+            for child in self.children:
+                if child.what_was_the_move() == (x, y):
+                    return child
+
+        # Colour is auto-determined by what colour the last move was...
+
+        mycolour = WHITE if self.last_colour_played() == BLACK else BLACK       # if it was None we get BLACK
+
+        # TODO: ko checks and suicide checks
+
+        child = self.make_child_from_move(mycolour, x, y)
+        return child
 
 
 def load(filename):
