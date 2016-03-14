@@ -181,11 +181,20 @@ def main():
 
     make_spriteGoban(node.board.boardsize)
 
+    draw_node(virtue, node)
+    pygame.display.update()
+
     while 1:
 
         # Handle events (update keyboard / mousebutton dicts, etc)
 
+        got_input = False
+
         for event in pygame.event.get():
+
+            if event.type in [KEYDOWN, MOUSEBUTTONDOWN]:
+                got_input = True
+
             if event.type == KEYDOWN:
                 keyboard[event.key] = 1
             if event.type == KEYUP:
@@ -270,7 +279,7 @@ def main():
                     child = node
                     node = node.parent
                     node.children.remove(child)
-                    node.rebuild_main_line()
+                    node.fix_main_line_status_recursive()
 
         if keyboard.get(K_d, 0):
             keyboard[K_d] = 0
@@ -319,13 +328,12 @@ def main():
                 title += " ({} of {} variations)".format(index + 1, len(node.parent.children))
         pygame.display.set_caption(title)
 
-        # Draw the node...
+        # Draw the node if anything's likely to have changed...
 
-        draw_node(virtue, node)
+        if got_input:
+            draw_node(virtue, node)
+            pygame.display.update()
 
-        # Update and wait...
-
-        pygame.display.update()
         fpsClock.tick(30)
 
 
