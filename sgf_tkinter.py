@@ -10,9 +10,11 @@ GAP = 31
 MOTD = """
   Fohristiwhirl's SGF readwriter. Keys:
 
-  -- NAVIGATE: Arrows, Home, End, PageUp, PageDown
   -- LOAD / SAVE: Ctrl-O, Ctrl-S
+
+  -- NAVIGATE: Arrows, Home, End, PageUp, PageDown
   -- SWITCH TO SIBLING: Tab
+  -- RETURN TO MAIN LINE: Backspace
   -- DESTROY NODE: Delete
 
   -- MAKE MOVE: Mouse Button
