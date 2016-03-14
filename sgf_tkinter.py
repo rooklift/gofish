@@ -200,12 +200,14 @@ def handle_key_END(node):
     return node.get_end_node()
 
 def handle_key_DELETE(node):
-    if node.parent:
-        if tkinter.messagebox.askokcancel("Delete?", "Delete this node and all of its children?"):
+    if tkinter.messagebox.askokcancel("Delete?", "Delete this node and all of its children?"):
+        if node.parent:
             child = node
             node = node.parent
             node.children.remove(child)
             node.fix_main_line_status_recursive()
+        else:
+            node = sgf.new_tree(19)
     return node
 
 def handle_key_D(node):
