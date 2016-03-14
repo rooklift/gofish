@@ -205,7 +205,11 @@ def handle_key_END(node):
     return node.get_end_node()
 
 def handle_key_DELETE(node):
-    if tkinter.messagebox.askokcancel("Delete?", "Delete this node and all of its children?"):
+    if len(node.children) > 0:
+        ok = tkinter.messagebox.askokcancel("Delete?", "Delete this node and all of its children?")
+    else:
+        ok = True
+    if ok:
         if node.parent:
             child = node
             node = node.parent
