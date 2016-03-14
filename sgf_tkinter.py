@@ -191,8 +191,9 @@ def handle_key_D(node):
     node.debug()
     return node
 
+# Other handlers...
 
-def opener(event, window, canvas, node):
+def opener(node):
     infilename = tkinter.filedialog.askopenfilename()
     if infilename:
         try:
@@ -209,18 +210,19 @@ def opener(event, window, canvas, node):
             print("error while loading: parser failed (invalid SGF?)")
     return node
 
-
-def saver(event, window, canvas, node):
+def saver(node):
     outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
     if outfilename:
         sgf.save_file(outfilename, node)
         print("---> Saved: {}\n".format(outfilename))
     return node
 
-
-def mouseclick_handler(event, window, canvas, node):
-    print("clicked at", board_pos_from_screen_pos(event.x, event.y, node.board.boardsize))
+def mouseclick_handler(node, x, y):
+    result = node.try_move(x, y)
+    if result:
+        node = result
     return node
+
 
 
 def main():
@@ -248,17 +250,18 @@ def main():
 
     def call_mouseclick_handler(event):
         nonlocal node
-        node = mouseclick_handler(event, window, canvas, node)
+        x, y = board_pos_from_screen_pos(event.x, event.y, node.board.boardsize)
+        node = mouseclick_handler(node, x, y)
         draw_node(window, canvas, node)
 
     def call_opener(event):
         nonlocal node
-        node = opener(event, window, canvas, node)
+        node = opener(node)
         draw_node(window, canvas, node)
 
     def call_saver(event):
         nonlocal node
-        node = saver(event, window, canvas, node)
+        node = saver(node)
         draw_node(window, canvas, node)
 
     window = tkinter.Tk()
