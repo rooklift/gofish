@@ -262,6 +262,13 @@ class Node():
                     child.update_recursive()
                 return
 
+    def rebuild_main_line(self):        # Assumes the only problem is that things wrongly have False (not wrongly have True)
+        node = self.get_root_node()
+        node.is_main_line = True
+        while len(node.children) > 0:
+            node = node.children[0]
+            node.is_main_line = True
+
     def copy_state_to_child(self, child):
         if len(self.children) > 0:
             if child is self.children[0]:
