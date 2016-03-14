@@ -9,7 +9,8 @@ MOTD = """
 
   -- NAVIGATE: Arrows, Home, End, PageUp, PageDown
   -- LOAD / SAVE: L, S
-  -- DEBUG INFO: D
+  -- SWITCH TO SIBLING: Tab
+  -- DESTROY NODE: Delete
 
   -- MAKE MOVE: Mouse Button
 """
