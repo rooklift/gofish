@@ -4,7 +4,7 @@ A simple [SGF](http://www.red-bean.com/sgf/sgf4.html) editor in Python. For prog
 
 The console app `sgf.py` provides a simple ability to view the main variation.
 
-The GUI also allows loading, saving, variations, *et cetera*.
+The GUI also allows loading, saving, variations, *et cetera*. I'm not actually sure what version of Python and Tk it needs.
 
 ## Notes on SGF as I understand it
 
