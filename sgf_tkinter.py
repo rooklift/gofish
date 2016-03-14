@@ -75,10 +75,13 @@ def draw_node(canvas, node):
     # Draw the lines...
 
     for n in range(1, boardsize + 1):
-        start_x, start_y = screen_pos_from_board_pos(n, 1, boardsize)
-        end_x, end_y = screen_pos_from_board_pos(n, boardsize, boardsize)
-        canvas.create_line(start_x, start_y, end_x, end_y)
-        canvas.create_line(start_y, start_x, end_y, end_x)
+        start_a, start_b = screen_pos_from_board_pos(n, 1, boardsize)
+        end_a, end_b = screen_pos_from_board_pos(n, boardsize, boardsize)
+
+        end_b += 1
+
+        canvas.create_line(start_a, start_b, end_a, end_b)
+        canvas.create_line(start_b, start_a, end_b, end_a)
 
     # Draw the stones...
 
