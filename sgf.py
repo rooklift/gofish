@@ -383,11 +383,12 @@ class Node():
         print()
         self.dump()
         print()
-        print("  -- parent: {}".format(self.parent))
-        print("  -- siblings: {}".format(self.sibling_count()))
-        print("  -- children: {}".format(len(self.children)))
+        print("  -- self:         {}".format(self))
+        print("  -- parent:       {}".format(self.parent))
+        print("  -- siblings:     {}".format(self.sibling_count()))
+        print("  -- children:     {}".format(len(self.children)))
         print("  -- is main line: {}".format(self.is_main_line))
-        print("  -- moves made: {}".format(self.moves_made))
+        print("  -- moves made:   {}".format(self.moves_made))
         print()
 
     def last_colour_played(self):   # Return the most recent colour played in this node or any ancestor
