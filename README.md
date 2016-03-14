@@ -3,7 +3,8 @@
 A simple [SGF](http://www.red-bean.com/sgf/sgf4.html) reader in Python. For programmers who stumble upon this, the meat of the parser is in the function **load_tree()** in `sgf.py`. It seems to work well on real SGF files.
 
 The console app `sgf.py` provides a simple ability to view the main variation.
-The GUIs also allow loading, saving, variations, et cetera.
+
+The GUI also allows loading, saving, variations, *et cetera*.
 
 ## Notes on SGF as I understand it
 
