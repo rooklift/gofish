@@ -293,11 +293,11 @@ def main():
 
     window = tkinter.Tk()
     window.resizable(width = False, height = False)
-    window.geometry('{}x{}'.format(WIDTH, HEIGHT))
+    window.geometry("{}x{}".format(WIDTH, HEIGHT))
 
     load_graphics()
 
-    canvas = tkinter.Canvas(window, width = WIDTH, height = HEIGHT)
+    canvas = tkinter.Canvas(window, width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
 
     canvas.bind("<Key>", call_keypress_handler)
     canvas.bind("<Button-1>", call_mouseclick_handler)
