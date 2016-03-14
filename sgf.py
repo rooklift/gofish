@@ -246,28 +246,41 @@ class Node():
                         x, y = point[0], point[1]
                         self.board.state[x][y] = adders[adder]
 
-    def update_recursive(self):     # Avoids unnecessary recursive calls by only going recursive if 2 or more children
+    def update_recursive(self):                     # Only goes recursive if 2 or more children
         node = self
         while 1:
             node.update()
             if len(node.children) == 0:
                 return
-            elif len(node.children) == 1:                       # i.e. just iterate where possible
+            elif len(node.children) == 1:           # i.e. just iterate where possible
                 node.copy_state_to_child(node.children[0])
                 node = node.children[0]
                 continue
             else:
-                for n, child in enumerate(node.children):
+                for child in node.children:
                     node.copy_state_to_child(child)
                     child.update_recursive()
                 return
 
-    def rebuild_main_line(self):        # Assumes the only problem is that things wrongly have False (not wrongly have True)
-        node = self.get_root_node()
-        node.is_main_line = True
-        while len(node.children) > 0:
-            node = node.children[0]
-            node.is_main_line = True
+    def fix_main_line_status(self):
+        if self.parent is None or self.parent.is_main_line:
+            self.is_main_line = True
+        else:
+            self.is_main_line = False
+
+    def fix_main_line_status_recursive(self):       # Only goes recursive if 2 or more children
+        node = self
+        while 1:
+            node.fix_main_line_status()
+            if len(node.children) == 0:
+                return
+            elif len(node.children) == 1:           # i.e. just iterate where possible
+                node = node.children[0]
+                continue
+            else:
+                for child in node.children:
+                    child.fix_main_line_status_recursive()
+                return
 
     def copy_state_to_child(self, child):
         if len(self.children) > 0:
