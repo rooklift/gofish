@@ -7,6 +7,18 @@ WIDTH, HEIGHT = 621, 621
 GAP = 31
 
 
+MOTD = """
+  Fohristiwhirl's SGF readwriter. Keys:
+
+  -- NAVIGATE: Arrows, Home, End, PageUp, PageDown
+  -- LOAD / SAVE: Ctrl-O, Ctrl-S
+  -- SWITCH TO SIBLING: Tab
+  -- DESTROY NODE: Delete
+
+  -- MAKE MOVE: Mouse Button
+"""
+
+
 def load_graphics():
     directory = os.path.dirname(os.path.realpath(sys.argv[0]))
     os.chdir(directory)    # Set working dir to be same as infile.
@@ -101,6 +113,15 @@ def draw_node(window, canvas, node):
             for point in points:
                 screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], node.board.boardsize)
                 canvas.create_image(screen_x, screen_y, image = markup_dict[mark])
+
+
+def title_bar_string(node):
+    title = "Move {}".format(node.moves_made)
+    if node.parent:
+        if len(node.parent.children) > 1:
+            index = node.parent.children.index(node)
+            title += " ({} of {} variations)".format(index + 1, len(node.parent.children))
+    return title
 
 
 # All the key handlers are in the same form:
@@ -226,6 +247,8 @@ def mouseclick_handler(node, x, y):
 
 
 def main():
+    print(MOTD)
+
     try:
         node = sgf.load(sys.argv[1])
         print("<--- Loaded: {}\n".format(sys.argv[1]))
@@ -247,22 +270,26 @@ def main():
         except:
             pass
         draw_node(window, canvas, node)
+        window.wm_title(title_bar_string(node))
 
     def call_mouseclick_handler(event):
         nonlocal node
         x, y = board_pos_from_screen_pos(event.x, event.y, node.board.boardsize)
         node = mouseclick_handler(node, x, y)
         draw_node(window, canvas, node)
+        window.wm_title(title_bar_string(node))
 
     def call_opener(event):
         nonlocal node
         node = opener(node)
         draw_node(window, canvas, node)
+        window.wm_title(title_bar_string(node))
 
     def call_saver(event):
         nonlocal node
         node = saver(node)
         draw_node(window, canvas, node)
+        window.wm_title(title_bar_string(node))
 
     window = tkinter.Tk()
     window.resizable(width = False, height = False)
@@ -281,6 +308,8 @@ def main():
     canvas.focus_set()
 
     draw_node(window, canvas, node)
+    window.wm_title(title_bar_string(node))
+
     window.mainloop()
 
 
