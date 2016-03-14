@@ -56,7 +56,7 @@ def board_pos_from_screen_pos(x, y, boardsize):        # Inverse of the above
     return ret_x, ret_y
 
 
-def draw_node(window, canvas, node):
+def draw_node(canvas, node):
     canvas.delete(tkinter.ALL)              # DESTROY all!
     boardsize = node.board.boardsize
 
@@ -269,26 +269,26 @@ def main():
             node = globals()[function_name](node)
         except:
             pass
-        draw_node(window, canvas, node)
+        draw_node(canvas, node)
         window.wm_title(title_bar_string(node))
 
     def call_mouseclick_handler(event):
         nonlocal node
         x, y = board_pos_from_screen_pos(event.x, event.y, node.board.boardsize)
         node = mouseclick_handler(node, x, y)
-        draw_node(window, canvas, node)
+        draw_node(canvas, node)
         window.wm_title(title_bar_string(node))
 
     def call_opener(event):
         nonlocal node
         node = opener(node)
-        draw_node(window, canvas, node)
+        draw_node(canvas, node)
         window.wm_title(title_bar_string(node))
 
     def call_saver(event):
         nonlocal node
         node = saver(node)
-        draw_node(window, canvas, node)
+        draw_node(canvas, node)
         window.wm_title(title_bar_string(node))
 
     window = tkinter.Tk()
@@ -307,7 +307,7 @@ def main():
     canvas.pack()
     canvas.focus_set()
 
-    draw_node(window, canvas, node)
+    draw_node(canvas, node)
     window.wm_title(title_bar_string(node))
 
     window.mainloop()
