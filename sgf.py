@@ -5,7 +5,7 @@ EMPTY, BLACK, WHITE = 0, 1, 2
 
 
 class OffBoard(Exception): pass
-class BoardTooBig(Exception): pass
+class BadBoardSize(Exception): pass
 class ParserFail(Exception): pass
 
 
@@ -472,7 +472,7 @@ def load(filename):
         size = 19
 
     if size > 19 or size < 1:
-        raise BoardTooBig
+        raise BadBoardSize
 
     root.board = Board(size)
     root.is_main_line = True
@@ -485,7 +485,7 @@ def load(filename):
 
 def new_tree(size):
     if size > 19 or size < 1:
-        raise BoardTooBig
+        raise BadBoardSize
 
     root = Node(parent = None)
     root.board = Board(size)

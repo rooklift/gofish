@@ -275,12 +275,18 @@ def main():
 
         if keyboard.get(K_DELETE, 0):
             keyboard[K_DELETE] = 0
-            if node.parent:
-                if tkinter.messagebox.askokcancel("Delete?", "Delete this node and all of its children?"):
+            if len(node.children) > 0:
+                ok = tkinter.messagebox.askokcancel("Delete?", "Delete this node and all of its children?")
+            else:
+                ok = True
+            if ok:
+                if node.parent:
                     child = node
                     node = node.parent
                     node.children.remove(child)
                     node.fix_main_line_status_recursive()
+                else:
+                    node = sgf.new_tree(19)
 
         if keyboard.get(K_d, 0):
             keyboard[K_d] = 0
@@ -306,7 +312,7 @@ def main():
                     node.print_comments()
                 except FileNotFoundError:
                     print("error while loading: file not found")
-                except sgf.BoardTooBig:
+                except sgf.BadBoardSize:
                     print("error while loading: SZ (board size) was not in range 1:19")
                 except sgf.ParserFail:
                     print("error while loading: parser failed (invalid SGF?)")

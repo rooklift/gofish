@@ -236,7 +236,7 @@ def opener(node):
             node.print_comments()
         except FileNotFoundError:
             print("error while loading: file not found")
-        except sgf.BoardTooBig:
+        except sgf.BadBoardSize:
             print("error while loading: SZ (board size) was not in range 1:19")
         except sgf.ParserFail:
             print("error while loading: parser failed (invalid SGF?)")
