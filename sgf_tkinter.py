@@ -80,12 +80,12 @@ class BoardCanvas(tkinter.Canvas):
         self.bind("<Control-o>", self.opener)
         self.bind("<Control-s>", self.saver)
 
-        self.node = sgf.new_tree(19)    # Do this now in case the load fails
+        self.node = sgf.new_tree(19)        # Do this now in case the load fails
 
         if filename is not None:
             self.open_file(filename)
 
-        self.draw_node()
+        self.draw_node(tellowner = False)   # The mainloop in the owner hasn't started yet, dunno if sending event is safe
 
     def open_file(self, infilename):
         try:
@@ -101,13 +101,14 @@ class BoardCanvas(tkinter.Canvas):
         except sgf.ParserFail:
             print("error while loading: parser failed (invalid SGF?)")
 
-    def draw_node(self):
+    def draw_node(self, tellowner = True):
         self.delete(tkinter.ALL)              # DESTROY all!
         boardsize = self.node.board.boardsize
 
-        # Fix the title bar...
+        # Tell the owner that we drew...
 
-        self.owner.wm_title(title_bar_string(self.node))
+        if tellowner:
+            self.owner.event_generate("<<boardwasdrawn>>", when="tail")
 
         # Draw the texture...
 
@@ -291,6 +292,7 @@ if __name__ == "__main__":
     window = tkinter.Tk()
     window.resizable(width = False, height = False)
     window.geometry("{}x{}".format(WIDTH, HEIGHT))
+    window.bind("<<boardwasdrawn>>", lambda x: window.wm_title(title_bar_string(board.node)))
 
     load_graphics()
 
@@ -303,4 +305,5 @@ if __name__ == "__main__":
     board.pack()
     board.focus_set()
 
+    window.wm_title("Fohristiwhirl's SGF readwriter")
     window.mainloop()
