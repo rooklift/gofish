@@ -67,6 +67,14 @@ def string_from_point(x, y):
     return s
 
 
+def english_string_from_point(x, y, boardsize):
+    xlookup = " ABCDEFGHJKLMNOPQRSTUVWXYZ"
+    s = ""
+    s += xlookup[x]
+    s += str((boardsize - y) + 1)
+    return s
+
+
 def adjacent_points(x, y, boardsize):
     result = set()
 
@@ -333,6 +341,18 @@ class Node():
                 except IndexError:
                     pass
         return None
+
+    def move_was_pass(self):
+        for key in ["B", "W"]:
+            if key in self.properties:
+                movestring = self.properties[key][0]
+                if len(movestring) < 2:                     # e.g. W[]
+                    return True
+                x = ord(movestring[0]) - 96
+                y = ord(movestring[1]) - 96
+                if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:      # e.g. W[tt]
+                    return True
+        return False
 
     def sibling_moves(self):        # Don't use this to check for variations - a node might not have any moves
         p = self.parent

@@ -60,11 +60,22 @@ def board_pos_from_screen_pos(x, y, boardsize):        # Inverse of the above
     return ret_x, ret_y
 
 def title_bar_string(node):
-    title = "Move {}".format(node.moves_made)
+    wwtm = node.what_was_the_move()
+    mwp = node.move_was_pass()
+
+    if wwtm is None and not mwp:
+        title = "Empty node"
+    else:
+        title = "Move {}".format(node.moves_made)
     if node.parent:
         if len(node.parent.children) > 1:
             index = node.parent.children.index(node)
-            title += " ({} of {} variations)".format(index + 1, len(node.parent.children))
+            title += " [{} of {} variations]".format(index + 1, len(node.parent.children))
+    if mwp:
+        title += " (pass)"
+    elif wwtm:
+        x, y = wwtm
+        title += " ({})".format(sgf.english_string_from_point(x, y, node.board.boardsize))
     return title
 
 # --------------------------------------------------------------------------------------
