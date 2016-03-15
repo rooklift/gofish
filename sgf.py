@@ -517,7 +517,10 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
         if inside:
             if c == "\\":               # Escape characters are saved
                 value += "\\"
-                value += sgf[i + 1]
+                try:
+                    value += sgf[i + 1]
+                except IndexError:
+                    raise ParserFail
                 chars_to_skip = 1
             elif c == "]":
                 inside = False
