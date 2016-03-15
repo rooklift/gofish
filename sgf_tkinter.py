@@ -64,7 +64,10 @@ def title_bar_string(node):
     mwp = node.move_was_pass()
 
     if wwtm is None and not mwp:
-        title = "Empty node"
+        if node.parent:
+            title = "Empty node"
+        else:
+            title = "Root node"
     else:
         title = "Move {}".format(node.moves_made)
     if node.parent:
