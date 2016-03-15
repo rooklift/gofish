@@ -33,15 +33,15 @@ fpsClock = pygame.time.Clock()
 directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 os.chdir(directory)    # Set working dir to be same as infile.
 
-spriteHoshi = pygame.image.load("gfx/hoshi.png")
-spriteBlack = pygame.image.load("gfx/black.png")
-spriteWhite = pygame.image.load("gfx/white.png")
-spriteMove = pygame.image.load("gfx/move.png")
-spriteVar = pygame.image.load("gfx/var.png")
-spriteTriangle = pygame.image.load("gfx/triangle.png")
-spriteCircle = pygame.image.load("gfx/circle.png")
-spriteSquare = pygame.image.load("gfx/square.png")
-spriteMark = pygame.image.load("gfx/mark.png")
+spriteHoshi = pygame.image.load("gfx/hoshi.gif")
+spriteBlack = pygame.image.load("gfx/black.gif")
+spriteWhite = pygame.image.load("gfx/white.gif")
+spriteMove = pygame.image.load("gfx/move.gif")
+spriteVar = pygame.image.load("gfx/var.gif")
+spriteTriangle = pygame.image.load("gfx/triangle.gif")
+spriteCircle = pygame.image.load("gfx/circle.gif")
+spriteSquare = pygame.image.load("gfx/square.gif")
+spriteMark = pygame.image.load("gfx/mark.gif")
 
 markup_dict = {"TR": spriteTriangle, "CR": spriteCircle, "SQ": spriteSquare, "MA": spriteMark}
 
@@ -144,7 +144,7 @@ def draw_node(screen, node):
 def make_spriteGoban(boardsize):
 
     global spriteGoban
-    spriteGoban = pygame.image.load("gfx/texture.jpg")
+    spriteGoban = pygame.image.load("gfx/texture.gif")
 
     # Patch up spriteGoban with the grid and hoshi points drawn...
 
