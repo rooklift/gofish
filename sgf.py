@@ -67,12 +67,33 @@ def string_from_point(x, y):
     return s
 
 
-def english_string_from_point(x, y, boardsize):
+def english_string_from_point(x, y, boardsize):     # 16, 4    --->     Q16  (skips I, numbers from bottom)
     xlookup = " ABCDEFGHJKLMNOPQRSTUVWXYZ"
     s = ""
     s += xlookup[x]
     s += str((boardsize - y) + 1)
     return s
+
+
+def point_from_english_string(s, boardsize):        # Q16       --->    16, 4
+    if len(s) not in [2,3]:
+        return None
+
+    s = s.upper()
+
+    xlookup = " ABCDEFGHJKLMNOPQRSTUVWXYZ"
+
+    try:
+        x = xlookup.index(s[0])
+    except:
+        return None
+
+    try:
+        y = boardsize - int(s[1:]) + 1
+    except:
+        return None
+
+    return x, y
 
 
 def adjacent_points(x, y, boardsize):
