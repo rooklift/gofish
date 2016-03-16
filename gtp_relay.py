@@ -102,24 +102,22 @@ def get_reply(process, verbose = True):
                     print(response)
                 return response
 
-def send_and_get(process, command, owner, output_queue, verbose = True):
+def send_and_get(process, command, output_queue, verbose = True):
 
     send_command(process, command, verbose)
     response = get_reply(process)
 
     if output_queue:
         output_queue.put(response)
-        owner.event_generate("<<queue_message>>", when="tail")
 
     return response
 
-def send_and_get_threaded(process, command, owner, output_queue, verbose = True):
+def send_and_get_threaded(process, command, output_queue, verbose = True):
 
     newthread = threading.Thread(target = send_and_get,
                                  kwargs = {
                                             "process": process,
                                             "command": command,
-                                            "owner": owner,
                                             "output_queue": output_queue,
                                             "verbose": verbose
                                            })
@@ -133,13 +131,14 @@ class GTP_GUI(tkinter.Canvas):
         tkinter.Canvas.__init__(self, owner, *args, **kwargs)
         self.owner = owner
         self.bind("<Button-1>", self.mouseclick_handler)
-        self.bind("<<queue_message>>", self.response_handler)
         self.process = subprocess.Popen(args = proc_args, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.DEVNULL)
 
         self.reset()
         self.draw_node(tellowner = False)   # The mainloop in the owner hasn't started yet, dunno if sending event is safe
 
         self.engine_output = queue.Queue()
+
+        self.engine_msg_poller()
 
 
     def reset(self):
@@ -165,14 +164,23 @@ class GTP_GUI(tkinter.Canvas):
             colour_lookup = {BLACK: "black", WHITE: "white"}
 
             command = "play {} {}".format(colour_lookup[self.human_colour], sgf.english_string_from_point(x, y, self.node.board.boardsize))
-            send_and_get(self.process, command, owner = self, output_queue = None)
+            send_and_get(self.process, command, output_queue = None)
 
             command = "genmove {}".format(colour_lookup[self.engine_colour])
-            send_and_get_threaded(self.process, command, owner = self, output_queue = self.engine_output)
+            send_and_get_threaded(self.process, command, output_queue = self.engine_output)
 
 
-    def response_handler(self, event):
-        message = self.engine_output.get()
+    def engine_msg_poller(self):
+        self.after(100, self.engine_msg_poller)
+        self.engine_move_handler()
+
+
+    def engine_move_handler(self):
+
+        try:
+            message = self.engine_output.get(block = False)
+        except queue.Empty:
+            return
         if message[0] != "=":
             return
         message = message[1:].strip()
@@ -273,7 +281,7 @@ if __name__ == "__main__":
     load_graphics()
 
     if len(sys.argv) < 2:
-        print("Need an argument: the engine to run")
+        print("Need an argument: the engine to run (it may also require more arguments)")
         sys.exit(1)
 
     board = GTP_GUI(window, sys.argv[1:], width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
