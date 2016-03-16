@@ -218,8 +218,19 @@ class GTP_GUI(tkinter.Canvas):
             return
 
         self.node = result
-        self.draw_node()
         self.next_colour = self.human_colour
+
+        self.maybe_get_final_score()
+
+        self.draw_node()
+
+
+    def maybe_get_final_score(self):
+
+        if self.node.move_was_pass():
+            if self.node.parent:
+                if self.node.parent.move_was_pass():
+                    send_and_get(self.process, "final_score", None, verbose = True)
 
 
     def draw_node(self, tellowner = True):
@@ -319,6 +330,8 @@ class GTP_GUI(tkinter.Canvas):
 
             command = "genmove {}".format(colour_lookup[self.engine_colour])
             send_and_get_threaded(self.process, command, output_queue = self.engine_output)
+
+            self.maybe_get_final_score()
 
 # ---------------------------------------------------------------------------------------
 
