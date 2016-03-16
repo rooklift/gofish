@@ -131,7 +131,7 @@ class GTP_GUI(tkinter.Canvas):
         tkinter.Canvas.__init__(self, owner, *args, **kwargs)
         self.owner = owner
         self.bind("<Button-1>", self.mouseclick_handler)
-        self.process = subprocess.Popen(args = proc_args, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.DEVNULL)
+        self.process = subprocess.Popen(args = proc_args, stdin = subprocess.PIPE, stdout = subprocess.PIPE)    #, stderr = subprocess.DEVNULL)
 
         self.reset()
         self.draw_node(tellowner = False)   # The mainloop in the owner hasn't started yet, dunno if sending event is safe
