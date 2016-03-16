@@ -132,6 +132,7 @@ class GTP_GUI(tkinter.Canvas):
         self.owner = owner
         self.bind("<Button-1>", self.mouseclick_handler)
         self.bind("<Key>", self.call_keypress_handler)
+        self.bind("<Control-s>", self.saver)
         self.process = subprocess.Popen(args = proc_args, stdin = subprocess.PIPE, stdout = subprocess.PIPE)    #, stderr = subprocess.DEVNULL)
 
         self.reset()
@@ -286,6 +287,14 @@ class GTP_GUI(tkinter.Canvas):
                 for point in points:
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
+
+
+    def saver(self, event):
+        outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
+        if outfilename:
+            sgf.save_file(outfilename, self.node)
+            print("---> Saved: {}\n".format(outfilename))
+        self.draw_node()
 
 
     def call_keypress_handler(self, event):
