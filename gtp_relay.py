@@ -144,7 +144,7 @@ class GTP_GUI(tkinter.Canvas):
 
     def reset(self):
 
-        self.node = sgf.new_tree(5)
+        self.node = sgf.new_tree(19)
 
         for cmd in ["boardsize {}".format(self.node.board.boardsize), "clear_board", "komi 0"]:
             send_command(self.process, cmd)
