@@ -131,6 +131,7 @@ class GTP_GUI(tkinter.Canvas):
         tkinter.Canvas.__init__(self, owner, *args, **kwargs)
         self.owner = owner
         self.bind("<Button-1>", self.mouseclick_handler)
+        self.bind("<Key>", self.call_keypress_handler)
         self.process = subprocess.Popen(args = proc_args, stdin = subprocess.PIPE, stdout = subprocess.PIPE)    #, stderr = subprocess.DEVNULL)
 
         self.reset()
@@ -142,11 +143,13 @@ class GTP_GUI(tkinter.Canvas):
 
 
     def reset(self):
-        for cmd in ["boardsize 19", "clear_board", "komi 0"]:
+
+        self.node = sgf.new_tree(5)
+
+        for cmd in ["boardsize {}".format(self.node.board.boardsize), "clear_board", "komi 0"]:
             send_command(self.process, cmd)
             get_reply(self.process)
 
-        self.node = sgf.new_tree(19)
         self.next_colour = BLACK
         self.human_colour = BLACK
         self.engine_colour = WHITE
@@ -161,7 +164,7 @@ class GTP_GUI(tkinter.Canvas):
 
             if result:
                 self.next_colour = self.engine_colour
-                
+
                 self.node = result
 
                 colour_lookup = {BLACK: "black", WHITE: "white"}
@@ -187,7 +190,9 @@ class GTP_GUI(tkinter.Canvas):
             return
         if message[0] != "=":
             return
+
         message = message[1:].strip()
+
         if len(message) in [2,3]:
             point = sgf.point_from_english_string(message, self.node.board.boardsize)
             if point is None:
@@ -201,9 +206,17 @@ class GTP_GUI(tkinter.Canvas):
             if result is None:
                 print("ERROR: got illegal move {}".format(message))
                 return
-            self.node = result
-            self.draw_node()
-            self.next_colour = self.human_colour
+        elif message.upper() == "PASS":
+            if self.next_colour != self.engine_colour:
+                print("ERROR: got move at unexpected time")
+                return
+            result = self.node.make_pass()
+        else:
+            return
+
+        self.node = result
+        self.draw_node()
+        self.next_colour = self.human_colour
 
 
     def draw_node(self, tellowner = True):
@@ -271,6 +284,30 @@ class GTP_GUI(tkinter.Canvas):
                 for point in points:
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
+
+
+    def call_keypress_handler(self, event):
+        try:
+            function_call = "self.handle_key_{}()".format(event.keysym.upper())
+            eval(function_call)
+        except AttributeError:
+            pass
+        self.draw_node()
+
+    def handle_key_P(self):
+
+        if self.next_colour == self.human_colour:
+
+            self.node = self.node.make_pass()
+            self.next_colour = self.engine_colour
+
+            colour_lookup = {BLACK: "black", WHITE: "white"}
+
+            command = "play {} pass".format(colour_lookup[self.human_colour])
+            send_and_get(self.process, command, output_queue = None)
+
+            command = "genmove {}".format(colour_lookup[self.engine_colour])
+            send_and_get_threaded(self.process, command, output_queue = self.engine_output)
 
 # ---------------------------------------------------------------------------------------
 

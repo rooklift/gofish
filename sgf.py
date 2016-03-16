@@ -67,7 +67,7 @@ def string_from_point(x, y):
     return s
 
 
-def english_string_from_point(x, y, boardsize):     # 16, 4    --->     Q16  (skips I, numbers from bottom)
+def english_string_from_point(x, y, boardsize):     # 16, 4     --->    Q16  (skips I, numbers from bottom)
     xlookup = " ABCDEFGHJKLMNOPQRSTUVWXYZ"
     s = ""
     s += xlookup[x]
