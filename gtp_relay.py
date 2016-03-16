@@ -331,7 +331,7 @@ class GTP_GUI(tkinter.Canvas):
             command = "genmove {}".format(colour_lookup[self.engine_colour])
             send_and_get_threaded(self.process, command, output_queue = self.engine_output)
 
-            self.maybe_get_final_score()
+            # self.maybe_get_final_score()      # Maybe just do this when it's the engine passing
 
 # ---------------------------------------------------------------------------------------
 
