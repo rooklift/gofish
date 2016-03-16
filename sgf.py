@@ -422,6 +422,14 @@ class Node():
                 return None
             node = node.parent
 
+    def move_colour(self):
+        if "B" in node.properties:
+            return BLACK
+        elif "W" in node.properties:
+            return WHITE
+        else:
+            return None
+
     def make_child_from_move(self, colour, x, y, append = True):
         assert(colour in [BLACK, WHITE])
 
@@ -452,11 +460,11 @@ class Node():
 
         # Colour is auto-determined by what colour the last move was...
 
-        mycolour = WHITE if self.last_colour_played() == BLACK else BLACK       # If it was None we get BLACK
+        newcolour = WHITE if self.last_colour_played() == BLACK else BLACK      # If it was None we get BLACK
 
         # Check for legality...
 
-        testchild = self.make_child_from_move(mycolour, x, y, append = False)   # Won't get appended to this node as a real child
+        testchild = self.make_child_from_move(newcolour, x, y, append = False)  # Won't get appended to this node as a real child
         if self.parent:
             if testchild.board.state == self.parent.board.state:     # Ko
                 return None
@@ -465,7 +473,28 @@ class Node():
 
         # Make real child and return...
 
-        child = self.make_child_from_move(mycolour, x, y)
+        child = self.make_child_from_move(newcolour, x, y)
+        return child
+
+    def make_pass(self):
+
+        # Colour is auto-determined by what colour the last move was...
+
+        newcolour = WHITE if self.last_colour_played() == BLACK else BLACK      # If it was None we get BLACK
+
+        # if the pass already exists, just return the (first) relevant child...
+
+        for child in self.children:
+            if child.move_colour == newcolour:
+                if child.move_was_pass():
+                    return child
+
+        key = "W" if newcolour == WHITE else "B"
+
+        child = Node(parent = self)
+        self.copy_state_to_child(child)
+        child.add_value(key, "")
+        child.update()
         return child
 
 

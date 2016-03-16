@@ -273,6 +273,9 @@ class BoardCanvas(tkinter.Canvas):
             else:
                 self.node = sgf.new_tree(19)
 
+    def handle_key_P(self):
+        self.node = self.node.make_pass()
+
     def handle_key_D(self):
         self.node.debug()
 
