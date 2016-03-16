@@ -485,7 +485,7 @@ class Node():
         # if the pass already exists, just return the (first) relevant child...
 
         for child in self.children:
-            if child.move_colour == newcolour:
+            if child.move_colour() == newcolour:
                 if child.move_was_pass():
                     return child
 
