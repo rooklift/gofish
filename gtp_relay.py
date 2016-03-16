@@ -171,7 +171,7 @@ class GTP_GUI(tkinter.Canvas):
 
 
     def engine_msg_poller(self):
-        self.after(100, self.engine_msg_poller)
+        self.after(100, self.engine_msg_poller)     # Add a callback here in 100 ms
         self.engine_move_handler()
 
 
