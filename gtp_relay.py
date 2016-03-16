@@ -153,21 +153,26 @@ class GTP_GUI(tkinter.Canvas):
 
 
     def mouseclick_handler(self, event):
+
         if self.next_colour == self.human_colour:
-            self.next_colour = self.engine_colour
+
             x, y = board_pos_from_screen_pos(event.x, event.y, self.node.board.boardsize)
             result = self.node.try_move(x, y)
+
             if result:
+                self.next_colour = self.engine_colour
+                
                 self.node = result
-            self.draw_node()
 
-            colour_lookup = {BLACK: "black", WHITE: "white"}
+                colour_lookup = {BLACK: "black", WHITE: "white"}
 
-            command = "play {} {}".format(colour_lookup[self.human_colour], sgf.english_string_from_point(x, y, self.node.board.boardsize))
-            send_and_get(self.process, command, output_queue = None)
+                command = "play {} {}".format(colour_lookup[self.human_colour], sgf.english_string_from_point(x, y, self.node.board.boardsize))
+                send_and_get(self.process, command, output_queue = None)
 
-            command = "genmove {}".format(colour_lookup[self.engine_colour])
-            send_and_get_threaded(self.process, command, output_queue = self.engine_output)
+                command = "genmove {}".format(colour_lookup[self.engine_colour])
+                send_and_get_threaded(self.process, command, output_queue = self.engine_output)
+
+        self.draw_node()
 
 
     def engine_msg_poller(self):
@@ -176,7 +181,6 @@ class GTP_GUI(tkinter.Canvas):
 
 
     def engine_move_handler(self):
-
         try:
             message = self.engine_output.get(block = False)
         except queue.Empty:
