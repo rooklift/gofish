@@ -423,9 +423,9 @@ class Node():
             node = node.parent
 
     def move_colour(self):
-        if "B" in node.properties:
+        if "B" in self.properties:
             return BLACK
-        elif "W" in node.properties:
+        elif "W" in self.properties:
             return WHITE
         else:
             return None
