@@ -1,6 +1,6 @@
 # SGF and GTP examples in Python / Tkinter
 
-Tools for the game of Go. [SGF](http://www.red-bean.com/sgf/) (Smart Game Format) is the standard file format, while GTP (Go Text Protocol) is used for communicating with engines, e.g. if you had [GNU Go](https://www.gnu.org/software/gnugo/) installed:
+Tools for the game of Go. [SGF](http://www.red-bean.com/sgf/) (Smart Game Format) is the standard file format, while GTP (Go Text Protocol) is used for communicating with engines, e.g. if you have [GNU Go](https://www.gnu.org/software/gnugo/) installed, you can run:
 
     python gtp_relay.py gnugo --mode gtp
 
