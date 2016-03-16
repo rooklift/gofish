@@ -211,6 +211,8 @@ class GTP_GUI(tkinter.Canvas):
                 print("ERROR: got move at unexpected time")
                 return
             result = self.node.make_pass()
+        elif message.upper() == "RESIGN":
+            pass                                    # FIXME
         else:
             return
 

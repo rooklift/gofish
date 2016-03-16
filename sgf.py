@@ -93,7 +93,10 @@ def point_from_english_string(s, boardsize):        # Q16       --->    16, 4
     except:
         return None
 
-    return x, y
+    if 1 <= x <= boardsize and 1 <= y <= boardsize:
+        return x, y
+    else:
+        return None
 
 
 def adjacent_points(x, y, boardsize):
