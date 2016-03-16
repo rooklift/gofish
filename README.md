@@ -1,10 +1,8 @@
-# sgf
+# SGF and GTP examples in Python / Tkinter
 
-A simple [SGF](http://www.red-bean.com/sgf/sgf4.html) editor in Python. For programmers who stumble upon this, the meat of the parser is in the function **load_tree()** in `sgf.py`. It seems to work well on real SGF files.
+Tools for the game of Go. [SGF](http://www.red-bean.com/sgf/) (Smart Game Format) is the standard file format, while GTP (Go Text Protocol) is used for communicating with engines, e.g. if you had [GNU Go](https://www.gnu.org/software/gnugo/) installed:
 
-The console app `sgf.py` provides a simple ability to view the main variation.
-
-The GUI also allows loading, saving, variations, *et cetera*. I'm not actually sure what version of Python and Tk it needs.
+    python gtp_relay.py gnugo --mode gtp
 
 ## Notes on SGF as I understand it
 
