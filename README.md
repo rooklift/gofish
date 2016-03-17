@@ -18,3 +18,13 @@ For programmers, the most interesting part of this is probably the SGF parser, *
 * When a node has two or more children, each subtree is contained within parentheses **()**
 * A subtree will always have a node right at the start, i.e. **(** is always followed by **;**
 * The main tree is also contained in parentheses **()**
+
+## Notes to future me on Tkinter (since I will forget)
+
+When widgets need to send messages to other widgets, a reasonable pattern might be:
+
+* Each receiver has a queue.Queue.
+* Each receiver polls its queue by having a method that schedules its next callback with the .after() method.
+* A sender just puts a message onto the Queue.
+
+This should be thread safe, as opposed to using the in-built messaging system, which apparently isn't.
