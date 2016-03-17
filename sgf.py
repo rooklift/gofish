@@ -335,9 +335,22 @@ class Node():
                         print("[ --- Exception when trying to print value --- ]", end="")
                 print()
 
-    def print_comments(self):           # Print comments while dropping escape backslashes
-        if "C" in self.properties:
+    def print_comments(self):
+
+        s = self.get_comments()
+
+        if s:
             print("[{}] ".format(self.moves_made), end="")
+            for ch in s:
+                try:
+                    print(ch, end="")
+                except:
+                    print("?", end="")
+            print("\n")
+
+    def get_comments(self):     # Return the comments but dropping escape backslashes
+        s = ""
+        if "C" in self.properties:
             for value in self.properties["C"]:
                 escape_mode = False
                 for ch in value:
@@ -346,12 +359,22 @@ class Node():
                     elif ch == "\\":
                         escape_mode = True
                         continue
-                    try:
-                        print(ch, end="")
-                    except:
-                        print("?", end="")
-                print()
-            print()
+                    s += ch
+        return s
+
+    def commit_comments(self, s):
+        safe_s = ""
+        for ch in s:
+            if ch in ["\\", "]"]:
+                safe_s += "\\"
+            safe_s += ch
+        if safe_s:
+            self.properties["C"] = [safe_s]
+        else:
+            try:
+                self.properties.pop("C")
+            except KeyError:
+                pass
 
     def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on.
         for key in ["B", "W"]:

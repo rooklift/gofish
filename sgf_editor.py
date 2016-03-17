@@ -1,4 +1,4 @@
-import os, sys
+import os, queue, sys
 import tkinter, tkinter.filedialog, tkinter.messagebox
 
 import sgf
@@ -83,7 +83,7 @@ def title_bar_string(node):
 
 # --------------------------------------------------------------------------------------
 
-class BoardCanvas(tkinter.Canvas):
+class SGF_Board(tkinter.Canvas):
     def __init__(self, owner, filename, *args, **kwargs):
         tkinter.Canvas.__init__(self, owner, *args, **kwargs)
 
@@ -99,7 +99,7 @@ class BoardCanvas(tkinter.Canvas):
         if filename is not None:
             self.open_file(filename)
 
-        self.draw_node(tellowner = False)   # The mainloop in the owner hasn't started yet, dunno if sending event is safe
+        self.node_changed(tellowner = False)
 
     def open_file(self, infilename):
         try:
@@ -107,7 +107,6 @@ class BoardCanvas(tkinter.Canvas):
             print("<--- Loaded: {}\n".format(infilename))
             self.node.dump(include_comments = False)
             print()
-            self.node.print_comments()
         except FileNotFoundError:
             print("error while loading: file not found")
         except sgf.BadBoardSize:
@@ -115,14 +114,9 @@ class BoardCanvas(tkinter.Canvas):
         except sgf.ParserFail:
             print("error while loading: parser failed (invalid SGF?)")
 
-    def draw_node(self, tellowner = True):
+    def draw_node(self):
         self.delete(tkinter.ALL)              # DESTROY all!
         boardsize = self.node.board.boardsize
-
-        # Tell the owner that we drew...
-
-        if tellowner:
-            self.owner.event_generate("<<boardwasdrawn>>", when="tail")
 
         # Draw the texture...
 
@@ -181,6 +175,12 @@ class BoardCanvas(tkinter.Canvas):
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
 
+    def node_changed(self, tellowner = True):
+        self.draw_node()
+        comment.queue.put(self.node)
+        if tellowner:
+            self.owner.event_generate("<<boardwasdrawn>>", when="tail")
+
     # --------------------------------------------------------------------------------------
     # All the key handlers are in the same form:
     #
@@ -198,14 +198,13 @@ class BoardCanvas(tkinter.Canvas):
             eval(function_call)
         except AttributeError:
             pass
-        self.draw_node()
 
     # ----- (the above makes the following work) -----
 
     def handle_key_DOWN(self):
         try:
             self.node = self.node.children[0]
-            self.node.print_comments()
+            self.node_changed()
         except IndexError:
             pass
 
@@ -215,6 +214,7 @@ class BoardCanvas(tkinter.Canvas):
     def handle_key_UP(self):
         if self.node.parent:
             self.node = self.node.parent
+            self.node_changed()
 
     def handle_key_LEFT(self):
         self.handle_key_UP()
@@ -223,9 +223,9 @@ class BoardCanvas(tkinter.Canvas):
         for n in range(10):
             try:
                 self.node = self.node.children[0]
-                self.node.print_comments()
             except IndexError:
                 break
+        self.node_changed()
 
     def handle_key_PRIOR(self):         # PageUp
         for n in range(10):
@@ -233,6 +233,7 @@ class BoardCanvas(tkinter.Canvas):
                 self.node = self.node.parent
             else:
                 break
+        self.node_changed()
 
     def handle_key_TAB(self):
         if self.node.parent:
@@ -243,7 +244,7 @@ class BoardCanvas(tkinter.Canvas):
                 else:
                     index = 0
                 self.node = self.node.parent.children[index]
-                self.node.print_comments()
+                self.node_changed()
 
     def handle_key_BACKSPACE(self):         # Return to the main line
         while 1:
@@ -252,12 +253,15 @@ class BoardCanvas(tkinter.Canvas):
             if self.node.parent is None:
                 break
             self.node = self.node.parent
+        self.node_changed()
 
     def handle_key_HOME(self):
         self.node = self.node.get_root_node()
+        self.node_changed()
 
     def handle_key_END(self):
         self.node = self.node.get_end_node()
+        self.node_changed()
 
     def handle_key_DELETE(self):
         if len(self.node.children) > 0:
@@ -270,11 +274,13 @@ class BoardCanvas(tkinter.Canvas):
                 self.node = self.node.parent
                 self.node.children.remove(child)
                 self.node.fix_main_line_status_recursive()
+                self.node_changed()
             else:
                 self.node = sgf.new_tree(19)
 
     def handle_key_P(self):
         self.node = self.node.make_pass()
+        self.node_changed()
 
     def handle_key_D(self):
         self.node.debug()
@@ -285,42 +291,104 @@ class BoardCanvas(tkinter.Canvas):
         infilename = tkinter.filedialog.askopenfilename()
         if infilename:
             self.open_file(infilename)
-        self.draw_node()
+            self.node_changed()
 
     def saver(self, event):
         outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
         if outfilename:
+            comment.commit_text()                   # directly call the CommentWindow's function - is this safe? (Don't see why not, is same thread.)
             sgf.save_file(outfilename, self.node)
             print("---> Saved: {}\n".format(outfilename))
-        self.draw_node()
 
     def mouseclick_handler(self, event):
         x, y = board_pos_from_screen_pos(event.x, event.y, self.node.board.boardsize)
         result = self.node.try_move(x, y)
         if result:
             self.node = result
-        self.draw_node()
+            self.node_changed()
 
 # ---------------------------------------------------------------------------------------
 
+class CommentWindow(tkinter.Toplevel):
+    def __init__(self, *args, **kwargs):
+
+        tkinter.Toplevel.__init__(self, *args, **kwargs)
+        self.title("Comments")
+        self.protocol("WM_DELETE_WINDOW", lambda: None)
+
+        self.text_widget = tkinter.Text(self, width = 60, height = 10, bg = "black", fg = "white", insertbackground = "white", wrap = tkinter.WORD)
+        self.scrollbar = tkinter.Scrollbar(self)
+
+        self.text_widget.pack(side = tkinter.LEFT, fill = tkinter.Y)
+        self.scrollbar.pack(side = tkinter.RIGHT, fill = tkinter.Y)
+
+        self.resizable(width = False, height = False)
+
+        self.text_widget.config(yscrollcommand = self.scrollbar.set)
+        self.scrollbar.config(command = self.text_widget.yview)
+
+        self.node = sgf.Node(None)  # This is just a dummy node until we get a real one. If the user
+                                    # really quickly enters some text it will be safely sent to this one
+
+        self.queue = queue.Queue()
+        self.after(100, self.poller)
+
+    def poller(self):
+
+        self.after(100, self.poller)
+
+        newnode = self.node
+
+        while 1:    # iterate through all the messages to get the most recently sent node
+            try:
+                newnode = self.queue.get(block = False)
+            except queue.Empty:
+                break
+
+        if newnode is self.node:
+            return
+
+        self.commit_text()
+        self.node = newnode
+
+        s = self.node.get_comments()
+
+        self.text_widget.delete(1.0, tkinter.END)
+        self.text_widget.insert(tkinter.END, s)
+
+    def commit_text(self):
+        s = self.text_widget.get(1.0, tkinter.END).strip()
+        self.node.commit_comments(s)
+
+
+class Root(tkinter.Tk):
+    def __init__(self, *args, **kwargs):
+
+        tkinter.Tk.__init__(self, *args, **kwargs)
+
+        self.resizable(width = False, height = False)
+        self.geometry("{}x{}".format(WIDTH, HEIGHT))
+        self.bind("<<boardwasdrawn>>", lambda x: self.wm_title(title_bar_string(board.node)))
+
+        load_graphics()
+
+        if len(sys.argv) > 1:
+            filename = sys.argv[1]
+        else:
+            filename = None
+
+        global comment
+        comment = CommentWindow()
+
+        global board
+        board = SGF_Board(self, filename, width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
+        board.pack()
+        board.focus_set()
+
+        self.wm_title("Fohristiwhirl's SGF readwriter")
+        self.mainloop()
+
+
 if __name__ == "__main__":
     print(MOTD)
-
-    window = tkinter.Tk()
-    window.resizable(width = False, height = False)
-    window.geometry("{}x{}".format(WIDTH, HEIGHT))
-    window.bind("<<boardwasdrawn>>", lambda x: window.wm_title(title_bar_string(board.node)))
-
-    load_graphics()
-
-    if len(sys.argv) > 1:
-        filename = sys.argv[1]
-    else:
-        filename = None
-
-    board = BoardCanvas(window, filename, width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
-    board.pack()
-    board.focus_set()
-
-    window.wm_title("Fohristiwhirl's SGF readwriter")
-    window.mainloop()
+    app = Root()
