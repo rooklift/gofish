@@ -27,4 +27,6 @@ When widgets need to send messages to other widgets, a reasonable pattern might 
 * Each receiver polls its queue by having a method that schedules its next callback with the .after() method.
 * A sender just puts a message onto the queue.
 
-This should be thread safe, as opposed to using the in-built messaging system, which apparently isn't. (But one should still keep all the things that directly affect the GUI in the main thread. A thread that isn't touching the GUI can just use a blocking Queue.get() to get its messages.)
+This should be thread safe, as opposed to using the in-built messaging system, which apparently isn't.
+
+On the other hand, if everything's in one thread, just directly calling methods in the target widget might be acceptable?
