@@ -23,8 +23,8 @@ For programmers, the most interesting part of this is probably the SGF parser, *
 
 When widgets need to send messages to other widgets, a reasonable pattern might be:
 
-* Each receiver has a queue.Queue.
+* Each receiver has a queue.
 * Each receiver polls its queue by having a method that schedules its next callback with the .after() method.
-* A sender just puts a message onto the Queue.
+* A sender just puts a message onto the queue.
 
 This should be thread safe, as opposed to using the in-built messaging system, which apparently isn't.
