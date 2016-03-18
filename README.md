@@ -19,14 +19,8 @@ For programmers, the most interesting part of this is probably the SGF parser, *
 * A subtree will always have a node right at the start, i.e. **(** is always followed by **;**
 * The main tree is also contained in parentheses **()**
 
-## Notes to future me on Tkinter (since I will forget)
+## Notes to future me on Tkinter and threading
 
-When widgets need to send messages to other widgets, a reasonable pattern might be:
+The GUI should all be in the main thread. If any other threads need to touch the GUI, don't use the messaging system, which allegedly isn't thread-safe. Instead, put a message on a queue and have the GUI poll that queue regularly, e.g. with the .after() method.
 
-* Each receiver has a queue.
-* Each receiver polls its queue by having a method that schedules its next callback with the .after() method.
-* A sender just puts a message onto the queue.
-
-This should be thread safe, as opposed to using the in-built messaging system, which apparently isn't.
-
-On the other hand, if everything's in one thread, just directly calling methods in the target widget might be acceptable?
+On the other hand, if everything's in one thread, just directly calling methods in the target widget seems acceptable. Right?
