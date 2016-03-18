@@ -99,7 +99,7 @@ class SGF_Board(tkinter.Canvas):
         if filename is not None:
             self.open_file(filename)
 
-        self.node_changed(tellowner = False)
+        self.node_changed()
 
     def open_file(self, infilename):
         try:
@@ -175,11 +175,10 @@ class SGF_Board(tkinter.Canvas):
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
 
-    def node_changed(self, tellowner = True):
+    def node_changed(self):
         self.draw_node()
         comment.queue.put(self.node)
-        if tellowner:
-            self.owner.event_generate("<<remake_title_bar>>", when="tail")
+        self.owner.wm_title(title_bar_string(self.node))
 
     # --------------------------------------------------------------------------------------
     # All the key handlers are in the same form:
@@ -297,7 +296,7 @@ class SGF_Board(tkinter.Canvas):
     def saver(self, event = None):
         outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
         if outfilename:
-            comment.commit_text()                   # directly call the CommentWindow's function - is this safe? (Don't see why not, is same thread.)
+            comment.commit_text()                   # tell the comment window that it must commit the comment
             sgf.save_file(outfilename, self.node)
             print("---> Saved: {}\n".format(outfilename))
 
@@ -337,8 +336,7 @@ class CommentWindow(tkinter.Toplevel):
         self.text_widget.config(yscrollcommand = self.scrollbar.set)
         self.scrollbar.config(command = self.text_widget.yview)
 
-        self.node = sgf.Node(None)  # This is just a dummy node until we get a real one. If the user
-                                    # really quickly enters some text it will be safely sent to this one
+        self.node = sgf.Node(None)  # This is just a dummy node until we get a real one.
 
         self.queue = queue.Queue()
         self.after(100, self.poller)
@@ -389,10 +387,7 @@ class Root(tkinter.Tk):
     def __init__(self, *args, **kwargs):
 
         tkinter.Tk.__init__(self, *args, **kwargs)
-
         self.resizable(width = False, height = False)
-        self.bind("<<remake_title_bar>>", lambda __: self.wm_title(title_bar_string(board.node)))
-        self.wm_title("Fohristiwhirl's SGF readwriter")
 
         load_graphics()
 
@@ -409,7 +404,7 @@ class Root(tkinter.Tk):
 
         global helpwindow
         helpwindow = HelpWindow()
-        helpwindow.withdraw()
+        helpwindow.withdraw()       # help window starts hidden
 
         global board
         board = SGF_Board(self, filename, width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
@@ -417,7 +412,7 @@ class Root(tkinter.Tk):
         global menubar
         menubar = tkinter.Menu(self)
 
-        new_board_menu = tkinter.Menu(menubar, tearoff=0)
+        new_board_menu = tkinter.Menu(menubar, tearoff = 0)
         new_board_menu.add_command(label="19x19", command = lambda : board.new_board(19))
         new_board_menu.add_command(label="17x17", command = lambda : board.new_board(17))
         new_board_menu.add_command(label="15x15", command = lambda : board.new_board(15))
@@ -425,7 +420,7 @@ class Root(tkinter.Tk):
         new_board_menu.add_command(label="11x11", command = lambda : board.new_board(11))
         new_board_menu.add_command(label="9x9", command = lambda : board.new_board(9))
 
-        menubar.add_cascade(label="New", menu = new_board_menu)
+        menubar.add_cascade(label = "New", menu = new_board_menu)
 
         menubar.add_command(label = "Load", command = board.opener)
         menubar.add_command(label = "Save", command = board.saver)
