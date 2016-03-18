@@ -228,9 +228,9 @@ class GTP_GUI(tkinter.Canvas):
         self.node = result
         self.next_colour = self.human_colour
 
-        self.maybe_get_final_score()
-
         self.draw_node()
+
+        self.maybe_get_final_score()    # do this after the draw_node, as it might change the title bar
 
 
     def maybe_get_final_score(self):
@@ -238,7 +238,8 @@ class GTP_GUI(tkinter.Canvas):
         if self.node.move_was_pass():
             if self.node.parent:
                 if self.node.parent.move_was_pass():
-                    send_and_get(self.process, "final_score", None, verbose = True)
+                    msg = send_and_get(self.process, "final_score", None, verbose = True)
+                    self.owner.wm_title(msg[1:].strip())
 
 
     def draw_node(self):
@@ -321,7 +322,6 @@ class GTP_GUI(tkinter.Canvas):
             eval(function_call)
         except AttributeError:
             pass
-        self.draw_node()
 
     def handle_key_P(self):
 
@@ -337,6 +337,8 @@ class GTP_GUI(tkinter.Canvas):
 
             command = "genmove {}".format(colour_lookup[self.engine_colour])
             send_and_get_threaded(self.process, command, output_queue = self.engine_output)
+
+            self.draw_node()
 
             # self.maybe_get_final_score()      # Maybe just do this when it's the engine passing
 
@@ -369,6 +371,7 @@ if __name__ == "__main__":
     new_board_menu.add_command(label="9x9", command = lambda : board.reset(9))
 
     menubar.add_cascade(label = "New", menu = new_board_menu)
+    menubar.add_command(label = "Pass", command = board.handle_key_P)
 
     window.config(menu = menubar)
 
