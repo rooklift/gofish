@@ -99,7 +99,7 @@ class SGF_Board(tkinter.Canvas):
         if filename is not None:
             self.open_file(filename)
 
-        self.node_changed()
+        self.node_changed(set_comment = False)
 
     def open_file(self, infilename):
         try:
@@ -175,9 +175,10 @@ class SGF_Board(tkinter.Canvas):
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
 
-    def node_changed(self):
+    def node_changed(self, set_comment = True):
         self.draw_node()
-        comment.node_changed()
+        if set_comment:
+            comment.node_changed()
         self.owner.wm_title(title_bar_string(self.node))
 
     # --------------------------------------------------------------------------------------
@@ -341,10 +342,7 @@ class CommentWindow(tkinter.Toplevel):
 
     def node_changed(self):
 
-        try:
-            newnode = board.node    # Fails during board's setup as board won't exist in the namespace until completed
-        except NameError:
-            return
+        newnode = board.node
 
         if newnode is self.node:
             return
@@ -424,6 +422,8 @@ class Root(tkinter.Tk):
 
         board.pack()
         board.focus_set()
+
+        board.node_changed()    # This triggers an update of the comment window so it points at the first node
 
 
 if __name__ == "__main__":
