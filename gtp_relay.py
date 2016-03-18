@@ -239,7 +239,7 @@ class GTP_GUI(tkinter.Canvas):
             if self.node.parent:
                 if self.node.parent.move_was_pass():
                     msg = send_and_get(self.process, "final_score", None, verbose = True)
-                    self.owner.wm_title(msg[1:].strip())
+                    self.owner.wm_title("Score: " + msg[1:].strip())
 
 
     def draw_node(self):
