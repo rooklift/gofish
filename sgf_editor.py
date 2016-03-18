@@ -1,4 +1,4 @@
-import os, queue, sys
+import os, sys
 import tkinter, tkinter.filedialog, tkinter.messagebox
 
 import sgf
@@ -177,7 +177,7 @@ class SGF_Board(tkinter.Canvas):
 
     def node_changed(self):
         self.draw_node()
-        comment.queue.put(self.node)
+        comment.node_changed()
         self.owner.wm_title(title_bar_string(self.node))
 
     # --------------------------------------------------------------------------------------
@@ -319,6 +319,7 @@ class SGF_Board(tkinter.Canvas):
 # ---------------------------------------------------------------------------------------
 
 class CommentWindow(tkinter.Toplevel):
+
     def __init__(self, *args, **kwargs):
 
         tkinter.Toplevel.__init__(self, *args, **kwargs)
@@ -338,20 +339,12 @@ class CommentWindow(tkinter.Toplevel):
 
         self.node = sgf.Node(None)  # This is just a dummy node until we get a real one.
 
-        self.queue = queue.Queue()
-        self.after(100, self.poller)
+    def node_changed(self):
 
-    def poller(self):
-
-        self.after(100, self.poller)
-
-        newnode = self.node
-
-        while 1:    # iterate through all the messages to get the most recently sent node
-            try:
-                newnode = self.queue.get(block = False)
-            except queue.Empty:
-                break
+        try:
+            newnode = board.node    # Fails during board's setup as board won't exist in the namespace until completed
+        except NameError:
+            return
 
         if newnode is self.node:
             return
