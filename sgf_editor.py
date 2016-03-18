@@ -287,13 +287,13 @@ class SGF_Board(tkinter.Canvas):
 
     # Other handlers...
 
-    def opener(self, event):
+    def opener(self, event = None):
         infilename = tkinter.filedialog.askopenfilename()
         if infilename:
             self.open_file(infilename)
             self.node_changed()
 
-    def saver(self, event):
+    def saver(self, event = None):
         outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
         if outfilename:
             comment.commit_text()                   # directly call the CommentWindow's function - is this safe? (Don't see why not, is same thread.)
@@ -314,7 +314,7 @@ class CommentWindow(tkinter.Toplevel):
 
         tkinter.Toplevel.__init__(self, *args, **kwargs)
         self.title("Comments")
-        self.protocol("WM_DELETE_WINDOW", lambda: None)
+        self.protocol("WM_DELETE_WINDOW", self.withdraw)
 
         self.text_widget = tkinter.Text(self, width = 60, height = 10, bg = "black", fg = "white", insertbackground = "white", wrap = tkinter.WORD)
         self.scrollbar = tkinter.Scrollbar(self)
@@ -332,6 +332,7 @@ class CommentWindow(tkinter.Toplevel):
 
         self.queue = queue.Queue()
         self.after(100, self.poller)
+
 
     def poller(self):
 
@@ -367,8 +368,8 @@ class Root(tkinter.Tk):
         tkinter.Tk.__init__(self, *args, **kwargs)
 
         self.resizable(width = False, height = False)
-        self.geometry("{}x{}".format(WIDTH, HEIGHT))
-        self.bind("<<boardwasdrawn>>", lambda x: self.wm_title(title_bar_string(board.node)))
+        self.bind("<<boardwasdrawn>>", lambda __: self.wm_title(title_bar_string(board.node)))
+        self.wm_title("Fohristiwhirl's SGF readwriter")
 
         load_graphics()
 
@@ -379,16 +380,29 @@ class Root(tkinter.Tk):
 
         global comment
         comment = CommentWindow()
+        comment.withdraw()          # comment window starts hidden
 
         global board
         board = SGF_Board(self, filename, width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
+
+        menubar = tkinter.Menu(self)
+        self.protocol("WM_DELETE_WINDOW", self.confirm_quit)
+        menubar.add_command(label="Quit", command = self.confirm_quit)
+        menubar.add_command(label="Load", command = board.opener)
+        menubar.add_command(label="Save", command = board.saver)
+        menubar.add_command(label="Comments", command = comment.deiconify)
+        self.config(menu = menubar)
+
         board.pack()
         board.focus_set()
 
-        self.wm_title("Fohristiwhirl's SGF readwriter")
-        self.mainloop()
+    def confirm_quit(self):
+        if tkinter.messagebox.askokcancel("Really quit?", "Really quit? Unsaved changes will be lost!"):
+            self.quit()
 
 
 if __name__ == "__main__":
     print(MOTD)
+
     app = Root()
+    app.mainloop()
