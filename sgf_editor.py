@@ -179,7 +179,7 @@ class SGF_Board(tkinter.Canvas):
         self.draw_node()
         comment.queue.put(self.node)
         if tellowner:
-            self.owner.event_generate("<<boardwasdrawn>>", when="tail")
+            self.owner.event_generate("<<remake_title_bar>>", when="tail")
 
     # --------------------------------------------------------------------------------------
     # All the key handlers are in the same form:
@@ -277,6 +277,7 @@ class SGF_Board(tkinter.Canvas):
                 self.node_changed()
             else:
                 self.node = sgf.new_tree(19)
+                self.node_changed()
 
     def handle_key_P(self):
         self.node = self.node.make_pass()
@@ -305,6 +306,15 @@ class SGF_Board(tkinter.Canvas):
         result = self.node.try_move(x, y)
         if result:
             self.node = result
+            self.node_changed()
+
+    def new_board(self, size):
+        if self.node.parent or len(self.node.children) > 0:
+            ok = tkinter.messagebox.askokcancel("New board?", "Really start a new board? Unsaved changes will be lost!")
+        else:
+            ok = True
+        if ok:
+            self.node = sgf.new_tree(size)
             self.node_changed()
 
 # ---------------------------------------------------------------------------------------
@@ -368,7 +378,7 @@ class Root(tkinter.Tk):
         tkinter.Tk.__init__(self, *args, **kwargs)
 
         self.resizable(width = False, height = False)
-        self.bind("<<boardwasdrawn>>", lambda __: self.wm_title(title_bar_string(board.node)))
+        self.bind("<<remake_title_bar>>", lambda __: self.wm_title(title_bar_string(board.node)))
         self.wm_title("Fohristiwhirl's SGF readwriter")
 
         load_graphics()
@@ -378,6 +388,8 @@ class Root(tkinter.Tk):
         else:
             filename = None
 
+        self.protocol("WM_DELETE_WINDOW", self.confirm_quit)
+
         global comment
         comment = CommentWindow()
         comment.withdraw()          # comment window starts hidden
@@ -385,12 +397,23 @@ class Root(tkinter.Tk):
         global board
         board = SGF_Board(self, filename, width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
 
+        global menubar
         menubar = tkinter.Menu(self)
-        self.protocol("WM_DELETE_WINDOW", self.confirm_quit)
-        menubar.add_command(label="Quit", command = self.confirm_quit)
-        menubar.add_command(label="Load", command = board.opener)
-        menubar.add_command(label="Save", command = board.saver)
-        menubar.add_command(label="Comments", command = comment.deiconify)
+
+        new_board_menu = tkinter.Menu(menubar, tearoff=0)
+        new_board_menu.add_command(label="19x19", command = lambda : board.new_board(19))
+        new_board_menu.add_command(label="17x17", command = lambda : board.new_board(17))
+        new_board_menu.add_command(label="15x15", command = lambda : board.new_board(15))
+        new_board_menu.add_command(label="13x13", command = lambda : board.new_board(13))
+        new_board_menu.add_command(label="11x11", command = lambda : board.new_board(11))
+        new_board_menu.add_command(label="9x9", command = lambda : board.new_board(9))
+
+        menubar.add_cascade(label="New", menu = new_board_menu)
+
+        menubar.add_command(label = "Load", command = board.opener)
+        menubar.add_command(label = "Save", command = board.saver)
+        menubar.add_command(label = "Comments", command = comment.deiconify)
+
         self.config(menu = menubar)
 
         board.pack()
