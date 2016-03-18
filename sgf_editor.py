@@ -96,6 +96,8 @@ class SGF_Board(tkinter.Canvas):
 
         self.node = sgf.new_tree(19)        # Do this now in case the load fails
 
+        self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
+
         if filename is not None:
             self.open_file(filename)
 
@@ -107,6 +109,7 @@ class SGF_Board(tkinter.Canvas):
             print("<--- Loaded: {}\n".format(infilename))
             self.node.dump(include_comments = False)
             print()
+            self.directory = os.path.dirname(os.path.realpath(infilename))
         except FileNotFoundError:
             print("error while loading: file not found")
         except sgf.BadBoardSize:
@@ -289,17 +292,18 @@ class SGF_Board(tkinter.Canvas):
     # Other handlers...
 
     def opener(self, event = None):
-        infilename = tkinter.filedialog.askopenfilename()
+        infilename = tkinter.filedialog.askopenfilename(initialdir = self.directory)
         if infilename:
-            self.open_file(infilename)
+            self.open_file(infilename)      # this also sets self.directory to match the location
             self.node_changed()
 
     def saver(self, event = None):
-        outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
+        outfilename = tkinter.filedialog.asksaveasfilename(defaultextension = ".sgf", initialdir = self.directory)
         if outfilename:
             comment.commit_text()                   # tell the comment window that it must commit the comment
             sgf.save_file(outfilename, self.node)
             print("---> Saved: {}\n".format(outfilename))
+            self.directory = os.path.dirname(os.path.realpath(outfilename))
 
     def mouseclick_handler(self, event):
         x, y = board_pos_from_screen_pos(event.x, event.y, self.node.board.boardsize)
@@ -400,7 +404,6 @@ class Root(tkinter.Tk):
         global board
         board = SGF_Board(self, filename, width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
 
-        global menubar
         menubar = tkinter.Menu(self)
 
         new_board_menu = tkinter.Menu(menubar, tearoff = 0)
