@@ -309,11 +309,11 @@ class SGF_Board(tkinter.Canvas):
             self.node_changed()
 
     def new_board(self, size):
-        if self.node.parent or len(self.node.children) > 0:
-            ok = tkinter.messagebox.askokcancel("New board?", "Really start a new board? Unsaved changes will be lost!")
-        else:
-            ok = True
-        if ok:
+        # if self.node.parent or len(self.node.children) > 0:
+        #     ok = tkinter.messagebox.askokcancel("New board?", "Really start a new board? Unsaved changes will be lost!")
+        # else:
+        #     ok = True
+        # if ok:
             self.node = sgf.new_tree(size)
             self.node_changed()
 
@@ -342,7 +342,6 @@ class CommentWindow(tkinter.Toplevel):
 
         self.queue = queue.Queue()
         self.after(100, self.poller)
-
 
     def poller(self):
 
@@ -402,7 +401,7 @@ class Root(tkinter.Tk):
         else:
             filename = None
 
-        self.protocol("WM_DELETE_WINDOW", self.confirm_quit)
+        self.protocol("WM_DELETE_WINDOW", self.quit)
 
         global comment
         comment = CommentWindow()
@@ -437,10 +436,6 @@ class Root(tkinter.Tk):
 
         board.pack()
         board.focus_set()
-
-    def confirm_quit(self):
-        if tkinter.messagebox.askokcancel("Really quit?", "Really quit? Unsaved changes will be lost!"):
-            self.quit()
 
 
 if __name__ == "__main__":
