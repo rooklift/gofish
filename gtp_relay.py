@@ -1,5 +1,6 @@
-
-# Warning: this program is pretty basic and naive.
+# The challenge of this is making a nice GUI while not having races where (e.g.) a new board
+# is created while the engine is thinking. I use the simplest solution of disallowing all
+# human action while we await the engine's next move.
 
 
 import os, queue, subprocess, sys, threading
@@ -7,6 +8,8 @@ import tkinter, tkinter.filedialog, tkinter.messagebox
 
 import sgf
 from sgf import BLACK, WHITE, EMPTY
+
+colour_lookup = {BLACK: "black", WHITE: "white"}
 
 WIDTH, HEIGHT = 621, 621
 GAP = 31
@@ -39,7 +42,6 @@ def load_graphics():
     global markup_dict; markup_dict = {"TR": spriteTriangle, "CR": spriteCircle, "SQ": spriteSquare, "MA": spriteMark}
 
 # --------------------------------------------------------------------------------------
-# Currently everything that returns a value is outside the class...
 
 def screen_pos_from_board_pos(x, y, boardsize):
     gridsize = GAP * (boardsize - 1) + 1
@@ -77,7 +79,9 @@ def title_bar_string(node):
         title += " ({})".format(sgf.english_string_from_point(x, y, node.board.boardsize))
     return title
 
-def send_command(process, command, verbose = True):
+# --------------------------------------------------------------------------------------
+
+def send_command(command, verbose = True):
 
     if len(command) == 0 or command[-1] != "\n":
         command += "\n"
@@ -88,7 +92,7 @@ def send_command(process, command, verbose = True):
     process.stdin.write(bytearray(command, encoding="ascii"))
     process.stdin.flush()
 
-def get_reply(process, verbose = True):
+def get_reply(verbose = True):
 
     response = ""
 
@@ -106,83 +110,80 @@ def get_reply(process, verbose = True):
                     print(response)
                 return response
 
-def send_and_get(process, command, output_queue, verbose = True):
-
-    send_command(process, command, verbose)
-    response = get_reply(process)
-
-    if output_queue:
-        output_queue.put(response)
-
+def send_and_get(command):
+    send_command(command)
+    response = get_reply()
     return response
 
-def send_and_get_threaded(process, command, output_queue, verbose = True):
+# This will get run in a thread, communicating with the rest of the program via queues...
 
-    newthread = threading.Thread(target = send_and_get,
-                                 kwargs = {
-                                            "process": process,
-                                            "command": command,
-                                            "output_queue": output_queue,
-                                            "verbose": verbose
-                                           })
-    newthread.start()
+def relay():
+
+    while 1:
+        command = engine_in_queue.get()
+        send_command(command)
+        response = get_reply()
+
+        engine_out_queue.put(response)
 
 # --------------------------------------------------------------------------------------
 
 class GTP_GUI(tkinter.Canvas):
 
-    def __init__(self, owner, proc_args, *args, **kwargs):
+    def __init__(self, owner, *args, **kwargs):
         tkinter.Canvas.__init__(self, owner, *args, **kwargs)
         self.owner = owner
         self.bind("<Button-1>", self.mouseclick_handler)
         self.bind("<Key>", self.call_keypress_handler)
         self.bind("<Control-s>", self.saver)
-        self.process = subprocess.Popen(args = proc_args, stdin = subprocess.PIPE, stdout = subprocess.PIPE)    #, stderr = subprocess.DEVNULL)
+
+        self.awaiting_move = False
+        self.human_colour = BLACK
+        self.engine_colour = WHITE
 
         self.reset(19)
-        self.draw_node()
-
-        self.engine_output = queue.Queue()
 
         self.engine_msg_poller()
 
 
     def reset(self, size):
 
-        # FIXME: there may be big problems if this is called while the engine is thinking
+        if self.awaiting_move:
+            return
 
         self.node = sgf.new_tree(size)
 
         for cmd in ["boardsize {}".format(self.node.board.boardsize), "clear_board", "komi 0"]:
-            send_command(self.process, cmd)
-            get_reply(self.process)
+            send_command(cmd)
+            get_reply()
 
-        self.next_colour = BLACK
-        self.human_colour = BLACK
-        self.engine_colour = WHITE
+        if self.human_colour == BLACK:
+            statusbar.config(text = "Your move ({})".format(colour_lookup[self.human_colour]))
+        else:
+            command = "genmove {}".format(colour_lookup[self.engine_colour])
+            engine_in_queue.put(command)
+            self.need_to_wait()
 
         self.draw_node()
 
 
     def mouseclick_handler(self, event):
 
-        if self.next_colour == self.human_colour:
+        if not self.awaiting_move:
 
             x, y = board_pos_from_screen_pos(event.x, event.y, self.node.board.boardsize)
             result = self.node.try_move(x, y)
 
             if result:
-                self.next_colour = self.engine_colour
-
                 self.node = result
 
-                colour_lookup = {BLACK: "black", WHITE: "white"}
-
                 command = "play {} {}".format(colour_lookup[self.human_colour], sgf.english_string_from_point(x, y, self.node.board.boardsize))
-                send_and_get(self.process, command, output_queue = None)
+                send_and_get(command)
 
                 command = "genmove {}".format(colour_lookup[self.engine_colour])
-                send_and_get_threaded(self.process, command, output_queue = self.engine_output)
+                engine_in_queue.put(command)
+
+                self.need_to_wait()
 
                 self.draw_node()
 
@@ -191,13 +192,20 @@ class GTP_GUI(tkinter.Canvas):
         self.after(100, self.engine_msg_poller)     # Add a callback here in 100 ms
         self.engine_move_handler()
 
+    # We just use the poller to get engine moves. Everything else doesn't use the
+    # other thread to send and receive.
 
     def engine_move_handler(self):
         try:
-            message = self.engine_output.get(block = False)
+            message = engine_out_queue.get(block = False)
         except queue.Empty:
             return
         if message[0] != "=":
+            print("ERROR: {}".format(message))
+            return
+
+        if not self.awaiting_move:
+            print("ERROR: got '{}' while NOT expecting move".format(message))
             return
 
         message = message[1:].strip()
@@ -205,40 +213,64 @@ class GTP_GUI(tkinter.Canvas):
         if len(message) in [2,3]:
             point = sgf.point_from_english_string(message, self.node.board.boardsize)
             if point is None:
+                print("ERROR: got '{}' while expecting move".format(message))
                 return
             else:
                 x, y = point
-            if self.next_colour != self.engine_colour:
-                print("ERROR: got move at unexpected time")
-                return
             result = self.node.try_move(x, y)
             if result is None:
                 print("ERROR: got illegal move {}".format(message))
                 return
         elif message.upper() == "PASS":
-            if self.next_colour != self.engine_colour:
-                print("ERROR: got move at unexpected time")
-                return
             result = self.node.make_pass()
         elif message.upper() == "RESIGN":
-            pass                                    # FIXME
+            result = self.node.make_pass()      # think this is OK
         else:
+            print("ERROR: got '{}' while expecting move".format(message))
             return
 
+        self.done_waiting()
+
         self.node = result
-        self.next_colour = self.human_colour
 
         self.draw_node()
 
         self.maybe_get_final_score()    # do this after the draw_node, as it might change the title bar
 
 
-    def maybe_get_final_score(self):
+    def swap_colours(self):
+        if self.awaiting_move:
+            return
 
+        self.human_colour, self.engine_colour = self.engine_colour, self.human_colour
+
+        command = "genmove {}".format(colour_lookup[self.engine_colour])
+        engine_in_queue.put(command)
+
+        self.need_to_wait()
+
+
+    def need_to_wait(self):     # Basically, prevent the user from doing anything
+        menubar.entryconfig("New", state = "disabled")
+        menubar.entryconfig("Pass", state = "disabled")
+        menubar.entryconfig("Swap colours", state = "disabled")
+        statusbar.config(text = "Awaiting move from engine")
+        self.awaiting_move = True
+
+
+    def done_waiting(self):
+        menubar.entryconfig("New", state = "normal")
+        menubar.entryconfig("Pass", state = "normal")
+        menubar.entryconfig("Swap colours", state = "normal")
+        statusbar.config(text = "Your move ({})".format(colour_lookup[self.human_colour]))
+        self.awaiting_move = False
+
+
+    def maybe_get_final_score(self):
         if self.node.move_was_pass():
             if self.node.parent:
                 if self.node.parent.move_was_pass():
-                    msg = send_and_get(self.process, "final_score", None, verbose = True)
+                    msg = send_and_get("final_score")
                     self.owner.wm_title("Score: " + msg[1:].strip())
 
 
@@ -325,55 +357,78 @@ class GTP_GUI(tkinter.Canvas):
 
     def handle_key_P(self):
 
-        if self.next_colour == self.human_colour:
+        if not self.awaiting_move:
 
             self.node = self.node.make_pass()
-            self.next_colour = self.engine_colour
 
             colour_lookup = {BLACK: "black", WHITE: "white"}
 
             command = "play {} pass".format(colour_lookup[self.human_colour])
-            send_and_get(self.process, command, output_queue = None)
+            send_and_get(command)
 
             command = "genmove {}".format(colour_lookup[self.engine_colour])
-            send_and_get_threaded(self.process, command, output_queue = self.engine_output)
+            engine_in_queue.put(command)
+
+            self.need_to_wait()
 
             self.draw_node()
 
-            # self.maybe_get_final_score()      # Maybe just do this when it's the engine passing
-
 # ---------------------------------------------------------------------------------------
 
+
+class Root(tkinter.Tk):
+    def __init__(self, *args, **kwargs):
+        tkinter.Tk.__init__(self, *args, **kwargs)
+
+        load_graphics()
+
+        self.resizable(width = False, height = False)
+
+        global statusbar
+        statusbar = tkinter.Label(self, text="test", bd = 0, anchor = tkinter.W)
+        statusbar.pack(side = tkinter.BOTTOM, fill = tkinter.X)
+
+        board = GTP_GUI(self, width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
+        board.pack()
+        board.focus_set()
+
+        global menubar
+        menubar = tkinter.Menu(self)
+
+        new_board_menu = tkinter.Menu(menubar, tearoff = 0)
+        new_board_menu.add_command(label="19x19", command = lambda : board.reset(19))
+        new_board_menu.add_command(label="17x17", command = lambda : board.reset(17))
+        new_board_menu.add_command(label="15x15", command = lambda : board.reset(15))
+        new_board_menu.add_command(label="13x13", command = lambda : board.reset(13))
+        new_board_menu.add_command(label="11x11", command = lambda : board.reset(11))
+        new_board_menu.add_command(label="9x9", command = lambda : board.reset(9))
+
+        menubar.add_cascade(label = "New", menu = new_board_menu)
+        menubar.add_command(label = "Pass", command = board.handle_key_P)
+        menubar.add_command(label = "Swap colours", command = board.swap_colours)
+
+        self.config(menu = menubar)
+
+        self.wm_title("Fohristiwhirl's GTP relay")
+
+
 if __name__ == "__main__":
-    print(MOTD)
-
-    window = tkinter.Tk()
-    window.resizable(width = False, height = False)
-
-    load_graphics()
 
     if len(sys.argv) < 2:
         print("Need an argument: the engine to run (it may also require more arguments)")
         sys.exit(1)
 
-    board = GTP_GUI(window, sys.argv[1:], width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
-    board.pack()
-    board.focus_set()
+    global process
+    process = subprocess.Popen(args = sys.argv[1:], stdin = subprocess.PIPE, stdout = subprocess.PIPE)    #, stderr = subprocess.DEVNULL)
 
-    menubar = tkinter.Menu(window)
+    global engine_in_queue
+    engine_in_queue = queue.Queue()
 
-    new_board_menu = tkinter.Menu(menubar, tearoff = 0)
-    new_board_menu.add_command(label="19x19", command = lambda : board.reset(19))
-    new_board_menu.add_command(label="17x17", command = lambda : board.reset(17))
-    new_board_menu.add_command(label="15x15", command = lambda : board.reset(15))
-    new_board_menu.add_command(label="13x13", command = lambda : board.reset(13))
-    new_board_menu.add_command(label="11x11", command = lambda : board.reset(11))
-    new_board_menu.add_command(label="9x9", command = lambda : board.reset(9))
+    global engine_out_queue
+    engine_out_queue = queue.Queue()
 
-    menubar.add_cascade(label = "New", menu = new_board_menu)
-    menubar.add_command(label = "Pass", command = board.handle_key_P)
+    print(MOTD)
 
-    window.config(menu = menubar)
-
-    window.wm_title("Fohristiwhirl's GTP relay")
-    window.mainloop()
+    threading.Thread(target = relay, daemon = True).start()    # The relay actually talks to the engine
+    app = Root()
+    app.mainloop()
