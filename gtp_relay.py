@@ -1,3 +1,7 @@
+
+# Warning: this program is pretty basic and naive.
+
+
 import os, queue, subprocess, sys, threading
 import tkinter, tkinter.filedialog, tkinter.messagebox
 
@@ -135,17 +139,19 @@ class GTP_GUI(tkinter.Canvas):
         self.bind("<Control-s>", self.saver)
         self.process = subprocess.Popen(args = proc_args, stdin = subprocess.PIPE, stdout = subprocess.PIPE)    #, stderr = subprocess.DEVNULL)
 
-        self.reset()
-        self.draw_node(tellowner = False)   # The mainloop in the owner hasn't started yet, dunno if sending event is safe
+        self.reset(19)
+        self.draw_node()
 
         self.engine_output = queue.Queue()
 
         self.engine_msg_poller()
 
 
-    def reset(self):
+    def reset(self, size):
 
-        self.node = sgf.new_tree(19)
+        # FIXME: there may be big problems if this is called while the engine is thinking
+
+        self.node = sgf.new_tree(size)
 
         for cmd in ["boardsize {}".format(self.node.board.boardsize), "clear_board", "komi 0"]:
             send_command(self.process, cmd)
@@ -154,6 +160,8 @@ class GTP_GUI(tkinter.Canvas):
         self.next_colour = BLACK
         self.human_colour = BLACK
         self.engine_colour = WHITE
+
+        self.draw_node()
 
 
     def mouseclick_handler(self, event):
@@ -233,14 +241,13 @@ class GTP_GUI(tkinter.Canvas):
                     send_and_get(self.process, "final_score", None, verbose = True)
 
 
-    def draw_node(self, tellowner = True):
+    def draw_node(self):
         self.delete(tkinter.ALL)              # DESTROY all!
         boardsize = self.node.board.boardsize
 
-        # Tell the owner that we drew...
+        # Set the title bar of the owning window
 
-        if tellowner:
-            self.owner.event_generate("<<boardwasdrawn>>", when="tail")
+        self.owner.wm_title(title_bar_string(self.node))
 
         # Draw the texture...
 
@@ -340,8 +347,6 @@ if __name__ == "__main__":
 
     window = tkinter.Tk()
     window.resizable(width = False, height = False)
-    window.geometry("{}x{}".format(WIDTH, HEIGHT))
-    window.bind("<<boardwasdrawn>>", lambda x: window.wm_title(title_bar_string(board.node)))
 
     load_graphics()
 
@@ -352,6 +357,20 @@ if __name__ == "__main__":
     board = GTP_GUI(window, sys.argv[1:], width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
     board.pack()
     board.focus_set()
+
+    menubar = tkinter.Menu(window)
+
+    new_board_menu = tkinter.Menu(menubar, tearoff = 0)
+    new_board_menu.add_command(label="19x19", command = lambda : board.reset(19))
+    new_board_menu.add_command(label="17x17", command = lambda : board.reset(17))
+    new_board_menu.add_command(label="15x15", command = lambda : board.reset(15))
+    new_board_menu.add_command(label="13x13", command = lambda : board.reset(13))
+    new_board_menu.add_command(label="11x11", command = lambda : board.reset(11))
+    new_board_menu.add_command(label="9x9", command = lambda : board.reset(9))
+
+    menubar.add_cascade(label = "New", menu = new_board_menu)
+
+    window.config(menu = menubar)
 
     window.wm_title("Fohristiwhirl's GTP relay")
     window.mainloop()
