@@ -326,7 +326,7 @@ class CommentWindow(tkinter.Toplevel):
         self.title("Comments")
         self.protocol("WM_DELETE_WINDOW", self.withdraw)
 
-        self.text_widget = tkinter.Text(self, width = 60, height = 10, bg = "black", fg = "white", insertbackground = "white", wrap = tkinter.WORD)
+        self.text_widget = tkinter.Text(self, width = 60, height = 10, bg = "#F0F0F0", wrap = tkinter.WORD)
         self.scrollbar = tkinter.Scrollbar(self)
 
         self.text_widget.pack(side = tkinter.LEFT, fill = tkinter.Y)
@@ -372,6 +372,20 @@ class CommentWindow(tkinter.Toplevel):
         self.node.commit_comments(s)
 
 
+class HelpWindow(tkinter.Toplevel):
+    def __init__(self, *args, **kwargs):
+
+        tkinter.Toplevel.__init__(self, *args, **kwargs)
+
+        self.resizable(width = False, height = False)
+
+        self.title("Help")
+        self.protocol("WM_DELETE_WINDOW", self.withdraw)
+
+        tkinter.Label(self, text = MOTD, justify = tkinter.LEFT).grid(row = 0, column = 0)
+        tkinter.Label(self, text = "  ").grid(row = 0, column = 1)
+
+
 class Root(tkinter.Tk):
     def __init__(self, *args, **kwargs):
 
@@ -394,6 +408,10 @@ class Root(tkinter.Tk):
         comment = CommentWindow()
         comment.withdraw()          # comment window starts hidden
 
+        global helpwindow
+        helpwindow = HelpWindow()
+        helpwindow.withdraw()
+
         global board
         board = SGF_Board(self, filename, width = WIDTH, height = HEIGHT, bd = 0, highlightthickness = 0)
 
@@ -413,6 +431,7 @@ class Root(tkinter.Tk):
         menubar.add_command(label = "Load", command = board.opener)
         menubar.add_command(label = "Save", command = board.saver)
         menubar.add_command(label = "Comments", command = comment.deiconify)
+        menubar.add_command(label = "Help", command = helpwindow.deiconify)
 
         self.config(menu = menubar)
 
