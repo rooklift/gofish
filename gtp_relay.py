@@ -184,7 +184,7 @@ class GTP_GUI(tkinter.Canvas):
                 command = "genmove {}".format(colour_lookup[self.engine_colour])
                 send_and_get_threaded(self.process, command, output_queue = self.engine_output)
 
-        self.draw_node()
+                self.draw_node()
 
 
     def engine_msg_poller(self):
