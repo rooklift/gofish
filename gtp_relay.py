@@ -271,6 +271,8 @@ class GTP_GUI(tkinter.Canvas):
         if self.node.move_was_pass():
             if self.node.parent:
                 if self.node.parent.move_was_pass():
+                    statusbar.config(text = "Asking engine for score")
+                    statusbar.update_idletasks()
                     msg = send_and_get("final_score")
                     self.owner.wm_title("Score: " + msg[1:].strip())
                     statusbar.config(text = "Score: " + msg[1:].strip())
