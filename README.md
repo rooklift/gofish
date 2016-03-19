@@ -4,9 +4,7 @@ Tools for the game of Go. [SGF](http://www.red-bean.com/sgf/) (Smart Game Format
 
     python gtp_relay.py gnugo --mode gtp
 
-But at this point, the SGF editor is more mature and functional than the GTP relay.
-
-For programmers, the most interesting part of all this is probably the SGF parser, **load_tree()** in `sgf.py`
+For programmers looking to do their own Go stuff, the most interesting part of all this is probably the SGF parser, **load_tree()** in `sgf.py`
 
 ## Notes on SGF as I understand it
 
