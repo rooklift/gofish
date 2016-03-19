@@ -167,12 +167,44 @@ class GTP_GUI(tkinter.Canvas):
         self.draw_node()
 
 
+    def handicap(self, h):
+        if self.awaiting_move:
+            return
+
+        self.node = sgf.new_tree(self.node.board.boardsize)
+
+        for cmd in ["boardsize {}".format(self.node.board.boardsize), "clear_board", "komi 0"]:
+            send_command(cmd)
+            get_reply()
+
+        send_command("fixed_handicap {}".format(h))
+        response = get_reply()
+
+        if response[0] == "?":
+            self.reset(self.node.board.boardsize)
+            return
+
+        english_points_list = response[1:].strip().split()
+        for p in english_points_list:
+            x, y = sgf.point_from_english_string(p, self.node.board.boardsize)
+            self.node.add_stone(BLACK, x, y)
+
+        if self.human_colour == WHITE:      # The reverse of normal; white goes first
+            statusbar.config(text = "Your move ({})".format(colour_lookup[self.human_colour]))
+        else:
+            command = "genmove {}".format(colour_lookup[self.engine_colour])
+            engine_in_queue.put(command)
+            self.need_to_wait()
+
+        self.draw_node()
+
+
     def mouseclick_handler(self, event):
 
         if not self.awaiting_move:
 
             x, y = board_pos_from_screen_pos(event.x, event.y, self.node.board.boardsize)
-            result = self.node.try_move(x, y)
+            result = self.node.try_move(x, y, colour = self.human_colour)
 
             if result:
                 self.node = result
@@ -218,7 +250,7 @@ class GTP_GUI(tkinter.Canvas):
                 return
             else:
                 x, y = point
-            result = self.node.try_move(x, y)
+            result = self.node.try_move(x, y, colour = self.engine_colour)
             if result is None:
                 print("ERROR: got illegal move {}".format(message))
                 return
@@ -253,6 +285,7 @@ class GTP_GUI(tkinter.Canvas):
 
     def need_to_wait(self):     # Basically, prevent the user from doing anything
         menubar.entryconfig("New", state = "disabled")
+        menubar.entryconfig("Handicap", state = "disabled")
         menubar.entryconfig("Pass", state = "disabled")
         menubar.entryconfig("Swap colours", state = "disabled")
         statusbar.config(text = "Awaiting move from engine")
@@ -261,6 +294,7 @@ class GTP_GUI(tkinter.Canvas):
 
     def done_waiting(self):
         menubar.entryconfig("New", state = "normal")
+        menubar.entryconfig("Handicap", state = "normal")
         menubar.entryconfig("Pass", state = "normal")
         menubar.entryconfig("Swap colours", state = "normal")
         statusbar.config(text = "Your move ({})".format(colour_lookup[self.human_colour]))
@@ -407,7 +441,19 @@ class Root(tkinter.Tk):
         new_board_menu.add_command(label="11x11", command = lambda : board.reset(11))
         new_board_menu.add_command(label="9x9", command = lambda : board.reset(9))
 
+
+        handicap_menu = tkinter.Menu(menubar, tearoff = 0)
+        handicap_menu.add_command(label="9", command = lambda : board.handicap(9))
+        handicap_menu.add_command(label="8", command = lambda : board.handicap(8))
+        handicap_menu.add_command(label="7", command = lambda : board.handicap(7))
+        handicap_menu.add_command(label="6", command = lambda : board.handicap(6))
+        handicap_menu.add_command(label="5", command = lambda : board.handicap(5))
+        handicap_menu.add_command(label="4", command = lambda : board.handicap(4))
+        handicap_menu.add_command(label="3", command = lambda : board.handicap(3))
+        handicap_menu.add_command(label="2", command = lambda : board.handicap(2))
+
         menubar.add_cascade(label = "New", menu = new_board_menu)
+        menubar.add_cascade(label = "Handicap", menu = handicap_menu)
         menubar.add_command(label = "Pass", command = board.handle_key_P)
         menubar.add_command(label = "Swap colours", command = board.swap_colours)
 

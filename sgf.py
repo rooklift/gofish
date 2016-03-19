@@ -465,6 +465,10 @@ class Node():
                 return BLACK
             if "W" in node.properties:
                 return WHITE
+            if "AB" in node.properties and "AW" not in node.properties:
+                return BLACK
+            if "AW" in node.properties and "AB" not in node.properties:
+                return WHITE
             if node.parent == None:
                 return None
             node = node.parent
@@ -491,8 +495,8 @@ class Node():
         child.update()
         return child
 
-    def try_move(self, x, y):       # Try the move and, if it's legal, create and return the child
-                                    # Don't use this while reading SGF, as even illegal moves should be allowed there
+    def try_move(self, x, y, colour = None):        # Try the move and, if it's legal, create and return the child
+                                                    # Don't use this while reading SGF, as even illegal moves should be allowed there
 
         if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
             return None
@@ -505,13 +509,16 @@ class Node():
             if child.what_was_the_move() == (x, y):
                 return child
 
-        # Colour is auto-determined by what colour the last move was...
+        # Colour can generally be auto-determined by what colour the last move was...
 
-        newcolour = WHITE if self.last_colour_played() == BLACK else BLACK      # If it was None we get BLACK
+        if colour == None:
+            colour = WHITE if self.last_colour_played() == BLACK else BLACK      # If it was None we get BLACK
+        else:
+            assert(colour in [BLACK, WHITE])
 
         # Check for legality...
 
-        testchild = self.make_child_from_move(newcolour, x, y, append = False)  # Won't get appended to this node as a real child
+        testchild = self.make_child_from_move(colour, x, y, append = False)  # Won't get appended to this node as a real child
         if self.parent:
             if testchild.board.state == self.parent.board.state:     # Ko
                 return None
@@ -520,7 +527,7 @@ class Node():
 
         # Make real child and return...
 
-        child = self.make_child_from_move(newcolour, x, y)
+        child = self.make_child_from_move(colour, x, y)
         return child
 
     def make_pass(self):
@@ -544,6 +551,23 @@ class Node():
         child.update()
         return child
 
+    def add_stone(self, colour, x, y):
+        assert(colour in [BLACK, WHITE])
+
+        s = string_from_point(x, y)
+
+        key = "AW" if colour == WHITE else "AB"
+
+        if key not in self.properties:
+            self.properties[key] = []
+
+        valuelist = self.properties[key]
+
+        if s in valuelist:
+            return
+
+        self.properties[key].append(s)
+        self.update()
 
 def load(filename):
 
