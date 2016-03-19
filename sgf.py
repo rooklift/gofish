@@ -560,12 +560,20 @@ class Node():
         return child
 
     def add_stone(self, colour, x, y):
+
+        # This is intended to be used on the root node to add handicap stones or setup
+        # for a problem. Otherwise it will generally raise an exception (e.g. if a move
+        # is present in the node, which it usually will be).
+
         assert(colour in [BLACK, WHITE])
 
         if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
             raise OffBoard
 
         if len(self.children) > 0:      # Can't add stones this way when the node has children (should we be able to?)
+            raise WrongNode
+
+        if "B" in self.properties or "W" in self.properties:
             raise WrongNode
 
         key = "AW" if colour == WHITE else "AB"
