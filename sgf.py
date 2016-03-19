@@ -7,6 +7,7 @@ EMPTY, BLACK, WHITE = 0, 1, 2
 class OffBoard(Exception): pass
 class BadBoardSize(Exception): pass
 class ParserFail(Exception): pass
+class WrongNode(Exception): pass
 
 
 def is_star_point(x, y, boardsize):
@@ -440,10 +441,14 @@ class Node():
                 break
         return node
 
-    def add_value(self, key, value):
+    def add_value(self, key, value):        # Note that, if improperly used, could lead to odd nodes like ;B[ab][cd]
         if key not in self.properties:
             self.properties[key] = []
-        self.properties[key].append(str(value))         # Strings are what are loaded from files, so just keep everything as so
+        if str(value) not in self.properties[key]:
+            self.properties[key].append(str(value))
+
+    def set_value(self, key, value):        # Like the above, but only allows the node to have 1 value for this key
+        self.properties[key] = [str(value)]
 
     def debug(self):
         self.board.dump()
@@ -484,6 +489,9 @@ class Node():
     def make_child_from_move(self, colour, x, y, append = True):
         assert(colour in [BLACK, WHITE])
 
+        if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
+            raise OffBoard
+
         if append:
             child = Node(parent = self)             # This automatically appends the child to this node
         else:
@@ -491,7 +499,7 @@ class Node():
         self.copy_state_to_child(child)
 
         key = "W" if colour == WHITE else "B"
-        child.add_value(key, string_from_point(x, y))
+        child.set_value(key, string_from_point(x, y))
         child.update()
         return child
 
@@ -534,39 +542,36 @@ class Node():
 
         # Colour is auto-determined by what colour the last move was...
 
-        newcolour = WHITE if self.last_colour_played() == BLACK else BLACK      # If it was None we get BLACK
+        colour = WHITE if self.last_colour_played() == BLACK else BLACK      # If it was None we get BLACK
 
         # if the pass already exists, just return the (first) relevant child...
 
         for child in self.children:
-            if child.move_colour() == newcolour:
+            if child.move_colour() == colour:
                 if child.move_was_pass():
                     return child
 
-        key = "W" if newcolour == WHITE else "B"
+        key = "W" if colour == WHITE else "B"
 
         child = Node(parent = self)
         self.copy_state_to_child(child)
-        child.add_value(key, "")
+        child.set_value(key, "")
         child.update()
         return child
 
     def add_stone(self, colour, x, y):
         assert(colour in [BLACK, WHITE])
 
-        s = string_from_point(x, y)
+        if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
+            raise OffBoard
+
+        if len(self.children) > 0:      # Can't add stones this way when the node has children (should we be able to?)
+            raise WrongNode
 
         key = "AW" if colour == WHITE else "AB"
+        s = string_from_point(x, y)
 
-        if key not in self.properties:
-            self.properties[key] = []
-
-        valuelist = self.properties[key]
-
-        if s in valuelist:
-            return
-
-        self.properties[key].append(s)
+        self.add_value(key, s)
         self.update()
 
 def load(filename):
@@ -598,7 +603,7 @@ def load(filename):
     root.is_main_line = True
     root.update_recursive()
 
-    root.properties["CA"] = ["UTF-8"]   # We don't append to the property list; we replace it with this; i.e. force UTF-8
+    root.set_value("CA", "UTF-8")   # Force UTF-8
 
     return root
 
@@ -610,10 +615,10 @@ def new_tree(size):
     root = Node(parent = None)
     root.board = Board(size)
     root.is_main_line = True
-    root.add_value("FF", 4)
-    root.add_value("GM", 1)
-    root.add_value("SZ", size)
-    root.add_value("CA", "UTF-8")
+    root.set_value("FF", 4)
+    root.set_value("GM", 1)
+    root.set_value("SZ", size)
+    root.set_value("CA", "UTF-8")
     return root
 
 
