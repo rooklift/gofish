@@ -193,7 +193,8 @@ class GTP_GUI(tkinter.Canvas):
         self.engine_move_handler()
 
     # We just use the poller to get engine moves. Everything else doesn't use the
-    # other thread to send and receive.
+    # other thread to send and receive. Everything else will just block while
+    # waiting for a response.
 
     def engine_move_handler(self):
         try:
@@ -272,6 +273,7 @@ class GTP_GUI(tkinter.Canvas):
                 if self.node.parent.move_was_pass():
                     msg = send_and_get("final_score")
                     self.owner.wm_title("Score: " + msg[1:].strip())
+                    statusbar.config(text = "Score: " + msg[1:].strip())
 
 
     def draw_node(self):
