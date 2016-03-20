@@ -241,6 +241,8 @@ class GTP_GUI(tkinter.Canvas):
             print("ERROR: got '{}' while NOT expecting move".format(message))
             return
 
+        resign_flag = False
+
         message = message[1:].strip()
 
         if len(message) in [2,3]:
@@ -257,7 +259,8 @@ class GTP_GUI(tkinter.Canvas):
         elif message.upper() == "PASS":
             result = self.node.make_pass()
         elif message.upper() == "RESIGN":
-            result = self.node.make_pass()      # think this is OK
+            result = self.node.make_pass()
+            resign_flag = True
         else:
             print("ERROR: got '{}' while expecting move".format(message))
             return
@@ -268,7 +271,11 @@ class GTP_GUI(tkinter.Canvas):
 
         self.draw_node()
 
-        self.maybe_get_final_score()    # do this after the draw_node, as it might change the title bar
+        if resign_flag:
+            self.owner.wm_title("Engine resigned")      # do this after the draw_node() so the title bar is set
+            statusbar.config(text = "Engine resigned")
+        else:
+            self.maybe_get_final_score()                # likewise
 
 
     def swap_colours(self):
@@ -440,6 +447,7 @@ class Root(tkinter.Tk):
         new_board_menu.add_command(label="13x13", command = lambda : board.reset(13))
         new_board_menu.add_command(label="11x11", command = lambda : board.reset(11))
         new_board_menu.add_command(label="9x9", command = lambda : board.reset(9))
+        new_board_menu.add_command(label="7x7", command = lambda : board.reset(7))
 
         handicap_menu = tkinter.Menu(menubar, tearoff = 0)
         handicap_menu.add_command(label="9", command = lambda : board.handicap(9))
