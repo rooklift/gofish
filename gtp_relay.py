@@ -118,9 +118,9 @@ def send_and_get(command):
 # This will get run in a thread, communicating with the rest of the program via queues...
 
 def relay():
-
     while 1:
         command = engine_in_queue.get()
+
         send_command(command)
         response = get_reply()
 
@@ -434,23 +434,12 @@ class Root(tkinter.Tk):
         menubar = tkinter.Menu(self)
 
         new_board_menu = tkinter.Menu(menubar, tearoff = 0)
-        new_board_menu.add_command(label="19x19", command = lambda : board.reset(19))
-        new_board_menu.add_command(label="17x17", command = lambda : board.reset(17))
-        new_board_menu.add_command(label="15x15", command = lambda : board.reset(15))
-        new_board_menu.add_command(label="13x13", command = lambda : board.reset(13))
-        new_board_menu.add_command(label="11x11", command = lambda : board.reset(11))
-        new_board_menu.add_command(label="9x9", command = lambda : board.reset(9))
-
+        for n in range(19, 8, -2):
+            new_board_menu.add_command(label = "{0}x{0}".format(n), command = lambda s = n: board.reset(s))
 
         handicap_menu = tkinter.Menu(menubar, tearoff = 0)
-        handicap_menu.add_command(label="9", command = lambda : board.handicap(9))
-        handicap_menu.add_command(label="8", command = lambda : board.handicap(8))
-        handicap_menu.add_command(label="7", command = lambda : board.handicap(7))
-        handicap_menu.add_command(label="6", command = lambda : board.handicap(6))
-        handicap_menu.add_command(label="5", command = lambda : board.handicap(5))
-        handicap_menu.add_command(label="4", command = lambda : board.handicap(4))
-        handicap_menu.add_command(label="3", command = lambda : board.handicap(3))
-        handicap_menu.add_command(label="2", command = lambda : board.handicap(2))
+        for n in range(9, 1, -1):
+            handicap_menu.add_command(label = str(n), command = lambda h = n : board.handicap(h))
 
         menubar.add_cascade(label = "New", menu = new_board_menu)
         menubar.add_cascade(label = "Handicap", menu = handicap_menu)
