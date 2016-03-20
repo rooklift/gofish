@@ -184,6 +184,8 @@ class GTP_GUI(tkinter.Canvas):
             self.reset(self.node.board.boardsize)
             return
 
+        self.node.set_value("HA", h)
+
         english_points_list = response[1:].strip().split()
         for p in english_points_list:
             x, y = sgf.point_from_english_string(p, self.node.board.boardsize)

@@ -10,6 +10,20 @@ class ParserFail(Exception): pass
 class WrongNode(Exception): pass
 
 
+handicap_points_19 = {
+    0: [],
+    1: [],
+    2: [(16,4), (4,16)],
+    3: [(16,4), (4,16), (16,16)],
+    4: [(16,4), (4,16), (16,16), (4, 4)],
+    5: [(16,4), (4,16), (16,16), (4, 4), (10, 10)],
+    6: [(16,4), (4,16), (16,16), (4, 4), (4, 10), (16, 10)],
+    7: [(16,4), (4,16), (16,16), (4, 4), (4, 10), (16, 10), (10, 10)],
+    8: [(16,4), (4,16), (16,16), (4, 4), (4, 10), (16, 10), (10, 4), (10, 16)],
+    9: [(16,4), (4,16), (16,16), (4, 4), (4, 10), (16, 10), (10, 4), (10, 16), (10, 10)]
+}
+
+
 def is_star_point(x, y, boardsize):
     good_x, good_y = False, False
 
@@ -602,10 +616,7 @@ def load(filename):
     except ParserFail:
         if filename[-4:].lower() == ".gib":
             print("Parsing as SGF failed, trying to parse as .GIB")
-            root = parse_gib(contents)
-            if len(root.children) == 0:
-                print("This didn't seem to work")
-                raise
+            root = parse_gib(contents)      # This itself can also raise ParserFail
         else:
             raise
 
@@ -703,11 +714,13 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
 
     if root is None:
         raise ParserFail
+
     return root, i + 1          # return characters read
 
 
 def parse_gib(gib):             # .gib is a file format used by the Tygem server, it's undocumented.
-                                # I know nothing about how it specifies board size, handicap, or variations.
+                                # I know nothing about how it specifies board size or variations.
+                                # I've inferred from other source code how it does handicaps.
     root = new_tree(19)
     node = root
 
@@ -715,6 +728,22 @@ def parse_gib(gib):             # .gib is a file format used by the Tygem server
 
     for line in lines:
         line = line.strip()
+
+        if line[0:3] == "INI":
+
+            if node is not root:
+                raise ParserFail
+
+            setup = line.split()
+            hcap = int(setup[3])
+            if hcap < 0 or hcap > 9:
+                raise ParserFail
+            if hcap >= 2:
+                node.set_value("HA", hcap)
+                stones = handicap_points_19[hcap]
+                for point in stones:
+                    node.add_stone(BLACK, point[0], point[1])
+
         if line[0:3] == "STO":
             move = line.split()
             colour = BLACK if move[3] == "1" else WHITE
@@ -725,6 +754,9 @@ def parse_gib(gib):             # .gib is a file format used by the Tygem server
             y = 19 - int(move[5])
 
             node = node.make_child_from_move(colour, x, y, append = True)
+
+    if len(root.children) == 0:     # We'll assume we failed in this case
+        raise ParserFail
 
     return root
 
