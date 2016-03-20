@@ -586,23 +586,34 @@ def load(filename):
 
     try:
         with open(filename, encoding="utf8") as infile:
-            sgf = infile.read()
+            contents = infile.read()
     except UnicodeDecodeError:
         print("Opening as UTF-8 failed, trying Latin-1\n")
         with open(filename, encoding="latin1") as infile:       # I think this can't actually fail, but it might corrupt
-            sgf = infile.read()
+            contents = infile.read()
 
     # FileNotFoundError is just allowed to bubble up
 
-    sgf = sgf.strip()
+    sgf = contents.strip()
     sgf = sgf.lstrip("(")       # the load_tree() function assumes the leading "(" has already been read and discarded
 
-    root, __ = load_tree(sgf, None)
+    try:
+        root, __ = load_tree(sgf, None)
+    except ParserFail:
+        if filename[-4:].lower() == ".gib":
+            print("Parsing as SGF failed, trying to parse as .GIB")
+            root = parse_gib(contents)
+            if len(root.children) == 0:
+                print("This didn't seem to work")
+                raise
+        else:
+            raise
 
     if "SZ" in root.properties:
         size = int(root.properties["SZ"][0])
     else:
         size = 19
+        root.set_value("SZ", "19")
 
     if size > 19 or size < 1:
         raise BadBoardSize
@@ -693,6 +704,29 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
     if root is None:
         raise ParserFail
     return root, i + 1          # return characters read
+
+
+def parse_gib(gib):             # .gib is a file format used by the Tygem server, it's undocumented.
+                                # I know nothing about how it specifies board size, handicap, or variations.
+    root = new_tree(19)
+    node = root
+
+    lines = gib.split("\n")
+
+    for line in lines:
+        line = line.strip()
+        if line[0:3] == "STO":
+            move = line.split()
+            colour = BLACK if move[3] == "1" else WHITE
+
+            # Allegedly the coordinate system numbers from the bottom left in range 0 to 18
+
+            x = int(move[4]) + 1
+            y = 19 - int(move[5])
+
+            node = node.make_child_from_move(colour, x, y, append = True)
+
+    return root
 
 
 def main():

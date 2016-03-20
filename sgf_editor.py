@@ -106,7 +106,10 @@ class SGF_Board(tkinter.Canvas):
     def open_file(self, infilename):
         try:
             self.node = sgf.load(infilename)
-            print("<--- Loaded: {}\n".format(infilename))
+            try:
+                print("<--- Loaded: {}\n".format(infilename))
+            except:
+                print("<--- Loaded: [ --- Exception when trying to print filename --- ]")
             self.node.dump(include_comments = False)
             print()
             self.directory = os.path.dirname(os.path.realpath(infilename))
@@ -302,7 +305,10 @@ class SGF_Board(tkinter.Canvas):
         if outfilename:
             comment.commit_text()                   # tell the comment window that it must commit the comment
             sgf.save_file(outfilename, self.node)
-            print("---> Saved: {}\n".format(outfilename))
+            try:
+                print("---> Saved: {}\n".format(outfilename))
+            except:
+                print("---> Saved: [ --- Exception when trying to print filename --- ]")
             self.directory = os.path.dirname(os.path.realpath(outfilename))
 
     def mouseclick_handler(self, event):
