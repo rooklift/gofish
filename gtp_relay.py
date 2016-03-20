@@ -447,7 +447,6 @@ class Root(tkinter.Tk):
         new_board_menu.add_command(label="13x13", command = lambda : board.reset(13))
         new_board_menu.add_command(label="11x11", command = lambda : board.reset(11))
         new_board_menu.add_command(label="9x9", command = lambda : board.reset(9))
-        new_board_menu.add_command(label="7x7", command = lambda : board.reset(7))
 
         handicap_menu = tkinter.Menu(menubar, tearoff = 0)
         handicap_menu.add_command(label="9", command = lambda : board.handicap(9))
