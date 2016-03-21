@@ -320,7 +320,7 @@ class Node():
                 return
 
     def fix_main_line_status(self):
-        if self.parent is None or self.parent.is_main_line:
+        if self.parent is None or (self.parent.is_main_line and self is self.parent.children[0]):
             self.is_main_line = True
         else:
             self.is_main_line = False
@@ -340,7 +340,7 @@ class Node():
                 return
 
     def copy_state_to_child(self, child):
-        if len(self.children) > 0:
+        if len(self.children) > 0:                  # there's no guarantee the child has actually been appended, hence this test
             if child is self.children[0]:
                 if self.is_main_line:
                     child.is_main_line = True
