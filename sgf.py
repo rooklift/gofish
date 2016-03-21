@@ -76,6 +76,8 @@ def points_from_points_string(s, boardsize):     # convert "aa" or "cd:jf" into 
 
 
 def string_from_point(x, y):
+    if x < 1 or x > 26 or y < 1 or y > 26:
+        raise ValueError
     s = ""
     s += chr(x + 96)
     s += chr(y + 96)
@@ -510,6 +512,7 @@ class Node():
             child = Node(parent = self)             # This automatically appends the child to this node
         else:
             child = Node(parent = None)
+
         self.copy_state_to_child(child)
 
         key = "W" if colour == WHITE else "B"
@@ -596,6 +599,21 @@ class Node():
         self.add_value(key, s)
         self.update()
 
+
+def new_tree(size):             # Returns a ready-to-use tree with board
+    if size > 19 or size < 1:
+        raise BadBoardSize
+
+    root = Node(parent = None)
+    root.board = Board(size)
+    root.is_main_line = True
+    root.set_value("FF", 4)
+    root.set_value("GM", 1)
+    root.set_value("CA", "UTF-8")
+    root.set_value("SZ", size)
+    return root
+
+
 def load(filename):
 
     try:
@@ -608,11 +626,8 @@ def load(filename):
 
     # FileNotFoundError is just allowed to bubble up
 
-    sgf = contents.strip()
-    sgf = sgf.lstrip("(")       # the load_tree() function assumes the leading "(" has already been read and discarded
-
     try:
-        root, __ = load_tree(sgf, None)
+        root, __ = parse_sgf(contents)
     except ParserFail:
         if filename[-4:].lower() == ".gib":
             print("Parsing as SGF failed, trying to parse as GIB")
@@ -623,6 +638,10 @@ def load(filename):
         else:
             raise
 
+    root.set_value("FF", 4)
+    root.set_value("GM", 1)
+    root.set_value("CA", "UTF-8")   # Force UTF-8
+
     if "SZ" in root.properties:
         size = int(root.properties["SZ"][0])
     else:
@@ -632,30 +651,25 @@ def load(filename):
     if size > 19 or size < 1:
         raise BadBoardSize
 
+    # The parsers just set up SGF keys and values in the nodes, but don't touch the board or other info like
+    # main line status and move count. We do that now:
+
     root.board = Board(size)
     root.is_main_line = True
     root.update_recursive()
 
-    root.set_value("CA", "UTF-8")   # Force UTF-8
-
     return root
 
 
-def new_tree(size):
-    if size > 19 or size < 1:
-        raise BadBoardSize
+def parse_sgf(sgf):
+    sgf = sgf.strip()
+    sgf = sgf.lstrip("(")       # the load_sgf_tree() function assumes the leading "(" has already been read and discarded
 
-    root = Node(parent = None)
-    root.board = Board(size)
-    root.is_main_line = True
-    root.set_value("FF", 4)
-    root.set_value("GM", 1)
-    root.set_value("SZ", size)
-    root.set_value("CA", "UTF-8")
+    root = load_sgf_tree(sgf, None)
     return root
 
 
-def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is no leading "("
+def load_sgf_tree(sgf, parent_of_local_root):   # The caller should ensure there is no leading "("
 
     root = None
     node = None
@@ -695,7 +709,7 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
             elif c == "(":
                 if node is None:
                     raise ParserFail
-                __, chars_to_skip = load_tree(sgf[i + 1:], node)    # The child function will append the new tree to the node
+                __, chars_to_skip = load_sgf_tree(sgf[i + 1:], node)    # The child function will append the new tree to the node
             elif c == ")":
                 if root is None:
                     raise ParserFail
@@ -724,7 +738,8 @@ def load_tree(sgf, parent_of_local_root):   # The caller should ensure there is 
 def parse_gib(gib):             # .gib is a file format used by the Tygem server, it's undocumented.
                                 # I know nothing about how it specifies board size or variations.
                                 # I've inferred from other source code how it does handicaps.
-    root = new_tree(19)
+
+    root = Node(parent = None)
     node = root
 
     lines = gib.split("\n")
@@ -738,18 +753,26 @@ def parse_gib(gib):             # .gib is a file format used by the Tygem server
                 raise ParserFail
 
             setup = line.split()
-            handicap = int(setup[3])
+
+            try:
+                handicap = int(setup[3])
+            except IndexError:
+                continue
+
             if handicap < 0 or handicap > 9:
                 raise ParserFail
+
             if handicap >= 2:
                 node.set_value("HA", handicap)
                 stones = handicap_points_19[handicap]
                 for point in stones:
-                    node.add_stone(BLACK, point[0], point[1])
+                    node.add_value("AB", string_from_point(point[0], point[1]))
 
         if line[0:3] == "STO":
+
             move = line.split()
-            colour = BLACK if move[3] == "1" else WHITE
+
+            key = "B" if move[3] == "1" else "W"
 
             # Although one source claims the coordinate system numbers from the bottom left in range 0 to 18,
             # various other pieces of evidence lead me to believe it numbers from the top left (like SGF).
@@ -758,11 +781,16 @@ def parse_gib(gib):             # .gib is a file format used by the Tygem server
             try:
                 x = int(move[4]) + 1
                 y = int(move[5]) + 1
-                node = node.make_child_from_move(colour, x, y, append = True)
             except IndexError:
-                pass
-            except OffBoard:
-                pass
+                continue
+
+            try:
+                value = string_from_point(x, y)
+            except ValueError:
+                continue
+
+            node = Node(parent = node)
+            node.set_value(key, value)
 
     if len(root.children) == 0:     # We'll assume we failed in this case
         raise ParserFail
@@ -787,15 +815,14 @@ def parse_ngf(ngf):             # Another poorly documented file format
     if boardsize < 19 and handicap:     # Can't be bothered
         raise ParserFail
 
-    root = new_tree(boardsize)
+    root = Node(parent = None)
+    node = root
 
     if handicap >= 2:
-        root.set_value("HA", handicap)
+        node.set_value("HA", handicap)
         stones = handicap_points_19[handicap]
         for point in stones:
-            root.add_stone(BLACK, point[0], point[1])
-
-    node = root
+            node.add_value("AB", string_from_point(point[0], point[1]))
 
     for line in lines:
         line = line.strip().upper()
@@ -803,19 +830,24 @@ def parse_ngf(ngf):             # Another poorly documented file format
         if len(line) >= 7:
             if line[0:2] == "PM":
                 if line[4] in ["B", "W"]:
-                    colour = BLACK if line[4] == "B" else WHITE
+
+                    key = line[4]
 
                     # Not at all sure, but assuming coordinates from top left.
 
                     # Also, coordinates are from 1-19, but with "B" representing
                     # the digit 1. (Presumably A would represent 0.)
 
+                    x = ord(line[5]) - 65
+                    y = ord(line[6]) - 65
+
                     try:
-                        x = ord(line[5]) - 65
-                        y = ord(line[6]) - 65
-                        node = node.make_child_from_move(colour, x, y, append = True)
-                    except OffBoard:
-                        pass
+                        value = string_from_point(x, y)
+                    except ValueError:
+                        continue
+
+                    node = Node(parent = node)
+                    node.set_value(key, value)
 
     if len(root.children) == 0:     # We'll assume we failed in this case
         raise ParserFail
