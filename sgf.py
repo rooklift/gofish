@@ -627,7 +627,7 @@ def load(filename):
     # FileNotFoundError is just allowed to bubble up
 
     try:
-        root, __ = parse_sgf(contents)
+        root = parse_sgf(contents)
     except ParserFail:
         if filename[-4:].lower() == ".gib":
             print("Parsing as SGF failed, trying to parse as GIB")
@@ -665,7 +665,7 @@ def parse_sgf(sgf):
     sgf = sgf.strip()
     sgf = sgf.lstrip("(")       # the load_sgf_tree() function assumes the leading "(" has already been read and discarded
 
-    root = load_sgf_tree(sgf, None)
+    root, __ = load_sgf_tree(sgf, None)
     return root
 
 
