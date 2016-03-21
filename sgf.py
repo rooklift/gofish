@@ -748,8 +748,9 @@ def parse_gib(gib):             # .gib is a file format used by the Tygem server
             move = line.split()
             colour = BLACK if move[3] == "1" else WHITE
 
-            # Someone says the coordinate system numbers from the bottom left in range 0 to 18,
-            # however I found a handicap 3 file which suggested it numbered from top left.
+            # Although one source claims the coordinate system numbers from the bottom left in range 0 to 18,
+            # various other pieces of evidence lead me to believe it numbers from the top left (like SGF).
+            # In particular, I tested some .gib files on http://gokifu.com
 
             x = int(move[4]) + 1
             y = int(move[5]) + 1
