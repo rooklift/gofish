@@ -101,7 +101,7 @@ class SGF_Board(tkinter.Canvas):
         if filename is not None:
             self.open_file(filename)
 
-        self.node_changed(set_comment = False)
+        self.node_changed()
 
     def open_file(self, infilename):
         try:
@@ -181,10 +181,10 @@ class SGF_Board(tkinter.Canvas):
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
 
-    def node_changed(self, set_comment = True):
+    def node_changed(self):
         self.draw_node()
-        if set_comment:
-            comment.node_changed()
+        commentwindow.node_changed(self.node)
+        infowindow.node_changed(self.node)
         self.owner.wm_title(title_bar_string(self.node))
 
     # --------------------------------------------------------------------------------------
@@ -303,7 +303,8 @@ class SGF_Board(tkinter.Canvas):
     def saver(self, event = None):
         outfilename = tkinter.filedialog.asksaveasfilename(defaultextension = ".sgf", initialdir = self.directory)
         if outfilename:
-            comment.commit_text()                   # tell the comment window that it must commit the comment
+            commentwindow.commit_text()             # tell the comment window that it must commit the comment
+            infowindow.commit_info()                # likewise for the info window
             sgf.save_file(outfilename, self.node)
             try:
                 print("---> Saved: {}\n".format(outfilename))
@@ -350,9 +351,7 @@ class CommentWindow(tkinter.Toplevel):
 
         self.node = sgf.Node(None)  # This is just a dummy node until we get a real one.
 
-    def node_changed(self):
-
-        newnode = board.node
+    def node_changed(self, newnode):
 
         if newnode is self.node:
             return
@@ -360,14 +359,94 @@ class CommentWindow(tkinter.Toplevel):
         self.commit_text()
         self.node = newnode
 
-        s = self.node.get_comments()
+        s = self.node.get_unescaped_concat("C")
 
         self.text_widget.delete(1.0, tkinter.END)
         self.text_widget.insert(tkinter.END, s)
 
     def commit_text(self):
         s = self.text_widget.get(1.0, tkinter.END).strip()
-        self.node.commit_comments(s)
+        self.node.safe_commit("C", s)
+
+
+class InfoWindow(tkinter.Toplevel):
+    def __init__(self, *args, **kwargs):
+
+        tkinter.Toplevel.__init__(self, *args, **kwargs)
+        self.title("Game Info")
+        self.protocol("WM_DELETE_WINDOW", self.withdraw)
+
+        self.resizable(width = False, height = False)
+
+        tkinter.Label(self, text="Player Black").grid(column = 0, row = 0)
+        tkinter.Label(self, text="Player White").grid(column = 0, row = 1)
+        tkinter.Label(self, text="Rank").grid(column = 2, row = 0)
+        tkinter.Label(self, text="Rank").grid(column = 2, row = 1)
+
+        self.pb_widget = tkinter.Entry(self, width = 30)
+        self.pw_widget = tkinter.Entry(self, width = 30)
+        self.br_widget = tkinter.Entry(self, width = 10)
+        self.wr_widget = tkinter.Entry(self, width = 10)
+
+        self.pb_widget.grid(column = 1, row = 0)
+        self.pw_widget.grid(column = 1, row = 1)
+        self.br_widget.grid(column = 3, row = 0)
+        self.wr_widget.grid(column = 3, row = 1)
+
+        tkinter.Label(self, text="").grid(column = 0, columnspan = 4, row = 2)
+        tkinter.Label(self, text="Result").grid(column = 0, row = 3)
+        self.re_widget = tkinter.Entry(self, width = 30)
+        self.re_widget.grid(column = 1, row = 3)
+
+        self.root = sgf.Node(None)  # This is just a dummy node until we get a real one.
+
+    def node_changed(self, node):
+
+        # For simplicity, this widget gets notified every time the viewer's node changes,
+        # regardless of whether the root is still the same. So we need to check for that.
+
+        newroot = node.get_root_node()
+        if newroot is self.root:
+            return
+
+        self.commit_info()
+        self.root = newroot
+
+        pb = self.root.get_unescaped_concat("PB")
+        self.pb_widget.delete(0, tkinter.END)
+        self.pb_widget.insert(tkinter.END, pb)
+
+        pw = self.root.get_unescaped_concat("PW")
+        self.pw_widget.delete(0, tkinter.END)
+        self.pw_widget.insert(tkinter.END, pw)
+
+        br = self.root.get_unescaped_concat("BR")
+        self.br_widget.delete(0, tkinter.END)
+        self.br_widget.insert(tkinter.END, br)
+
+        wr = self.root.get_unescaped_concat("WR")
+        self.wr_widget.delete(0, tkinter.END)
+        self.wr_widget.insert(tkinter.END, wr)
+
+        re = self.root.get_unescaped_concat("RE")
+        self.re_widget.delete(0, tkinter.END)
+        self.re_widget.insert(tkinter.END, re)
+
+    def commit_info(self):
+        pb = self.pb_widget.get().strip()
+        self.root.safe_commit("PB", pb)
+
+        pw = self.pw_widget.get().strip()
+        self.root.safe_commit("PW", pw)
+
+        br = self.br_widget.get().strip()
+        self.root.safe_commit("BR", br)
+
+        wr = self.wr_widget.get().strip()
+        self.root.safe_commit("WR", wr)
+
+        re = self.re_widget.get().strip()
+        self.root.safe_commit("RE", re)
 
 
 class HelpWindow(tkinter.Toplevel):
@@ -399,9 +478,13 @@ class Root(tkinter.Tk):
 
         self.protocol("WM_DELETE_WINDOW", self.quit)
 
-        global comment
-        comment = CommentWindow()
-        comment.withdraw()          # comment window starts hidden
+        global commentwindow
+        commentwindow = CommentWindow()
+        commentwindow.withdraw()    # comment window starts hidden
+
+        global infowindow
+        infowindow = InfoWindow()
+        infowindow.withdraw()       # info window starts hidden
 
         global helpwindow
         helpwindow = HelpWindow()
@@ -424,15 +507,14 @@ class Root(tkinter.Tk):
 
         menubar.add_command(label = "Load", command = board.opener)
         menubar.add_command(label = "Save", command = board.saver)
-        menubar.add_command(label = "Comments", command = comment.deiconify)
+        menubar.add_command(label = "Comments", command = commentwindow.deiconify)
+        menubar.add_command(label = "Info", command = infowindow.deiconify)
         menubar.add_command(label = "Help", command = helpwindow.deiconify)
 
         self.config(menu = menubar)
 
         board.pack()
         board.focus_set()
-
-        board.node_changed()    # This triggers an update of the comment window so it points at the first node
 
 
 if __name__ == "__main__":

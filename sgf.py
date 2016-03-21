@@ -131,6 +131,16 @@ def adjacent_points(x, y, boardsize):
     return result
 
 
+def safe_string(s):     # "safe" meaning safely escaped \ and ] characters
+    s = str(s)
+    safe_s = ""
+    for ch in s:
+        if ch in ["\\", "]"]:
+            safe_s += "\\"
+        safe_s += ch
+    return safe_s
+
+
 def save_file(filename, node):
     node = node.get_root_node()
     with open(filename, "w", encoding="utf-8") as outfile:
@@ -275,9 +285,7 @@ class Node():
                     x = ord(movestring[0]) - 96
                     y = ord(movestring[1]) - 96
                     self.board.play_move(movers[mover], x, y)
-                except IndexError:
-                    pass
-                except OffBoard:
+                except (IndexError, OffBoard):
                     pass
                 self.moves_made += 1        # Consider off-board / passing moves as moves for counting purposes
                                             # (incidentally, old SGF sometimes uses an off-board move to mean pass)
@@ -353,9 +361,7 @@ class Node():
                 print()
 
     def print_comments(self):
-
-        s = self.get_comments()
-
+        s = self.get_unescaped_concat("C")
         if s:
             print("[{}] ".format(self.moves_made), end="")
             for ch in s:
@@ -365,10 +371,10 @@ class Node():
                     print("?", end="")
             print("\n")
 
-    def get_comments(self):     # Return the comments but dropping escape backslashes
+    def get_unescaped_concat(self, key):
         s = ""
-        if "C" in self.properties:
-            for value in self.properties["C"]:
+        if key in self.properties:
+            for value in self.properties[key]:
                 escape_mode = False
                 for ch in value:
                     if escape_mode:
@@ -379,17 +385,13 @@ class Node():
                     s += ch
         return s
 
-    def commit_comments(self, s):
-        safe_s = ""
-        for ch in s:
-            if ch in ["\\", "]"]:
-                safe_s += "\\"
-            safe_s += ch
+    def safe_commit(self, key, value):      # Note: destroys the key if value is ""
+        safe_s = safe_string(value)
         if safe_s:
-            self.properties["C"] = [safe_s]
+            self.properties[key] = [safe_s]
         else:
             try:
-                self.properties.pop("C")
+                self.properties.pop(key)
             except KeyError:
                 pass
 
@@ -806,7 +808,7 @@ def parse_ngf(ngf):             # Another poorly documented file format
     try:
         boardsize = int(lines[1])
         handicap = int(lines[5])
-    except:
+    except (IndexError, ValueError):
         raise ParserFail
 
     if boardsize < 1 or boardsize > 19 or handicap < 0 or handicap > 9:
@@ -836,7 +838,7 @@ def parse_ngf(ngf):             # Another poorly documented file format
                     # Not at all sure, but assuming coordinates from top left.
 
                     # Also, coordinates are from 1-19, but with "B" representing
-                    # the digit 1. (Presumably A would represent 0.)
+                    # the digit 1. (Presumably "A" would represent 0.)
 
                     x = ord(line[5]) - 65
                     y = ord(line[6]) - 65
