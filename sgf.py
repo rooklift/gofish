@@ -517,7 +517,7 @@ class Node():
         child.update()
         return child
 
-    def try_move(self, x, y, colour = None):        # Try the move and, if it's legal, create and return the child
+    def try_move(self, x, y, colour = None):        # Try the move... if it's legal, create and return the child; else return None
                                                     # Don't use this while reading SGF, as even illegal moves should be allowed there
 
         if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
@@ -615,8 +615,11 @@ def load(filename):
         root, __ = load_tree(sgf, None)
     except ParserFail:
         if filename[-4:].lower() == ".gib":
-            print("Parsing as SGF failed, trying to parse as .GIB")
+            print("Parsing as SGF failed, trying to parse as GIB")
             root = parse_gib(contents)      # This itself can also raise ParserFail
+        elif filename[-4:].lower() == ".ngf":
+            print("Parsing as SGF failed, trying to parse as NGF")
+            root = parse_ngf(contents)      # This itself can also raise ParserFail
         else:
             raise
 
@@ -735,12 +738,12 @@ def parse_gib(gib):             # .gib is a file format used by the Tygem server
                 raise ParserFail
 
             setup = line.split()
-            hcap = int(setup[3])
-            if hcap < 0 or hcap > 9:
+            handicap = int(setup[3])
+            if handicap < 0 or handicap > 9:
                 raise ParserFail
-            if hcap >= 2:
-                node.set_value("HA", hcap)
-                stones = handicap_points_19[hcap]
+            if handicap >= 2:
+                node.set_value("HA", handicap)
+                stones = handicap_points_19[handicap]
                 for point in stones:
                     node.add_stone(BLACK, point[0], point[1])
 
@@ -752,10 +755,67 @@ def parse_gib(gib):             # .gib is a file format used by the Tygem server
             # various other pieces of evidence lead me to believe it numbers from the top left (like SGF).
             # In particular, I tested some .gib files on http://gokifu.com
 
-            x = int(move[4]) + 1
-            y = int(move[5]) + 1
+            try:
+                x = int(move[4]) + 1
+                y = int(move[5]) + 1
+                node = node.make_child_from_move(colour, x, y, append = True)
+            except IndexError:
+                pass
+            except OffBoard:
+                pass
 
-            node = node.make_child_from_move(colour, x, y, append = True)
+    if len(root.children) == 0:     # We'll assume we failed in this case
+        raise ParserFail
+
+    return root
+
+
+def parse_ngf(ngf):             # Another poorly documented file format
+
+    ngf = ngf.strip()
+    lines = ngf.split("\n")
+
+    try:
+        boardsize = int(lines[1])
+        handicap = int(lines[5])
+    except:
+        raise ParserFail
+
+    if boardsize < 1 or boardsize > 19 or handicap < 0 or handicap > 9:
+        raise ParserFail
+
+    if boardsize < 19 and handicap:     # Can't be bothered
+        raise ParserFail
+
+    root = new_tree(boardsize)
+
+    if handicap >= 2:
+        root.set_value("HA", handicap)
+        stones = handicap_points_19[handicap]
+        for point in stones:
+            root.add_stone(BLACK, point[0], point[1])
+
+    node = root
+
+    for line in lines:
+        line = line.strip().upper()
+
+        if len(line) >= 7:
+            if line[0:2] == "PM":
+                if line[4] in ["B", "W"]:
+                    colour = BLACK if line[4] == "B" else WHITE
+
+                    # Not at all sure, but assuming coordinates from top left.
+
+                    # Also, coordinates are from 1-19, but with "B" representing
+                    # the digit 1. (Presumably A would represent 0.)
+
+                    try:
+                        x = ord(line[5]) - 65
+                        y = ord(line[6]) - 65
+                        node = node.make_child_from_move(colour, x, y, append = True)
+                    except OffBoard:
+                        pass
 
     if len(root.children) == 0:     # We'll assume we failed in this case
         raise ParserFail
