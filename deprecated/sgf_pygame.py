@@ -2,7 +2,7 @@ import os, pygame, sys
 import tkinter, tkinter.filedialog, tkinter.messagebox
 from pygame.locals import *
 
-import sgf
+import gofish as sgf
 
 MOTD = """
   Fohristiwhirl's SGF readwriter. Keys:
@@ -173,7 +173,10 @@ def main():
 
     try:
         node = sgf.load(sys.argv[1])
-        print("<--- Loaded: {}\n".format(sys.argv[1]))
+        try:
+            print("<--- Loaded: {}\n".format(infilename))
+        except:
+            print("<--- Loaded: --- Exception when trying to print filename ---")
         node.dump(include_comments = False)
         print()
         node.print_comments()
@@ -297,7 +300,10 @@ def main():
             outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
             if outfilename:
                 sgf.save_file(outfilename, node)
-                print("---> Saved: {}\n".format(outfilename))
+                try:
+                    print("---> Saved: {}\n".format(outfilename))
+                except:
+                    print("---> Saved: --- Exception when trying to print filename ---")
 
         if keyboard.get(K_l, 0):
             keyboard[K_l] = 0
@@ -306,7 +312,10 @@ def main():
                 try:
                     node = sgf.load(infilename)
                     make_spriteGoban(node.board.boardsize)
-                    print("<--- Loaded: {}\n".format(infilename))
+                    try:
+                        print("<--- Loaded: {}\n".format(infilename))
+                    except:
+                        print("<--- Loaded: --- Exception when trying to print filename ---")
                     node.dump(include_comments = False)
                     print()
                     node.print_comments()
