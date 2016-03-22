@@ -2,7 +2,6 @@
 # is created while the engine is thinking. I use the simplest solution of disallowing all
 # human action while we await the engine's next move.
 
-
 import os, queue, subprocess, sys, threading
 import tkinter, tkinter.filedialog, tkinter.messagebox
 

@@ -2,6 +2,7 @@ import os, sys
 import tkinter, tkinter.filedialog, tkinter.messagebox
 
 import gofish
+from gofish import BLACK, WHITE
 
 WIDTH, HEIGHT = 621, 621
 GAP = 31
@@ -152,9 +153,9 @@ class SGF_Board(tkinter.Canvas):
         for x in range(1, self.node.board.boardsize + 1):
             for y in range(1, self.node.board.boardsize + 1):
                 screen_x, screen_y = screen_pos_from_board_pos(x, y, self.node.board.boardsize)
-                if self.node.board.state[x][y] == gofish.BLACK:
+                if self.node.board.state[x][y] == BLACK:
                     self.create_image(screen_x, screen_y, image = spriteBlack)
-                elif self.node.board.state[x][y] == gofish.WHITE:
+                elif self.node.board.state[x][y] == WHITE:
                     self.create_image(screen_x, screen_y, image = spriteWhite)
 
         # Draw a mark at the current move, if there is one...
