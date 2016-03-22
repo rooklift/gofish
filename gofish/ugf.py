@@ -81,6 +81,12 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
             elif line.upper().startswith("PLACE="):
                 root.safe_commit("PC", line[6:])
 
+            elif line.upper().startswith("WINNER=B"):
+                root.safe_commit("RE", "B+")
+
+            elif line.upper().startswith("WINNER=W"):
+                root.safe_commit("RE", "W+")
+
         elif section == "[DATA]":
 
             line = line.upper()
