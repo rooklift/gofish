@@ -68,7 +68,7 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
                     continue
 
             elif line.upper().startswith("COORDINATETYPE="):
-                coordinate_type = line.upper().split("=")[1].split(",")[0]  # Think this can't IndexError
+                coordinate_type = line.split("=")[1].upper()
 
             # Note that the properties that aren't being converted to int/float need to use the .safe_commit() method...
 
