@@ -27,7 +27,12 @@ def load_graphics():
     # PhotoImages have a tendency to get garbage-collected even when they're needed.
     # Avoid this by making them globals, so there's always a reference to them.
 
-    global spriteTexture; spriteTexture = tkinter.PhotoImage(file = "gfx/texture.gif")
+    global spriteTexture
+    try:
+        spriteTexture = tkinter.PhotoImage(file = "gfx/texture_override.gif")
+    except:
+        spriteTexture = tkinter.PhotoImage(file = "gfx/texture.gif")
+
     global spriteBlack; spriteBlack = tkinter.PhotoImage(file = "gfx/black.gif")
     global spriteWhite; spriteWhite = tkinter.PhotoImage(file = "gfx/white.gif")
     global spriteHoshi; spriteHoshi = tkinter.PhotoImage(file = "gfx/hoshi.gif")

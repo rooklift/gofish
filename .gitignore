@@ -1,6 +1,5 @@
 __pycache__/
-gfx/texture2.gif
-gfx/texture3.gif
+gfx/texture_override.gif
 *.sgf
 *.exe
 *.dll
