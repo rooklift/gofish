@@ -8,6 +8,8 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
     boardsize = None
     handicap = None
 
+    handicap_stones_set = 0
+
     coordinate_type = ""
 
     lines = ugf.split("\n")
@@ -62,10 +64,13 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
             except IndexError:
                 continue
 
+            try:
+                node_chr = slist[2][0]
+            except IndexError:
+                node_chr = ""
+
             if colour not in ["B", "W"]:
                 continue
-
-            key = colour
 
             if coordinate_type == "IGS":        # apparently "IGS" format is from the bottom left
                 x = ord(x_chr) - 64
@@ -79,8 +84,16 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
             except ValueError:
                 continue
 
-            node = Node(parent = node)
-            node.set_value(key, value)
+            # In case of the initial handicap placement, don't create a new node...
+
+            if handicap >= 2 and handicap_stones_set != handicap and node_chr == "0" and colour == "B" and node is root:
+                handicap_stones_set += 1
+                key = "AB"
+                node.add_value(key, value)      # add_value not set_value
+            else:
+                node = Node(parent = node)
+                key = colour
+                node.set_value(key, value)
 
 
     if root is None:
