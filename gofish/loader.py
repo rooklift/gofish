@@ -8,13 +8,8 @@ from gofish.ugf import *
 
 def load(filename):
 
-    try:
-        with open(filename, encoding="utf8") as infile:
-            contents = infile.read()
-    except UnicodeDecodeError:
-        print("Opening as UTF-8 failed, trying Latin-1")
-        with open(filename, encoding="latin1") as infile:       # I think this can't actually fail, but it might corrupt
-            contents = infile.read()
+    with open(filename, encoding="utf8", errors="replace") as infile:
+        contents = infile.read()
 
     # FileNotFoundError is just allowed to bubble up
 
