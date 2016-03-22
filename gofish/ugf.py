@@ -22,20 +22,22 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
 
     for line in lines:
 
-        line = line.strip().upper()     # Note this
+        line = line.strip()
 
         try:
             if line[0] == "[" and line[-1] == "]":
-                section = line
 
-                if section == "[DATA]":     # Check that the header contained all needed info
+                section = line.upper()
+
+                if section == "[DATA]":
+
+                    # Since we're entering the data section, we need to ensure we have
+                    # gotten sane info from the header; check this now...
 
                     if handicap is None or boardsize is None:
                         raise ParserFail
                     if boardsize < 1 or boardsize > 19 or handicap < 0:
                         raise ParserFail
-                    if handicap >= 2:       # Set the header - but the actual stones get set in data section
-                        root.set_value("HA", handicap)
 
                 continue
 
@@ -44,24 +46,44 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
 
         if section == "[HEADER]":
 
-            if line.startswith("HDCP="):
-                sval = line.split("=")[1].split(",")[0]  # Think this can't IndexError
+            if line.upper().startswith("HDCP="):
                 try:
-                    handicap = int(sval)
+                    handicap_str = line.split("=")[1].split(",")[0]
+                    handicap = int(handicap_str)
+                    if handicap >= 2:
+                        root.set_value("HA", handicap)
+
+                    komi_str = line.split("=")[1].split(",")[1]
+                    komi = float(komi_str)
+                    root.set_value("KM", komi)
                 except:
                     continue
 
-            elif line.startswith("SIZE="):
+            elif line.upper().startswith("SIZE="):
                 sval = line.split("=")[1].split(",")[0]  # Think this can't IndexError
                 try:
                     boardsize = int(sval)
+                    root.set_value("SZ", boardsize)
                 except:
                     continue
 
-            elif line.startswith("COORDINATETYPE="):
-                coordinate_type = line.split("=")[1].split(",")[0]  # Think this can't IndexError
+            elif line.upper().startswith("COORDINATETYPE="):
+                coordinate_type = line.upper().split("=")[1].split(",")[0]  # Think this can't IndexError
+
+            # Note that the properties that aren't being converted to int/float need to use the .safe_commit() method...
+
+            elif line.upper().startswith("PLAYERB="):
+                root.safe_commit("PB", line[8:])
+
+            elif line.upper().startswith("PLAYERW="):
+                root.safe_commit("PW", line[8:])
+
+            elif line.upper().startswith("PLACE="):
+                root.safe_commit("PC", line[6:])
 
         elif section == "[DATA]":
+
+            line = line.upper()
 
             slist = line.split(",")
             try:
