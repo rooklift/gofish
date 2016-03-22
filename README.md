@@ -1,6 +1,12 @@
 # gofish: an SGF-based library
 
-Tools for the game of Go. [SGF](http://www.red-bean.com/sgf/) (Smart Game Format) is the standard file format, while [GTP](https://www.lysator.liu.se/~gunnar/gtp/) (Go Text Protocol) is used for communicating with engines, e.g. if you have [GNU Go](https://www.gnu.org/software/gnugo/) installed, you can run:
+Tools for the game of Go:
+
+* `gofish/` - the basic library
+* `gtp_relay.py` - a GUI to play against a GTP ([Go Text Protocol](https://www.lysator.liu.se/~gunnar/gtp/)) engine
+* `sgf_editor.py` - a rudimentary SGF ([Smart Game Format](http://www.red-bean.com/sgf/)) editor
+
+As an example of how to use the relay, if you have [GNU Go](https://www.gnu.org/software/gnugo/) installed, you can run:
 
     python gtp_relay.py gnugo --mode gtp
 
