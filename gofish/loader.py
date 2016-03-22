@@ -1,6 +1,10 @@
+# Internally, everything is stored as SGF (or rather a tree-structure that incorporates properties like SGF's).
+# See tree.py for the implementation.
+
 from gofish.gib import *
 from gofish.ngf import *
 from gofish.sgf import *
+from gofish.ugf import *
 
 def load(filename):
 
@@ -23,6 +27,9 @@ def load(filename):
         elif filename[-4:].lower() == ".ngf":
             print("Parsing as SGF failed, trying to parse as NGF")
             root = parse_ngf(contents)      # This itself can also raise ParserFail
+        elif filename[-4:].lower() in [".ugf", ".ugi"]:
+            print("Parsing as SGF failed, trying to parse as UGF")
+            root = parse_ugf(contents)      # This itself can also raise ParserFail
         else:
             raise
 

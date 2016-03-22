@@ -17,17 +17,17 @@ def parse_ngf(ngf):
     if boardsize < 1 or boardsize > 19 or handicap < 0 or handicap > 9:
         raise ParserFail
 
-    if boardsize < 19 and handicap:     # Can't be bothered
+    if boardsize != 19 and handicap >= 2:     # Can't be bothered
         raise ParserFail
 
     root = Node(parent = None)
     node = root
 
     if handicap >= 2:
-        node.set_value("HA", handicap)
+        root.set_value("HA", handicap)
         stones = handicap_points_19[handicap]
         for point in stones:
-            node.add_value("AB", string_from_point(point[0], point[1]))
+            root.add_value("AB", string_from_point(point[0], point[1]))
 
     for line in lines:
         line = line.strip().upper()
@@ -43,7 +43,7 @@ def parse_ngf(ngf):
                     # Also, coordinates are from 1-19, but with "B" representing
                     # the digit 1. (Presumably "A" would represent 0.)
 
-                    x = ord(line[5]) - 65
+                    x = ord(line[5]) - 65       # Therefore 65 is correct
                     y = ord(line[6]) - 65
 
                     try:
