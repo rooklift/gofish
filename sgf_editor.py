@@ -378,25 +378,33 @@ class InfoWindow(tkinter.Toplevel):
 
         self.resizable(width = False, height = False)
 
+        self.widgets = dict()
+
         tkinter.Label(self, text="Player Black").grid(column = 0, row = 0)
         tkinter.Label(self, text="Player White").grid(column = 0, row = 1)
         tkinter.Label(self, text="Rank").grid(column = 2, row = 0)
         tkinter.Label(self, text="Rank").grid(column = 2, row = 1)
 
-        self.pb_widget = tkinter.Entry(self, width = 30)
-        self.pw_widget = tkinter.Entry(self, width = 30)
-        self.br_widget = tkinter.Entry(self, width = 10)
-        self.wr_widget = tkinter.Entry(self, width = 10)
+        self.widgets["PB"] = tkinter.Entry(self, width = 30)
+        self.widgets["PW"] = tkinter.Entry(self, width = 30)
+        self.widgets["BR"] = tkinter.Entry(self, width = 10)
+        self.widgets["WR"] = tkinter.Entry(self, width = 10)
 
-        self.pb_widget.grid(column = 1, row = 0)
-        self.pw_widget.grid(column = 1, row = 1)
-        self.br_widget.grid(column = 3, row = 0)
-        self.wr_widget.grid(column = 3, row = 1)
+        self.widgets["PB"].grid(column = 1, row = 0)
+        self.widgets["PW"].grid(column = 1, row = 1)
+        self.widgets["BR"].grid(column = 3, row = 0)
+        self.widgets["WR"].grid(column = 3, row = 1)
 
         tkinter.Label(self, text="").grid(column = 0, columnspan = 4, row = 2)
-        tkinter.Label(self, text="Result").grid(column = 0, row = 3)
-        self.re_widget = tkinter.Entry(self, width = 30)
-        self.re_widget.grid(column = 1, row = 3)
+
+        tkinter.Label(self, text="Komi").grid(column = 0, row = 3)
+        tkinter.Label(self, text="Result").grid(column = 0, row = 4)
+
+        self.widgets["KM"] = tkinter.Entry(self, width = 30)
+        self.widgets["RE"] = tkinter.Entry(self, width = 30)
+
+        self.widgets["KM"].grid(column = 1, row = 3)
+        self.widgets["RE"].grid(column = 1, row = 4)
 
         self.root = sgf.Node(None)  # This is just a dummy node until we get a real one.
 
@@ -412,41 +420,16 @@ class InfoWindow(tkinter.Toplevel):
         self.commit_info()
         self.root = newroot
 
-        pb = self.root.get_unescaped_concat("PB")
-        self.pb_widget.delete(0, tkinter.END)
-        self.pb_widget.insert(tkinter.END, pb)
-
-        pw = self.root.get_unescaped_concat("PW")
-        self.pw_widget.delete(0, tkinter.END)
-        self.pw_widget.insert(tkinter.END, pw)
-
-        br = self.root.get_unescaped_concat("BR")
-        self.br_widget.delete(0, tkinter.END)
-        self.br_widget.insert(tkinter.END, br)
-
-        wr = self.root.get_unescaped_concat("WR")
-        self.wr_widget.delete(0, tkinter.END)
-        self.wr_widget.insert(tkinter.END, wr)
-
-        re = self.root.get_unescaped_concat("RE")
-        self.re_widget.delete(0, tkinter.END)
-        self.re_widget.insert(tkinter.END, re)
+        for key in self.widgets:                            # e.g. key is "RE" or "KM" etc...
+            text = self.root.get_unescaped_concat(key)      # pull the value from the root node
+            self.widgets[key].delete(0, tkinter.END)
+            self.widgets[key].insert(tkinter.END, text)     # and set the widget to it
 
     def commit_info(self):
-        pb = self.pb_widget.get().strip()
-        self.root.safe_commit("PB", pb)
 
-        pw = self.pw_widget.get().strip()
-        self.root.safe_commit("PW", pw)
-
-        br = self.br_widget.get().strip()
-        self.root.safe_commit("BR", br)
-
-        wr = self.wr_widget.get().strip()
-        self.root.safe_commit("WR", wr)
-
-        re = self.re_widget.get().strip()
-        self.root.safe_commit("RE", re)
+        for key in self.widgets:                            # e.g. key is "RE" or "KM" etc...
+            text = self.widgets[key].get().strip()          # pull the value from the widget
+            self.root.safe_commit(key, text)                # and set the root node accordingly
 
 
 class HelpWindow(tkinter.Toplevel):
