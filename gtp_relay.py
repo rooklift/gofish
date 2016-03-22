@@ -6,8 +6,8 @@
 import os, queue, subprocess, sys, threading
 import tkinter, tkinter.filedialog, tkinter.messagebox
 
-import sgf
-from sgf import BLACK, WHITE, EMPTY
+import gofish
+from gofish import BLACK, WHITE
 
 colour_lookup = {BLACK: "black", WHITE: "white"}
 
@@ -76,7 +76,7 @@ def title_bar_string(node):
         title += " (pass)"
     elif wwtm:
         x, y = wwtm
-        title += " ({})".format(sgf.english_string_from_point(x, y, node.board.boardsize))
+        title += " ({})".format(gofish.english_string_from_point(x, y, node.board.boardsize))
     return title
 
 # --------------------------------------------------------------------------------------
@@ -151,7 +151,7 @@ class GTP_GUI(tkinter.Canvas):
         if self.awaiting_move:
             return
 
-        self.node = sgf.new_tree(size)
+        self.node = gofish.new_tree(size)
 
         for cmd in ["boardsize {}".format(self.node.board.boardsize), "clear_board", "komi 0"]:
             send_command(cmd)
@@ -171,7 +171,7 @@ class GTP_GUI(tkinter.Canvas):
         if self.awaiting_move:
             return
 
-        self.node = sgf.new_tree(self.node.board.boardsize)
+        self.node = gofish.new_tree(self.node.board.boardsize)
 
         for cmd in ["boardsize {}".format(self.node.board.boardsize), "clear_board", "komi 0"]:
             send_command(cmd)
@@ -188,7 +188,7 @@ class GTP_GUI(tkinter.Canvas):
 
         english_points_list = response[1:].strip().split()
         for p in english_points_list:
-            x, y = sgf.point_from_english_string(p, self.node.board.boardsize)
+            x, y = gofish.point_from_english_string(p, self.node.board.boardsize)
             self.node.add_stone(BLACK, x, y)
 
         if self.human_colour == WHITE:      # The reverse of normal; white goes first
@@ -211,7 +211,7 @@ class GTP_GUI(tkinter.Canvas):
             if result:
                 self.node = result
 
-                command = "play {} {}".format(colour_lookup[self.human_colour], sgf.english_string_from_point(x, y, self.node.board.boardsize))
+                command = "play {} {}".format(colour_lookup[self.human_colour], gofish.english_string_from_point(x, y, self.node.board.boardsize))
                 send_and_get(command)
 
                 command = "genmove {}".format(colour_lookup[self.engine_colour])
@@ -248,7 +248,7 @@ class GTP_GUI(tkinter.Canvas):
         message = message[1:].strip()
 
         if len(message) in [2,3]:
-            point = sgf.point_from_english_string(message, self.node.board.boardsize)
+            point = gofish.point_from_english_string(message, self.node.board.boardsize)
             if point is None:
                 print("ERROR: got '{}' while expecting move".format(message))
                 return
@@ -337,7 +337,7 @@ class GTP_GUI(tkinter.Canvas):
 
         for x in range(3, boardsize - 1):
             for y in range(boardsize - 1):
-                if sgf.is_star_point(x, y, boardsize):
+                if gofish.is_star_point(x, y, boardsize):
                     screen_x, screen_y = screen_pos_from_board_pos(x, y, boardsize)
                     self.create_image(screen_x, screen_y, image = spriteHoshi)
 
@@ -357,9 +357,9 @@ class GTP_GUI(tkinter.Canvas):
         for x in range(1, self.node.board.boardsize + 1):
             for y in range(1, self.node.board.boardsize + 1):
                 screen_x, screen_y = screen_pos_from_board_pos(x, y, self.node.board.boardsize)
-                if self.node.board.state[x][y] == sgf.BLACK:
+                if self.node.board.state[x][y] == BLACK:
                     self.create_image(screen_x, screen_y, image = spriteBlack)
-                elif self.node.board.state[x][y] == sgf.WHITE:
+                elif self.node.board.state[x][y] == WHITE:
                     self.create_image(screen_x, screen_y, image = spriteWhite)
 
         # Draw a mark at the current move, if there is one...
@@ -381,7 +381,7 @@ class GTP_GUI(tkinter.Canvas):
             if mark in self.node.properties:
                 points = set()
                 for value in self.node.properties[mark]:
-                    points |= sgf.points_from_points_string(value, self.node.board.boardsize)
+                    points |= gofish.points_from_points_string(value, self.node.board.boardsize)
                 for point in points:
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
@@ -390,8 +390,11 @@ class GTP_GUI(tkinter.Canvas):
     def saver(self, event):
         outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
         if outfilename:
-            sgf.save_file(outfilename, self.node)
-            print("---> Saved: {}\n".format(outfilename))
+            gofish.save_file(outfilename, self.node)
+            try:
+                print("---> Saved: {}\n".format(outfilename))
+            except:
+                print("---> Saved: --- Exception when trying to print filename ---")
         self.draw_node()
 
 

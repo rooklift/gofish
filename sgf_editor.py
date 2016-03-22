@@ -1,7 +1,7 @@
 import os, sys
 import tkinter, tkinter.filedialog, tkinter.messagebox
 
-import sgf
+import gofish
 
 WIDTH, HEIGHT = 621, 621
 GAP = 31
@@ -78,7 +78,7 @@ def title_bar_string(node):
         title += " (pass)"
     elif wwtm:
         x, y = wwtm
-        title += " ({})".format(sgf.english_string_from_point(x, y, node.board.boardsize))
+        title += " ({})".format(gofish.english_string_from_point(x, y, node.board.boardsize))
     return title
 
 # --------------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ class SGF_Board(tkinter.Canvas):
         self.bind("<Control-o>", self.opener)
         self.bind("<Control-s>", self.saver)
 
-        self.node = sgf.new_tree(19)        # Do this now in case the load fails
+        self.node = gofish.new_tree(19)        # Do this now in case the load fails
 
         self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -105,19 +105,19 @@ class SGF_Board(tkinter.Canvas):
 
     def open_file(self, infilename):
         try:
-            self.node = sgf.load(infilename)
+            self.node = gofish.load(infilename)
             try:
                 print("<--- Loaded: {}\n".format(infilename))
             except:
-                print("<--- Loaded: [ --- Exception when trying to print filename --- ]")
+                print("<--- Loaded: --- Exception when trying to print filename ---")
             self.node.dump(include_comments = False)
             print()
             self.directory = os.path.dirname(os.path.realpath(infilename))
         except FileNotFoundError:
             print("error while loading: file not found")
-        except sgf.BadBoardSize:
+        except gofish.BadBoardSize:
             print("error while loading: SZ (board size) was not in range 1:19")
-        except sgf.ParserFail:
+        except gofish.ParserFail:
             print("error while loading: parser failed (invalid SGF?)")
 
     def draw_node(self):
@@ -132,7 +132,7 @@ class SGF_Board(tkinter.Canvas):
 
         for x in range(3, boardsize - 1):
             for y in range(boardsize - 1):
-                if sgf.is_star_point(x, y, boardsize):
+                if gofish.is_star_point(x, y, boardsize):
                     screen_x, screen_y = screen_pos_from_board_pos(x, y, boardsize)
                     self.create_image(screen_x, screen_y, image = spriteHoshi)
 
@@ -152,9 +152,9 @@ class SGF_Board(tkinter.Canvas):
         for x in range(1, self.node.board.boardsize + 1):
             for y in range(1, self.node.board.boardsize + 1):
                 screen_x, screen_y = screen_pos_from_board_pos(x, y, self.node.board.boardsize)
-                if self.node.board.state[x][y] == sgf.BLACK:
+                if self.node.board.state[x][y] == gofish.BLACK:
                     self.create_image(screen_x, screen_y, image = spriteBlack)
-                elif self.node.board.state[x][y] == sgf.WHITE:
+                elif self.node.board.state[x][y] == gofish.WHITE:
                     self.create_image(screen_x, screen_y, image = spriteWhite)
 
         # Draw a mark at the current move, if there is one...
@@ -176,7 +176,7 @@ class SGF_Board(tkinter.Canvas):
             if mark in self.node.properties:
                 points = set()
                 for value in self.node.properties[mark]:
-                    points |= sgf.points_from_points_string(value, self.node.board.boardsize)
+                    points |= gofish.points_from_points_string(value, self.node.board.boardsize)
                 for point in points:
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
@@ -282,7 +282,7 @@ class SGF_Board(tkinter.Canvas):
                 self.node.fix_main_line_status_recursive()
                 self.node_changed()
             else:
-                self.node = sgf.new_tree(19)
+                self.node = gofish.new_tree(19)
                 self.node_changed()
 
     def handle_key_P(self):
@@ -305,11 +305,11 @@ class SGF_Board(tkinter.Canvas):
         if outfilename:
             commentwindow.commit_text()             # tell the comment window that it must commit the comment
             infowindow.commit_info()                # likewise for the info window
-            sgf.save_file(outfilename, self.node)
+            gofish.save_file(outfilename, self.node)
             try:
                 print("---> Saved: {}\n".format(outfilename))
             except:
-                print("---> Saved: [ --- Exception when trying to print filename --- ]")
+                print("---> Saved: --- Exception when trying to print filename ---")
             self.directory = os.path.dirname(os.path.realpath(outfilename))
 
     def mouseclick_handler(self, event):
@@ -325,7 +325,7 @@ class SGF_Board(tkinter.Canvas):
         # else:
         #     ok = True
         # if ok:
-            self.node = sgf.new_tree(size)
+            self.node = gofish.new_tree(size)
             self.node_changed()
 
 # ---------------------------------------------------------------------------------------
@@ -349,7 +349,7 @@ class CommentWindow(tkinter.Toplevel):
         self.text_widget.config(yscrollcommand = self.scrollbar.set)
         self.scrollbar.config(command = self.text_widget.yview)
 
-        self.node = sgf.Node(None)  # This is just a dummy node until we get a real one.
+        self.node = gofish.Node(None)  # This is just a dummy node until we get a real one.
 
     def node_changed(self, newnode):
 
@@ -377,7 +377,7 @@ class InfoWindow(tkinter.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.withdraw)
         self.resizable(width = False, height = False)
 
-        self.root = sgf.Node(None)  # This is just a dummy node until we get a real one.
+        self.root = gofish.Node(None)  # This is just a dummy node until we get a real one.
 
         self.widgets = dict()   # key (e.g. "KM") ---> Entry widget
 
