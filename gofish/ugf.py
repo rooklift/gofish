@@ -6,7 +6,8 @@ from gofish.tree import *
 
 def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
 
-    root = None
+    root = Node(parent = None)
+    node = root
 
     boardsize = None
     handicap = None
@@ -33,9 +34,6 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
 
                 if boardsize < 1 or boardsize > 19 or handicap < 0:
                     raise ParserFail
-
-                root = Node(parent = None)
-                node = root
 
                 if handicap >= 2:
                     root.set_value("HA", handicap)
@@ -100,10 +98,6 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
                 node = Node(parent = node)
                 key = colour
                 node.set_value(key, value)
-
-
-    if root is None:
-        raise ParserFail
 
     if len(root.children) == 0:     # We'll assume we failed in this case
         raise ParserFail
