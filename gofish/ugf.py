@@ -18,28 +18,33 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
 
     lines = ugf.split("\n")
 
-    data_section = False
+    section = None
 
     for line in lines:
 
         line = line.strip().upper()     # Note this
 
-        if not data_section:
+        try:
+            if line[0] == "[" and line[-1] == "]":
+                section = line
 
-            if line == "[DATA]":
-                if handicap is None or boardsize is None:
-                    raise ParserFail
+                if section == "[DATA]":     # Check that the header contained all needed info
 
-                data_section = True
+                    if handicap is None or boardsize is None:
+                        raise ParserFail
+                    if boardsize < 1 or boardsize > 19 or handicap < 0:
+                        raise ParserFail
+                    if handicap >= 2:       # Set the header - but the actual stones get set in data section
+                        root.set_value("HA", handicap)
 
-                if boardsize < 1 or boardsize > 19 or handicap < 0:
-                    raise ParserFail
+                continue
 
-                if handicap >= 2:
-                    root.set_value("HA", handicap)
-                    # The stones apparently get set as normal moves in .ugf
+        except IndexError:
+            pass
 
-            elif line.startswith("HDCP="):
+        if section == "[HEADER]":
+
+            if line.startswith("HDCP="):
                 sval = line.split("=")[1].split(",")[0]  # Think this can't IndexError
                 try:
                     handicap = int(sval)
@@ -56,7 +61,8 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
             elif line.startswith("COORDINATETYPE="):
                 coordinate_type = line.split("=")[1].split(",")[0]  # Think this can't IndexError
 
-        else:
+        elif section == "[DATA]":
+
             slist = line.split(",")
             try:
                 x_chr = slist[0][0]
