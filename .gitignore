@@ -1,5 +1,6 @@
 __pycache__/
 gfx/texture2.gif
+gfx/texture3.gif
 *.sgf
 *.exe
 *.dll
