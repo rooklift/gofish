@@ -60,9 +60,9 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
                     continue
 
             elif line.upper().startswith("SIZE="):
-                sval = line.split("=")[1].split(",")[0]  # Think this can't IndexError
+                size_str = line.split("=")[1]
                 try:
-                    boardsize = int(sval)
+                    boardsize = int(size_str)
                     root.set_value("SZ", boardsize)
                 except:
                     continue
