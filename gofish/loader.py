@@ -12,7 +12,7 @@ def load(filename):
         with open(filename, encoding="utf8") as infile:
             contents = infile.read()
     except UnicodeDecodeError:
-        print("Opening as UTF-8 failed, trying Latin-1\n")
+        print("Opening as UTF-8 failed, trying Latin-1")
         with open(filename, encoding="latin1") as infile:       # I think this can't actually fail, but it might corrupt
             contents = infile.read()
 
