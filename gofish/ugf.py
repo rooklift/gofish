@@ -1,3 +1,6 @@
+# This format better documented than some, see:
+# http://homepages.cwi.nl/~aeb/go/misc/ugf.html
+
 from gofish.constants import *
 from gofish.tree import *
 
@@ -79,10 +82,13 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
                 x = ord(x_chr) - 64
                 y = ord(y_chr) - 64
 
-            try:
-                value = string_from_point(x, y)
-            except ValueError:
-                continue
+            if x > boardsize or x < 1 or y > boardsize or y < 1:    # Likely a pass, "YA" is often used as a pass
+                value = ""
+            else:
+                try:
+                    value = string_from_point(x, y)
+                except ValueError:
+                    continue
 
             # In case of the initial handicap placement, don't create a new node...
 
