@@ -4,7 +4,7 @@ Tools for the game of Go. [SGF](http://www.red-bean.com/sgf/) (Smart Game Format
 
     python gtp_relay.py gnugo --mode gtp
 
-For programmers looking to do their own Go stuff, the most interesting part of all this is probably the SGF parser, **load_sgf_tree()** in `sgf.py`. There's also an attempt to read the undocumented GIB and NGF file formats in **parse_gib()** and **parse_ngf()**.
+For programmers looking to do their own Go stuff, the most interesting part of all this is probably the SGF parser, **load_sgf_tree()** in `sgf.py`. There are also rudimentary parsers for GIB, NGF, and UGI/UGF formats (but the SGF parser is much more full-featured).
 
 ## Notes on SGF as I understand it
 
