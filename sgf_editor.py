@@ -375,15 +375,18 @@ class InfoWindow(tkinter.Toplevel):
         tkinter.Toplevel.__init__(self, *args, **kwargs)
         self.title("Game Info")
         self.protocol("WM_DELETE_WINDOW", self.withdraw)
-
         self.resizable(width = False, height = False)
 
-        self.widgets = dict()
+        self.root = sgf.Node(None)  # This is just a dummy node until we get a real one.
 
-        tkinter.Label(self, text="Player Black").grid(column = 0, row = 0)
-        tkinter.Label(self, text="Player White").grid(column = 0, row = 1)
-        tkinter.Label(self, text="Rank").grid(column = 2, row = 0)
-        tkinter.Label(self, text="Rank").grid(column = 2, row = 1)
+        self.widgets = dict()   # key (e.g. "KM") ---> Entry widget
+
+        # Top section: player names and ranks...
+
+        tkinter.Label(self, text = " Player Black ").grid(column = 0, row = 0)
+        tkinter.Label(self, text = " Player White ").grid(column = 0, row = 1)
+        tkinter.Label(self, text = " Rank ").grid(column = 2, row = 0)
+        tkinter.Label(self, text = " Rank ").grid(column = 2, row = 1)
 
         self.widgets["PB"] = tkinter.Entry(self, width = 30)
         self.widgets["PW"] = tkinter.Entry(self, width = 30)
@@ -397,16 +400,36 @@ class InfoWindow(tkinter.Toplevel):
 
         tkinter.Label(self, text="").grid(column = 0, columnspan = 4, row = 2)
 
-        tkinter.Label(self, text="Komi").grid(column = 0, row = 3)
-        tkinter.Label(self, text="Result").grid(column = 0, row = 4)
+        # Mid section: various metadata...
+
+        tkinter.Label(self, text = "Event").grid(column = 0, row = 3)
+        tkinter.Label(self, text = "Game").grid(column = 0, row = 4)
+        tkinter.Label(self, text = "Place").grid(column = 0, row = 5)
+        tkinter.Label(self, text = "Date").grid(column = 0, row = 6)
+
+        self.widgets["EV"] = tkinter.Entry(self, width = 30)
+        self.widgets["GN"] = tkinter.Entry(self, width = 30)
+        self.widgets["PC"] = tkinter.Entry(self, width = 30)
+        self.widgets["DT"] = tkinter.Entry(self, width = 30)
+
+        self.widgets["EV"].grid(column = 1, row = 3)
+        self.widgets["GN"].grid(column = 1, row = 4)
+        self.widgets["PC"].grid(column = 1, row = 5)
+        self.widgets["DT"].grid(column = 1, row = 6)
+
+        tkinter.Label(self, text="").grid(column = 0, columnspan = 4, row = 7)
+
+        # Bottom section: result...
+
+        tkinter.Label(self, text = "Komi").grid(column = 0, row = 8)
+        tkinter.Label(self, text = "Result").grid(column = 0, row = 9)
 
         self.widgets["KM"] = tkinter.Entry(self, width = 30)
         self.widgets["RE"] = tkinter.Entry(self, width = 30)
 
-        self.widgets["KM"].grid(column = 1, row = 3)
-        self.widgets["RE"].grid(column = 1, row = 4)
+        self.widgets["KM"].grid(column = 1, row = 8)
+        self.widgets["RE"].grid(column = 1, row = 9)
 
-        self.root = sgf.Node(None)  # This is just a dummy node until we get a real one.
 
     def node_changed(self, node):
 
