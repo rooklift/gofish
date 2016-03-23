@@ -15,16 +15,26 @@ def load(filename):
 
     try:
         root = parse_sgf(contents)
-    except ParserFail:
+
+    except ParserFail:      # All the parsers below can themselves raise ParserFail
+
         if filename[-4:].lower() == ".gib":
             print("Parsing as SGF failed, trying to parse as GIB")
-            root = parse_gib(contents)      # This itself can also raise ParserFail
+            root = parse_gib(contents)
+
         elif filename[-4:].lower() == ".ngf":
             print("Parsing as SGF failed, trying to parse as NGF")
-            root = parse_ngf(contents)      # This itself can also raise ParserFail
+            root = parse_ngf(contents)
+
         elif filename[-4:].lower() in [".ugf", ".ugi"]:
             print("Parsing as SGF failed, trying to parse as UGF")
-            root = parse_ugf(contents)      # This itself can also raise ParserFail
+
+            # These seem to usually be in Shift-JIS encoding, hence:
+
+            with open(filename, encoding="shift-jis", errors="replace") as infile:
+                contents = infile.read()
+
+            root = parse_ugf(contents)
         else:
             raise
 
