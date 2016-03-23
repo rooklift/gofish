@@ -15,6 +15,14 @@ def parse_gib(gib):
     for line in lines:
         line = line.strip()
 
+        if line.startswith("\\[GAMEBLACKNAME=") and line.endswith("\\]"):
+            s = line[16:-2]
+            root.safe_commit("PB", s)
+
+        if line.startswith("\\[GAMEWHITENAME=") and line.endswith("\\]"):
+            s = line[16:-2]
+            root.safe_commit("PW", s)
+
         if line[0:3] == "INI":
 
             if node is not root:

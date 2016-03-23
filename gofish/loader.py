@@ -20,6 +20,10 @@ def load(filename):
 
         if filename[-4:].lower() == ".gib":
             print("Parsing as SGF failed, trying to parse as GIB")
+
+            # These can be in variousdifferent encodings, I think,
+            # so no attempt to switch to GBK or whatever...
+
             root = parse_gib(contents)
 
         elif filename[-4:].lower() == ".ngf":
