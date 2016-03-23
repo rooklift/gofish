@@ -12,6 +12,8 @@ As an example of how to use the relay, if you have [GNU Go](https://www.gnu.org/
 
 For programmers looking to do their own Go stuff, the most interesting part of all this is probably the SGF parser, **load_sgf_tree()** in `sgf.py`. There are also rudimentary parsers for GIB, NGF, and UGF formats (but the SGF parser is much more full-featured).
 
+A standalone (single file) script that converts these things to SGF [is available](https://github.com/fohristiwhirl/xyz2sgf).
+
 ## Notes on SGF as I understand it
 
 * An SGF file is a tree of nodes
