@@ -11,12 +11,21 @@ def parse_ngf(ngf):
     try:
         boardsize = int(lines[1])
         handicap = int(lines[5])
-        komi = float(lines[7])
         pw = lines[2].split()[0]
         pb = lines[3].split()[0]
         rawdate = lines[8][0:8]
+        komi = float(lines[7])
+
+        if handicap == 0 and int(komi) == komi:
+            komi += 0.5
+
     except (IndexError, ValueError):
-        raise ParserFail
+        boardsize = 19
+        handicap = 0
+        pw = ""
+        pb = ""
+        rawdate = ""
+        komi = 0
 
     if boardsize < 1 or boardsize > 19 or handicap < 0 or handicap > 9:
         raise ParserFail
@@ -27,8 +36,16 @@ def parse_ngf(ngf):
     root = Node(parent = None)
     node = root
 
-    if handicap == 0 and int(komi) == komi:
-        komi += 0.5
+    # Set root values...
+
+    root.set_value("SZ", boardsize)
+
+    if handicap >= 2:
+        root.set_value("HA", handicap)
+        stones = handicap_points_19[handicap]
+        for point in stones:
+            root.add_value("AB", string_from_point(point[0], point[1]))
+
     if komi:
         root.set_value("KM", komi)
 
@@ -41,15 +58,12 @@ def parse_ngf(ngf):
             date = rawdate[0:4] + "-" + rawdate[4:6] + "-" + rawdate[6:8]
             root.set_value("DT", date)
 
-    root.set_value("SZ", boardsize)
-    root.safe_commit("PW", pw)
-    root.safe_commit("PB", pb)
+    if pw:
+        root.safe_commit("PW", pw)
+    if pb:
+        root.safe_commit("PB", pb)
 
-    if handicap >= 2:
-        root.set_value("HA", handicap)
-        stones = handicap_points_19[handicap]
-        for point in stones:
-            root.add_value("AB", string_from_point(point[0], point[1]))
+    # Main parser...
 
     for line in lines:
         line = line.strip().upper()
