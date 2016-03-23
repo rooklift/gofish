@@ -3,14 +3,14 @@
 Tools for the game of Go:
 
 * `gofish/` - the basic library
+* `game_editor.py` - a basic [kifu](https://en.wikipedia.org/wiki/Kifu) editor - reads SGF, UGF, GIB, and NGF; writes SGF ([Smart Game Format](http://www.red-bean.com/sgf/))
 * `gtp_relay.py` - a GUI to play against a GTP ([Go Text Protocol](https://www.lysator.liu.se/~gunnar/gtp/)) engine
-* `sgf_editor.py` - a rudimentary SGF ([Smart Game Format](http://www.red-bean.com/sgf/)) editor
 
 As an example of how to use the relay, if you have [GNU Go](https://www.gnu.org/software/gnugo/) installed, you can run:
 
     python gtp_relay.py gnugo --mode gtp
 
-For programmers looking to do their own Go stuff, the most interesting part of all this is probably the SGF parser, **load_sgf_tree()** in `sgf.py`. There are also rudimentary parsers for GIB, NGF, and UGI/UGF formats (but the SGF parser is much more full-featured).
+For programmers looking to do their own Go stuff, the most interesting part of all this is probably the SGF parser, **load_sgf_tree()** in `sgf.py`. There are also rudimentary parsers for GIB, NGF, and UGF formats (but the SGF parser is much more full-featured).
 
 ## Notes on SGF as I understand it
 
