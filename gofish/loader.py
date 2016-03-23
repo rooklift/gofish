@@ -31,7 +31,7 @@ def load(filename):
 
             # These seem to usually be in Shift-JIS encoding, hence:
 
-            with open(filename, encoding="shift-jis", errors="replace") as infile:
+            with open(filename, encoding="shift_jisx0213", errors="replace") as infile:
                 contents = infile.read()
 
             root = parse_ugf(contents)
