@@ -11,6 +11,10 @@ def parse_ngf(ngf):
     try:
         boardsize = int(lines[1])
         handicap = int(lines[5])
+        komi = float(lines[7])
+        pw = lines[2].split()[0]
+        pb = lines[3].split()[0]
+        rawdate = lines[8][0:8]
     except (IndexError, ValueError):
         raise ParserFail
 
@@ -22,6 +26,24 @@ def parse_ngf(ngf):
 
     root = Node(parent = None)
     node = root
+
+    if handicap == 0 and int(komi) == komi:
+        komi += 0.5
+    if komi:
+        root.set_value("KM", komi)
+
+    if len(rawdate) == 8:
+        ok = True
+        for n in range(8):
+            if rawdate[n] not in "0123456789":
+                ok = False
+        if ok:
+            date = rawdate[0:4] + "-" + rawdate[4:6] + "-" + rawdate[6:8]
+            root.set_value("DT", date)
+
+    root.set_value("SZ", boardsize)
+    root.safe_commit("PW", pw)
+    root.safe_commit("PB", pb)
 
     if handicap >= 2:
         root.set_value("HA", handicap)

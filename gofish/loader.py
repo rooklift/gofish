@@ -28,6 +28,12 @@ def load(filename):
 
         elif filename[-4:].lower() == ".ngf":
             print("Parsing as SGF failed, trying to parse as NGF")
+
+            # These seem to use GB18030:
+
+            with open(filename, encoding="gb18030", errors="replace") as infile:
+                contents = infile.read()
+
             root = parse_ngf(contents)
 
         elif filename[-4:].lower() in [".ugf", ".ugi"]:
