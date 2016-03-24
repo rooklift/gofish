@@ -270,6 +270,14 @@ class Node():
                     moves.add(move)
         return moves
 
+    def children_moves(self):
+        moves = set()
+        for node in self.children:
+            move = node.what_was_the_move()
+            if move is not None:
+                moves.add(move)
+        return moves
+
     def sibling_count(self):
         if self.parent is None:
             return 0

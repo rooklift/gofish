@@ -104,10 +104,21 @@ class SGF_Board(tkinter.Canvas):
 
         self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
+        self.show_siblings = tkinter.IntVar()
+        self.show_children = tkinter.IntVar()
+
         if filename is not None:
             self.open_file(filename)
 
         self.node_changed()
+
+    def show_siblings_was_toggled(self):    # regardless of whether this button is on or off, the other will be off
+        self.show_children.set(0)
+        self.draw_node()
+
+    def show_children_was_toggled(self):    # likewise
+        self.show_siblings.set(0)
+        self.draw_node()
 
     def open_file(self, infilename):
         try:
@@ -172,9 +183,15 @@ class SGF_Board(tkinter.Canvas):
 
         # Draw a mark at variations, if there are any...
 
-        for sib_move in self.node.sibling_moves():
-            screen_x, screen_y = screen_pos_from_board_pos(sib_move[0], sib_move[1], self.node.board.boardsize)
-            self.create_image(screen_x, screen_y, image = spriteVar)
+        if self.show_siblings.get():
+            for sib_move in self.node.sibling_moves():
+                screen_x, screen_y = screen_pos_from_board_pos(sib_move[0], sib_move[1], self.node.board.boardsize)
+                self.create_image(screen_x, screen_y, image = spriteVar)
+
+        if self.show_children.get():
+            for child_move in self.node.children_moves():
+                screen_x, screen_y = screen_pos_from_board_pos(child_move[0], child_move[1], self.node.board.boardsize)
+                self.create_image(screen_x, screen_y, image = spriteVar)
 
         # Draw the commonly used marks...
 
@@ -508,17 +525,21 @@ class Root(tkinter.Tk):
         menubar = tkinter.Menu(self)
 
         new_board_menu = tkinter.Menu(menubar, tearoff = 0)
-        new_board_menu.add_command(label="19x19", command = lambda : board.new_board(19))
-        new_board_menu.add_command(label="17x17", command = lambda : board.new_board(17))
-        new_board_menu.add_command(label="15x15", command = lambda : board.new_board(15))
-        new_board_menu.add_command(label="13x13", command = lambda : board.new_board(13))
-        new_board_menu.add_command(label="11x11", command = lambda : board.new_board(11))
-        new_board_menu.add_command(label="9x9", command = lambda : board.new_board(9))
+        new_board_menu.add_command(label = "19x19", command = lambda : board.new_board(19))
+        new_board_menu.add_command(label = "17x17", command = lambda : board.new_board(17))
+        new_board_menu.add_command(label = "15x15", command = lambda : board.new_board(15))
+        new_board_menu.add_command(label = "13x13", command = lambda : board.new_board(13))
+        new_board_menu.add_command(label = "11x11", command = lambda : board.new_board(11))
+        new_board_menu.add_command(label = "9x9", command = lambda : board.new_board(9))
+
+        options_menu = tkinter.Menu(menubar, tearoff = 0)
+        options_menu.add_checkbutton(label = "Show siblings", variable = board.show_siblings, command = board.show_siblings_was_toggled)
+        options_menu.add_checkbutton(label = "Show children", variable = board.show_children, command = board.show_children_was_toggled)
 
         menubar.add_cascade(label = "New", menu = new_board_menu)
-
         menubar.add_command(label = "Load", command = board.opener)
         menubar.add_command(label = "Save", command = board.saver)
+        menubar.add_cascade(label = "Options", menu = options_menu)
         menubar.add_command(label = "Comments", command = commentwindow.deiconify)
         menubar.add_command(label = "Info", command = infowindow.deiconify)
         menubar.add_command(label = "Help", command = helpwindow.deiconify)
