@@ -2,8 +2,8 @@
 
 Tools for the game of Go:
 
-* `gofish/` - the basic library
-* `game_editor.py` - a basic [kifu](https://en.wikipedia.org/wiki/Kifu) editor - reads SGF, UGF, GIB, and NGF; writes SGF ([Smart Game Format](http://www.red-bean.com/sgf/))
+* `gofish/` - the basic library, can read SGF, UGF, GIB, and NGF; can write SGF ([Smart Game Format](http://www.red-bean.com/sgf/))
+* `game_editor.py` - a basic [kifu](https://en.wikipedia.org/wiki/Kifu) editor
 * `gtp_relay.py` - a GUI to play against a GTP ([Go Text Protocol](https://www.lysator.liu.se/~gunnar/gtp/)) engine
 
 The parser and game editor have been tested with [Kogo's Joseki Dictionary](http://waterfire.us/joseki.htm) as a fairly pathological test case; things seem to work, after 20-30 seconds of parsing, and 450 MB of memory usage...
