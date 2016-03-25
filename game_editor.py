@@ -41,6 +41,7 @@ def load_graphics():
     global spriteHoshi; spriteHoshi = tkinter.PhotoImage(file = "gfx/hoshi.gif")
     global spriteMove; spriteMove = tkinter.PhotoImage(file = "gfx/move.gif")
     global spriteVar; spriteVar = tkinter.PhotoImage(file = "gfx/var.gif")
+    global spriteVarWhite; spriteVarWhite = tkinter.PhotoImage(file = "gfx/varwhite.gif")
     global spriteTriangle; spriteTriangle = tkinter.PhotoImage(file = "gfx/triangle.gif")
     global spriteCircle; spriteCircle = tkinter.PhotoImage(file = "gfx/circle.gif")
     global spriteSquare; spriteSquare = tkinter.PhotoImage(file = "gfx/square.gif")
@@ -185,14 +186,16 @@ class SGF_Board(tkinter.Canvas):
         # Draw a mark at variations, if there are any...
 
         if self.show_siblings.get():
+            sprite = spriteVarWhite if self.node.last_colour_played() == WHITE else spriteVar
             for sib_move in self.node.sibling_moves():
                 screen_x, screen_y = screen_pos_from_board_pos(sib_move[0], sib_move[1], self.node.board.boardsize)
-                self.create_image(screen_x, screen_y, image = spriteVar)
+                self.create_image(screen_x, screen_y, image = sprite)
 
         if self.show_children.get():
+            sprite = spriteVar if self.node.last_colour_played() in [WHITE, None] else spriteVarWhite
             for child_move in self.node.children_moves():
                 screen_x, screen_y = screen_pos_from_board_pos(child_move[0], child_move[1], self.node.board.boardsize)
-                self.create_image(screen_x, screen_y, image = spriteVar)
+                self.create_image(screen_x, screen_y, image = sprite)
 
         # Draw the commonly used marks...
 
