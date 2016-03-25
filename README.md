@@ -6,7 +6,9 @@ Tools for the game of Go:
 * `game_editor.py` - a basic [kifu](https://en.wikipedia.org/wiki/Kifu) editor - reads SGF, UGF, GIB, and NGF; writes SGF ([Smart Game Format](http://www.red-bean.com/sgf/))
 * `gtp_relay.py` - a GUI to play against a GTP ([Go Text Protocol](https://www.lysator.liu.se/~gunnar/gtp/)) engine
 
-As an example of how to use the relay, if you have [GNU Go](https://www.gnu.org/software/gnugo/) installed, you can run:
+The game editor has been tested with [Kogo's Joseki Dictionary](http://waterfire.us/joseki.htm) as a fairly pathological test case; it seems to work, after 20-30 seconds of parsing...
+
+As an example of how to use the GTP relay, if you have [GNU Go](https://www.gnu.org/software/gnugo/) installed, you can do:
 
     python gtp_relay.py gnugo --mode gtp
 
