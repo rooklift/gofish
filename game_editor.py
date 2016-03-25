@@ -129,7 +129,9 @@ class SGF_Board(tkinter.Canvas):
 
     def open_file(self, infilename):
         try:
+            unlink_target = self.node.get_root_node()
             self.node = gofish.load(infilename)
+            unlink_target.unlink_recursive()        # remove the old tree's circular references, so GC can work
             try:
                 print("<--- Loaded: {}\n".format(infilename))
             except:
@@ -330,15 +332,18 @@ class SGF_Board(tkinter.Canvas):
         else:
             ok = True
         if ok:
+            unlink_target = self.node
+
             if self.node.parent:
-                child = self.node
-                self.node = self.node.parent
-                self.node.children.remove(child)
+                parent = self.node.parent
+                parent.children.remove(self.node)
+                self.node = parent
                 self.node.fix_main_line_status_recursive()
-                self.node_changed()
             else:
                 self.node = gofish.new_tree(19)
-                self.node_changed()
+
+            self.node_changed()
+            unlink_target.unlink_recursive()      # the old node gets its circular references recursively removed to allow GC to work
 
     def handle_key_P(self):
         self.node = self.node.make_pass()
@@ -569,7 +574,7 @@ class Root(tkinter.Tk):
         options_menu.add_checkbutton(label = "Show children", variable = board.show_children, command = board.show_children_was_toggled)
 
         file_menu = tkinter.Menu(menubar, tearoff = 0)
-        file_menu.add_command(label = "Load", command = board.opener)
+        file_menu.add_command(label = "Open", command = board.opener)
         file_menu.add_command(label = "Save", command = board.saver)
 
         menubar.add_cascade(label = "New", menu = new_board_menu)

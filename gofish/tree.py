@@ -449,6 +449,27 @@ class Node():
         self.add_value(key, s)
         self.update()
 
+    def unlink_recursive(self):
+
+        # Recursively remove all references (parents, children) in self and child nodes,
+        # to allow garbage collection to work.
+
+        node = self
+
+        while 1:
+            node.parent = None
+            if len(node.children) == 0:
+                return
+            elif len(node.children) == 1:           # i.e. just iterate where possible
+                child = node.children[0]
+                node.children = []
+                node = child
+                continue
+            else:
+                for child in node.children:
+                    child.unlink_recursive()
+                node.children = []
+                return
 
 def new_tree(size):             # Returns a ready-to-use tree with board
     if size > 19 or size < 1:
