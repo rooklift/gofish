@@ -327,6 +327,11 @@ class Node():
     def last_colour_played(self):   # Return the most recent colour played in this node or any ancestor
         node = self
         while 1:
+            if "PL" in node.properties:
+                if node.properties["PL"][0] in ["b", "B"]:     # file explicitly says black plays next, so we pretend white played last
+                    return WHITE
+                if node.properties["PL"][0] in ["w", "W"]:
+                    return BLACK
             if "B" in node.properties:
                 return BLACK
             if "W" in node.properties:
