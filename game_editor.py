@@ -385,7 +385,9 @@ class SGF_Board(tkinter.Canvas):
         # else:
         #     ok = True
         # if ok:
+            unlink_target = self.node.get_root_node()
             self.node = gofish.new_tree(size)
+            unlink_target.unlink_recursive()    # recursively destroy the old tree's circular references so the GC can work
             self.node_changed()
 
 # ---------------------------------------------------------------------------------------
