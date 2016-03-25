@@ -36,17 +36,22 @@ def load_graphics():
     except:
         spriteTexture = tkinter.PhotoImage(file = "gfx/texture.gif")
 
+    global textbackSprite
+    try:
+        textbackSprite = tkinter.PhotoImage(file = "gfx/textback_override.gif")
+    except:
+        textbackSprite = tkinter.PhotoImage(file = "gfx/textback.gif")
+
     global spriteBlack; spriteBlack = tkinter.PhotoImage(file = "gfx/black.gif")
     global spriteWhite; spriteWhite = tkinter.PhotoImage(file = "gfx/white.gif")
     global spriteHoshi; spriteHoshi = tkinter.PhotoImage(file = "gfx/hoshi.gif")
     global spriteMove; spriteMove = tkinter.PhotoImage(file = "gfx/move.gif")
-    global spriteVar; spriteVar = tkinter.PhotoImage(file = "gfx/var.gif")
+    global spriteVarBlack; spriteVarBlack = tkinter.PhotoImage(file = "gfx/var.gif")
     global spriteVarWhite; spriteVarWhite = tkinter.PhotoImage(file = "gfx/varwhite.gif")
     global spriteTriangle; spriteTriangle = tkinter.PhotoImage(file = "gfx/triangle.gif")
     global spriteCircle; spriteCircle = tkinter.PhotoImage(file = "gfx/circle.gif")
     global spriteSquare; spriteSquare = tkinter.PhotoImage(file = "gfx/square.gif")
     global spriteMark; spriteMark = tkinter.PhotoImage(file = "gfx/mark.gif")
-    global textbackSprite; textbackSprite = tkinter.PhotoImage(file = "gfx/textback.gif")
 
     global markup_dict; markup_dict = {"TR": spriteTriangle, "CR": spriteCircle, "SQ": spriteSquare, "MA": spriteMark}
 
@@ -143,6 +148,8 @@ class SGF_Board(tkinter.Canvas):
         self.delete(tkinter.ALL)              # DESTROY all!
         boardsize = self.node.board.boardsize
 
+        all_marks = set()
+
         # Draw the texture...
 
         self.create_image(0, 0, anchor = tkinter.NW, image = spriteTexture)
@@ -176,23 +183,16 @@ class SGF_Board(tkinter.Canvas):
                 elif self.node.board.state[x][y] == WHITE:
                     self.create_image(screen_x, screen_y, image = spriteWhite)
 
-        # Draw a mark at the current move, if there is one...
-
-        move = self.node.what_was_the_move()
-        if move is not None:
-            screen_x, screen_y = screen_pos_from_board_pos(move[0], move[1], self.node.board.boardsize)
-            self.create_image(screen_x, screen_y, image = spriteMove)
-
         # Draw a mark at variations, if there are any...
 
         if self.show_siblings.get():
-            sprite = spriteVarWhite if self.node.last_colour_played() == WHITE else spriteVar
+            sprite = spriteVarWhite if self.node.last_colour_played() == WHITE else spriteVarBlack
             for sib_move in self.node.sibling_moves():
                 screen_x, screen_y = screen_pos_from_board_pos(sib_move[0], sib_move[1], self.node.board.boardsize)
                 self.create_image(screen_x, screen_y, image = sprite)
 
         if self.show_children.get():
-            sprite = spriteVar if self.node.last_colour_played() in [WHITE, None] else spriteVarWhite
+            sprite = spriteVarBlack if self.node.last_colour_played() in [WHITE, None] else spriteVarWhite
             for child_move in self.node.children_moves():
                 screen_x, screen_y = screen_pos_from_board_pos(child_move[0], child_move[1], self.node.board.boardsize)
                 self.create_image(screen_x, screen_y, image = sprite)
@@ -204,6 +204,7 @@ class SGF_Board(tkinter.Canvas):
                 points = set()
                 for value in self.node.properties[mark]:
                     points |= gofish.points_from_points_string(value, self.node.board.boardsize)
+                    all_marks |= points
                 for point in points:
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
@@ -215,6 +216,7 @@ class SGF_Board(tkinter.Canvas):
                 if len(value) in [4,5,6]:
                     if value[2] == ":":
                         points = gofish.points_from_points_string(value[0:2], self.node.board.boardsize)
+                        all_marks |= points
                         for point in points:    # expecting 1 or 0 points
                             screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                             if self.node.board.state[point[0]][point[1]] == EMPTY:
@@ -224,6 +226,14 @@ class SGF_Board(tkinter.Canvas):
                             else:
                                 textcolour = "white"
                             self.create_text(screen_x, screen_y, text = value[3:], fill = textcolour)
+
+        # Draw a mark at the current move, if there is one...
+
+        move = self.node.what_was_the_move()
+        if move is not None:
+            if move not in all_marks:
+                screen_x, screen_y = screen_pos_from_board_pos(move[0], move[1], self.node.board.boardsize)
+                self.create_image(screen_x, screen_y, image = spriteMove)
 
 
     def node_changed(self):
@@ -558,9 +568,12 @@ class Root(tkinter.Tk):
         options_menu.add_checkbutton(label = "Show siblings", variable = board.show_siblings, command = board.show_siblings_was_toggled)
         options_menu.add_checkbutton(label = "Show children", variable = board.show_children, command = board.show_children_was_toggled)
 
+        file_menu = tkinter.Menu(menubar, tearoff = 0)
+        file_menu.add_command(label = "Load", command = board.opener)
+        file_menu.add_command(label = "Save", command = board.saver)
+
         menubar.add_cascade(label = "New", menu = new_board_menu)
-        menubar.add_command(label = "Load", command = board.opener)
-        menubar.add_command(label = "Save", command = board.saver)
+        menubar.add_cascade(label = "File", menu = file_menu)
         menubar.add_cascade(label = "Options", menu = options_menu)
         menubar.add_command(label = "Comments", command = commentwindow.deiconify)
         menubar.add_command(label = "Info", command = infowindow.deiconify)

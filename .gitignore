@@ -1,6 +1,7 @@
 __pycache__/
 examples/
 gfx/texture_override.gif
+gfx/textback_override.gif
 *.sgf
 *.exe
 *.dll
