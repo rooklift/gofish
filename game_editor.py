@@ -2,7 +2,7 @@ import os, sys
 import tkinter, tkinter.filedialog, tkinter.messagebox
 
 import gofish
-from gofish import BLACK, WHITE
+from gofish import BLACK, WHITE, EMPTY
 
 WIDTH, HEIGHT = 621, 621
 GAP = 31
@@ -45,6 +45,7 @@ def load_graphics():
     global spriteCircle; spriteCircle = tkinter.PhotoImage(file = "gfx/circle.gif")
     global spriteSquare; spriteSquare = tkinter.PhotoImage(file = "gfx/square.gif")
     global spriteMark; spriteMark = tkinter.PhotoImage(file = "gfx/mark.gif")
+    global textbackSprite; textbackSprite = tkinter.PhotoImage(file = "gfx/textback.gif")
 
     global markup_dict; markup_dict = {"TR": spriteTriangle, "CR": spriteCircle, "SQ": spriteSquare, "MA": spriteMark}
 
@@ -204,6 +205,24 @@ class SGF_Board(tkinter.Canvas):
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
 
+        # Draw text labels iff they are 1 char long
+
+        if "LB" in self.node.properties:
+            for value in self.node.properties["LB"]:
+                if len(value) == 4:
+                    if value[2] == ":":
+                        points = gofish.points_from_points_string(value[0:2], self.node.board.boardsize)
+                        for point in points:    # expecting 1 or 0 points
+                            screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
+                            if self.node.board.state[point[0]][point[1]] == EMPTY:
+                                self.create_image(screen_x, screen_y, image = textbackSprite)
+                            if self.node.board.state[point[0]][point[1]] in [EMPTY, WHITE]:
+                                textcolour = "black"
+                            else:
+                                textcolour = "white"
+                            self.create_text(screen_x, screen_y, text = value[3], fill = textcolour)
+
+
     def node_changed(self):
         self.draw_node()
         commentwindow.node_changed(self.node)
@@ -361,7 +380,7 @@ class CommentWindow(tkinter.Toplevel):
         self.title("Comments")
         self.protocol("WM_DELETE_WINDOW", self.withdraw)
 
-        self.text_widget = tkinter.Text(self, width = 60, height = 10, bg = "#F0F0F0", wrap = tkinter.WORD)
+        self.text_widget = tkinter.Text(self, width = 60, height = 20, bg = "#F0F0F0", wrap = tkinter.WORD)
         self.scrollbar = tkinter.Scrollbar(self)
 
         self.text_widget.pack(side = tkinter.LEFT, fill = tkinter.Y)
