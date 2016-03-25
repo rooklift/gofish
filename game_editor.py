@@ -208,11 +208,11 @@ class SGF_Board(tkinter.Canvas):
                     screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
 
-        # Draw text labels iff they are 1 char long
+        # Draw text labels iff they are 1-3 chars long
 
         if "LB" in self.node.properties:
             for value in self.node.properties["LB"]:
-                if len(value) == 4:
+                if len(value) in [4,5,6]:
                     if value[2] == ":":
                         points = gofish.points_from_points_string(value[0:2], self.node.board.boardsize)
                         for point in points:    # expecting 1 or 0 points
@@ -223,7 +223,7 @@ class SGF_Board(tkinter.Canvas):
                                 textcolour = "black"
                             else:
                                 textcolour = "white"
-                            self.create_text(screen_x, screen_y, text = value[3], fill = textcolour)
+                            self.create_text(screen_x, screen_y, text = value[3:], fill = textcolour)
 
 
     def node_changed(self):
