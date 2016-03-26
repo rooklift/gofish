@@ -114,7 +114,7 @@ def safe_string(s):     # "safe" meaning safely escaped \ and ] characters
     return safe_s
 
 
-def handicap_points(boardsize, handicap):
+def handicap_points(boardsize, handicap, tygem = False):
 
     points = set()
 
@@ -133,11 +133,19 @@ def handicap_points(boardsize, handicap):
         points.add((boardsize - d, 1 + d))
         points.add((1 + d, boardsize - d))
 
+    # Experiments suggest Tygem puts its 3rd handicap stone in the top left
+
     if handicap >= 3:
-        points.add((boardsize - d, boardsize - d))
+        if tygem:
+            points.add((1 + d, 1 + d))
+        else:
+            points.add((boardsize - d, boardsize - d))
 
     if handicap >= 4:
-        points.add((1 + d, 1 + d))
+        if tygem:
+            points.add((boardsize - d, boardsize - d))
+        else:
+            points.add((1 + d, 1 + d))
 
     if boardsize % 2 == 0:      # No handicap > 4 on even sided boards
         return points

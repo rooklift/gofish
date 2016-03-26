@@ -123,7 +123,7 @@ class SGF_Board(tkinter.Canvas):
         self.show_siblings.set(0)
         self.draw_node()
 
-    def open_file(self, infilename):
+    def open_file(self, infilename):        # expects that there is already a valid self.node
         try:
             unlink_target = self.node.get_root_node()
             self.node = gofish.load(infilename)

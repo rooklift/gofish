@@ -41,7 +41,7 @@ def parse_gib(gib):
 
             if handicap >= 2:
                 node.set_value("HA", handicap)
-                stones = handicap_points(19, handicap)
+                stones = handicap_points(19, handicap, tygem = True)
                 for point in stones:
                     node.add_value("AB", string_from_point(point[0], point[1]))
 
