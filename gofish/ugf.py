@@ -51,7 +51,7 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
                     handicap_str = line.split("=")[1].split(",")[0]
                     handicap = int(handicap_str)
                     if handicap >= 2:
-                        root.set_value("HA", handicap)
+                        root.set_value("HA", handicap)      # The actual stones are placed in the data section
 
                     komi_str = line.split("=")[1].split(",")[1]
                     komi = float(komi_str)

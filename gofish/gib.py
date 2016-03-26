@@ -4,6 +4,7 @@
 
 from gofish.constants import *
 from gofish.tree import *
+from gofish.utils import *
 
 def parse_gib(gib):
 
@@ -40,7 +41,7 @@ def parse_gib(gib):
 
             if handicap >= 2:
                 node.set_value("HA", handicap)
-                stones = handicap_points_19[handicap]
+                stones = handicap_points(19, handicap)
                 for point in stones:
                     node.add_value("AB", string_from_point(point[0], point[1]))
 

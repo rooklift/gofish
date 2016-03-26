@@ -2,6 +2,7 @@
 
 from gofish.constants import *
 from gofish.tree import *
+from gofish.utils import *
 
 def parse_ngf(ngf):
 
@@ -30,9 +31,6 @@ def parse_ngf(ngf):
     if boardsize < 1 or boardsize > 19 or handicap < 0 or handicap > 9:
         raise ParserFail
 
-    if boardsize != 19 and handicap >= 2:     # Can't be bothered
-        raise ParserFail
-
     root = Node(parent = None)
     node = root
 
@@ -42,7 +40,7 @@ def parse_ngf(ngf):
 
     if handicap >= 2:
         root.set_value("HA", handicap)
-        stones = handicap_points_19[handicap]
+        stones = handicap_points(boardsize, handicap)
         for point in stones:
             root.add_value("AB", string_from_point(point[0], point[1]))
 
