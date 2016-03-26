@@ -8,16 +8,17 @@ WIDTH, HEIGHT = 621, 621
 GAP = 31
 
 MOTD = """
-  Fohristiwhirl's SGF readwriter. Keys:
+  NAVIGATE:
+  -- Arrows, Home, End, PageUp, PageDown
 
-  -- LOAD / SAVE: Ctrl-O, Ctrl-S
+  SWITCH TO SIBLING:
+  -- Tab
 
-  -- NAVIGATE: Arrows, Home, End, PageUp, PageDown
-  -- SWITCH TO SIBLING: Tab
-  -- RETURN TO MAIN LINE: Backspace
-  -- DESTROY NODE: Delete
+  RETURN TO MAIN LINE:
+  -- Backspace
 
-  -- MAKE MOVE: Mouse Button
+  DESTROY NODE:
+  -- Delete
 """
 
 # --------------------------------------------------------------------------------------
@@ -383,7 +384,7 @@ class SGF_Board(tkinter.Canvas):
         if self.node.parent is None and len(self.node.children) == 0:
             ok = True
         else:
-            ok = tkinter.messagebox.askokcancel("Reset?", "This requires a fresh board. Destroy the current one?")
+            ok = tkinter.messagebox.askokcancel("New board?", "This requires a fresh board. Destroy the current one?")
 
         if ok:
             self.new_board(self.node.board.boardsize)
@@ -618,7 +619,5 @@ class Root(tkinter.Tk):
 
 
 if __name__ == "__main__":
-    print(MOTD)
-
     app = Root()
     app.mainloop()
