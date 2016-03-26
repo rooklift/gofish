@@ -571,6 +571,10 @@ class Root(tkinter.Tk):
 
         menubar = tkinter.Menu(self)
 
+        file_menu = tkinter.Menu(menubar, tearoff = 0)
+        file_menu.add_command(label = "Open", command = board.opener)
+        file_menu.add_command(label = "Save", command = board.saver)
+
         new_board_menu = tkinter.Menu(menubar, tearoff = 0)
         new_board_menu.add_command(label = "19x19", command = lambda : board.new_board(19))
         new_board_menu.add_command(label = "17x17", command = lambda : board.new_board(17))
@@ -594,13 +598,9 @@ class Root(tkinter.Tk):
         options_menu.add_checkbutton(label = "Show siblings", variable = board.show_siblings, command = board.show_siblings_was_toggled)
         options_menu.add_checkbutton(label = "Show children", variable = board.show_children, command = board.show_children_was_toggled)
 
-        file_menu = tkinter.Menu(menubar, tearoff = 0)
-        file_menu.add_command(label = "Open", command = board.opener)
-        file_menu.add_command(label = "Save", command = board.saver)
-
+        menubar.add_cascade(label = "File", menu = file_menu)
         menubar.add_cascade(label = "New", menu = new_board_menu)
         menubar.add_cascade(label = "Handicap", menu = handicap_menu)
-        menubar.add_cascade(label = "File", menu = file_menu)
         menubar.add_cascade(label = "Options", menu = options_menu)
         menubar.add_command(label = "Comments", command = commentwindow.deiconify)
         menubar.add_command(label = "Info", command = infowindow.deiconify)
