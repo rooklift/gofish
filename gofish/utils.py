@@ -112,3 +112,47 @@ def safe_string(s):     # "safe" meaning safely escaped \ and ] characters
             safe_s += "\\"
         safe_s += ch
     return safe_s
+
+
+def handicap_points(boardsize, handicap):
+
+    points = set()
+
+    if boardsize < 4:
+        return points
+
+    if handicap > 9:
+        handicap = 9
+
+    if boardsize < 13:
+        d = 2
+    else:
+        d = 3
+
+    if handicap >= 2:
+        points.add((boardsize - d, 1 + d))
+        points.add((1 + d, boardsize - d))
+
+    if handicap >= 3:
+        points.add((boardsize - d, boardsize - d))
+
+    if handicap >= 4:
+        points.add((1 + d, 1 + d))
+
+    if boardsize % 2 == 0:      # No handicap > 4 on even sided boards
+        return points
+
+    mid = (boardsize + 1) // 2
+
+    if handicap in [5, 7, 9]:
+        points.add((mid, mid))
+
+    if handicap in [6, 7, 8, 9]:
+        points.add((1 + d, mid))
+        points.add((boardsize - d, mid))
+
+    if handicap in [8, 9]:
+        points.add((mid, 1 + d))
+        points.add((mid, boardsize - d))
+
+    return points

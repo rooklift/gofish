@@ -102,12 +102,7 @@ class SGF_Board(tkinter.Canvas):
 
         self.owner = owner
 
-        self.bind("<Key>", self.call_keypress_handler)
-        self.bind("<Button-1>", self.mouseclick_handler)
-        self.bind("<Control-o>", self.opener)
-        self.bind("<Control-s>", self.saver)
-
-        self.node = gofish.new_tree(19)        # Do this now in case the load fails
+        self.node = gofish.new_tree(19)     # Do this now in case the load fails
 
         self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -115,7 +110,7 @@ class SGF_Board(tkinter.Canvas):
         self.show_children = tkinter.IntVar()
 
         if filename is not None:
-            self.open_file(filename)
+            self.open_file(filename)        # Can fail, leaving us with the tree we created above
 
         self.node_changed()
 
@@ -236,7 +231,6 @@ class SGF_Board(tkinter.Canvas):
             if move not in all_marks:
                 screen_x, screen_y = screen_pos_from_board_pos(move[0], move[1], self.node.board.boardsize)
                 self.create_image(screen_x, screen_y, image = spriteMove)
-
 
     def node_changed(self):
         self.draw_node()
@@ -379,16 +373,30 @@ class SGF_Board(tkinter.Canvas):
             self.node = result
             self.node_changed()
 
-    def new_board(self, size):
-        # if self.node.parent or len(self.node.children) > 0:
-        #     ok = tkinter.messagebox.askokcancel("New board?", "Really start a new board? Unsaved changes will be lost!")
-        # else:
-        #     ok = True
-        # if ok:
-            unlink_target = self.node.get_root_node()
-            self.node = gofish.new_tree(size)
-            unlink_target.unlink_recursive()    # recursively destroy the old tree's circular references so the GC can work
+    def new_board(self, size):      # assumes there already is a board; will crash if this is not so
+        unlink_target = self.node.get_root_node()
+        self.node = gofish.new_tree(size)
+        unlink_target.unlink_recursive()    # recursively destroy the old tree's circular references so the GC can work
+        self.node_changed()
+
+    def set_handicap(self, h):
+        if self.node.parent is None and len(self.node.children) == 0:
+            ok = True
+        else:
+            ok = tkinter.messagebox.askokcancel("Reset?", "This requires a fresh board. Destroy the current one?")
+
+        if ok:
+            self.new_board(self.node.board.boardsize)
+
+            points = gofish.handicap_points(self.node.board.boardsize, h)
+            self.node.set_value("HA", h)
+            for point in points:
+                s = gofish.string_from_point(point[0], point[1])
+                self.node.add_value("AB", s)
+                self.node.update()
+
             self.node_changed()
+
 
 # ---------------------------------------------------------------------------------------
 
@@ -570,6 +578,17 @@ class Root(tkinter.Tk):
         new_board_menu.add_command(label = "13x13", command = lambda : board.new_board(13))
         new_board_menu.add_command(label = "11x11", command = lambda : board.new_board(11))
         new_board_menu.add_command(label = "9x9", command = lambda : board.new_board(9))
+        new_board_menu.add_command(label = "7x7", command = lambda : board.new_board(7))
+
+        handicap_menu = tkinter.Menu(menubar, tearoff = 0)
+        handicap_menu.add_command(label = "9", command = lambda : board.set_handicap(9))
+        handicap_menu.add_command(label = "8", command = lambda : board.set_handicap(8))
+        handicap_menu.add_command(label = "7", command = lambda : board.set_handicap(7))
+        handicap_menu.add_command(label = "6", command = lambda : board.set_handicap(6))
+        handicap_menu.add_command(label = "5", command = lambda : board.set_handicap(5))
+        handicap_menu.add_command(label = "4", command = lambda : board.set_handicap(4))
+        handicap_menu.add_command(label = "3", command = lambda : board.set_handicap(3))
+        handicap_menu.add_command(label = "2", command = lambda : board.set_handicap(2))
 
         options_menu = tkinter.Menu(menubar, tearoff = 0)
         options_menu.add_checkbutton(label = "Show siblings", variable = board.show_siblings, command = board.show_siblings_was_toggled)
@@ -580,6 +599,7 @@ class Root(tkinter.Tk):
         file_menu.add_command(label = "Save", command = board.saver)
 
         menubar.add_cascade(label = "New", menu = new_board_menu)
+        menubar.add_cascade(label = "Handicap", menu = handicap_menu)
         menubar.add_cascade(label = "File", menu = file_menu)
         menubar.add_cascade(label = "Options", menu = options_menu)
         menubar.add_command(label = "Comments", command = commentwindow.deiconify)
@@ -589,7 +609,12 @@ class Root(tkinter.Tk):
         self.config(menu = menubar)
 
         board.pack()
-        board.focus_set()
+
+        self.focus_set()
+        self.bind("<Key>", board.call_keypress_handler)
+        self.bind("<Button-1>", board.mouseclick_handler)
+        self.bind("<Control-o>", board.opener)
+        self.bind("<Control-s>", board.saver)
 
 
 if __name__ == "__main__":
