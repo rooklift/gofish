@@ -28,7 +28,7 @@ def parse_ngf(ngf):
         rawdate = ""
         komi = 0
 
-    if boardsize < 1 or boardsize > 19 or handicap < 0 or handicap > 9:
+    if handicap < 0 or handicap > 9:
         raise ParserFail
 
     root = Node(parent = None)

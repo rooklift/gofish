@@ -36,7 +36,7 @@ def parse_ugf(ugf):     # Note that the files are often (always?) named .ugi
 
                     if handicap is None or boardsize is None:
                         raise ParserFail
-                    if boardsize < 1 or boardsize > 19 or handicap < 0:
+                    if handicap < 0:
                         raise ParserFail
 
                 continue
