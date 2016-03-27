@@ -62,7 +62,7 @@ class Board():                          # Internally the arrays are 1 too big, w
                         return True
         return False
 
-    def play_move(self, colour, x, y):
+    def play_move(self, colour, x, y):      # No legality checks, as per SGF standard
         assert(colour in [BLACK, WHITE])
 
         opponent = BLACK if colour == WHITE else WHITE
