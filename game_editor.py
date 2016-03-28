@@ -154,11 +154,14 @@ class SGF_Board(tkinter.Canvas):
 
         # Draw the hoshi points...
 
-        for x in range(3, boardsize - 1):
-            for y in range(boardsize - 1):
-                if gofish.is_star_point(x, y, boardsize):
-                    screen_x, screen_y = screen_pos_from_board_pos(x, y, boardsize)
-                    self.create_image(screen_x, screen_y, image = spriteHoshi)
+        if boardsize > 13:
+            hoshi_points = gofish.handicap_points(boardsize, 9)
+        else:
+            hoshi_points = gofish.handicap_points(boardsize, 5)
+
+        for point in hoshi_points:
+            screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], boardsize)
+            self.create_image(screen_x, screen_y, image = spriteHoshi)
 
         # Draw the lines...
 
