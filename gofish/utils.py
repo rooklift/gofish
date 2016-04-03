@@ -155,11 +155,11 @@ def handicap_points(boardsize, handicap, tygem = False):
     if handicap in [5, 7, 9]:
         points.add((mid, mid))
 
-    if handicap in [6, 7, 8, 9]:
+    if handicap >= 6:
         points.add((1 + d, mid))
         points.add((boardsize - d, mid))
 
-    if handicap in [8, 9]:
+    if handicap >= 8:
         points.add((mid, 1 + d))
         points.add((mid, boardsize - d))
 

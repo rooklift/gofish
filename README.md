@@ -6,7 +6,7 @@ Tools for the game of Go:
 * `game_editor.py` - a basic [kifu](https://en.wikipedia.org/wiki/Kifu) editor
 * `gtp_relay.py` - a GUI to play against a GTP ([Go Text Protocol](https://www.lysator.liu.se/~gunnar/gtp/)) engine
 
-The parser and game editor have been tested with [Kogo's Joseki Dictionary](http://waterfire.us/joseki.htm) as a fairly pathological test case; things seem to work, after 20-30 seconds of parsing, and 450 MB of memory usage...
+The parser and game editor have been tested with [Kogo's Joseki Dictionary](http://waterfire.us/joseki.htm) as a fairly pathological test case; things seem to work, after 20-30 seconds and 450 MB of memory usage... (this is because we create and store a board for every node, which is normally fine but inefficient for truly large files).
 
 As an example of how to use the GTP relay, if you have [GNU Go](https://www.gnu.org/software/gnugo/) installed, you can do:
 
