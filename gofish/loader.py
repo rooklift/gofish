@@ -61,8 +61,8 @@ def load(filename):
     if size > 19 or size < 1:
         raise BadBoardSize
 
-    # The parsers just set up SGF keys and values in the nodes, but don't touch the board or other info like
-    # main line status and move count. We do that now:
+    # The parsers just set up SGF keys and values in the nodes. We no longer update the boards
+    # when loading a file, but still need to update main line status and moves played:
 
     root.is_main_line = True
     root.update_recursive(update_board = False)
