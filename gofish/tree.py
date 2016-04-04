@@ -514,7 +514,7 @@ class Node():
         board = Board(size)
 
         for node in path:
-            board.update(node.properties)
+            board.update_from_node(node)
 
         return board
 
