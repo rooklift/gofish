@@ -541,7 +541,7 @@ class Node():
             board.update_from_node(node)
             if node is not self:
                 if node.__board is None:
-                    node.board = copy.deepcopy(board)   # Cache the nodes while we're at it
+                    node.__board = copy.deepcopy(board)   # Cache the nodes while we're at it
 
         return board
 
