@@ -64,8 +64,7 @@ def load(filename):
     # The parsers just set up SGF keys and values in the nodes, but don't touch the board or other info like
     # main line status and move count. We do that now:
 
-    root.board = Board(size)
     root.is_main_line = True
-    root.update_recursive()
+    root.update_recursive(update_board = False)
 
     return root

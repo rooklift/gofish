@@ -130,13 +130,23 @@ class Node():
     def __init__(self, parent):
         self.properties = dict()
         self.children = []
-        self.board = None
+        self.__board = None
         self.moves_made = 0
         self.is_main_line = False
         self.parent = parent
 
         if parent:
             parent.children.append(self)
+
+    @property
+    def board(self):
+        if not self.__board:
+            self.__board = self.board_from_scratch()
+        return self.__board
+
+    @board.setter
+    def board(self, board):
+        self.__board = board
 
     def moves_in_this_node(self):
         ret = 0
@@ -145,24 +155,25 @@ class Node():
                 ret += 1
         return ret
 
-    def update(self):                               # Use the properties to modify the board
-        self.board.update_from_node(self)
+    def update(self, update_board = True):              # Use the properties to modify the node
+        if update_board:
+            self.board.update_from_node(self)
         self.moves_made += self.moves_in_this_node()
 
-    def update_recursive(self):                     # Only goes recursive if 2 or more children
+    def update_recursive(self, update_board = True):    # Only goes recursive if 2 or more children
         node = self
         while 1:
-            node.update()
+            node.update(update_board)
             if len(node.children) == 0:
                 return
-            elif len(node.children) == 1:           # i.e. just iterate where possible
+            elif len(node.children) == 1:               # i.e. just iterate where possible
                 node.copy_state_to_child(node.children[0])
                 node = node.children[0]
                 continue
             else:
                 for child in node.children:
                     node.copy_state_to_child(child)
-                    child.update_recursive()
+                    child.update_recursive(update_board)
                 return
 
     def fix_main_line_status(self):
@@ -185,13 +196,15 @@ class Node():
                     child.fix_main_line_status_recursive()
                 return
 
-    def copy_state_to_child(self, child):
+    def copy_state_to_child(self, child, copyboard = False):
         if len(self.children) > 0:                  # there's no guarantee the child has actually been appended, hence this test
             if child is self.children[0]:
                 if self.is_main_line:
                     child.is_main_line = True
 
-        child.board = copy.deepcopy(self.board)
+        if copyboard:
+            child.board = copy.deepcopy(self.board)     # usually not needed; the board is generated the first time it's needed
+
         child.moves_made = self.moves_made
 
     def dump(self, include_comments = True):
@@ -374,7 +387,7 @@ class Node():
         else:
             child = Node(parent = None)
 
-        self.copy_state_to_child(child)
+        self.copy_state_to_child(child, copyboard = True)
 
         key = "W" if colour == WHITE else "B"
         child.set_value(key, string_from_point(x, y))
@@ -499,8 +512,8 @@ class Node():
 
         return list(reversed(path))
 
-    def board_from_scratch(self):   # Create a board by iterating through the node path starting at root
-
+    def board_from_scratch(self):   # Create a board by iterating through the node path starting at root.
+                                    # Incidentally, this also caches the board in every node traversed
         path = self.node_path()
 
         if "SZ" not in path[0].properties:
@@ -515,6 +528,9 @@ class Node():
 
         for node in path:
             board.update_from_node(node)
+            if node is not self:
+                if node.__board is None:
+                    node.board = copy.deepcopy(board)
 
         return board
 

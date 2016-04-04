@@ -5,3 +5,4 @@ class OffBoard(Exception): pass
 class BadBoardSize(Exception): pass
 class ParserFail(Exception): pass
 class WrongNode(Exception): pass
+class NoBoardSize(Exception): pass
