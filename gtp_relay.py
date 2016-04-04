@@ -327,7 +327,9 @@ class GTP_GUI(tkinter.Canvas):
 
     def draw_node(self):
         self.delete(tkinter.ALL)              # DESTROY all!
-        boardsize = self.node.board.boardsize
+
+        board = self.node.board
+        boardsize = board.boardsize
 
         # Set the title bar of the owning window
 
@@ -361,25 +363,25 @@ class GTP_GUI(tkinter.Canvas):
 
         # Draw the stones...
 
-        for x in range(1, self.node.board.boardsize + 1):
-            for y in range(1, self.node.board.boardsize + 1):
-                screen_x, screen_y = screen_pos_from_board_pos(x, y, self.node.board.boardsize)
-                if self.node.board.state[x][y] == BLACK:
+        for x in range(1, boardsize + 1):
+            for y in range(1, boardsize + 1):
+                screen_x, screen_y = screen_pos_from_board_pos(x, y, boardsize)
+                if board.state[x][y] == BLACK:
                     self.create_image(screen_x, screen_y, image = spriteBlack)
-                elif self.node.board.state[x][y] == WHITE:
+                elif board.state[x][y] == WHITE:
                     self.create_image(screen_x, screen_y, image = spriteWhite)
 
         # Draw a mark at the current move, if there is one...
 
         move = self.node.what_was_the_move()
         if move is not None:
-            screen_x, screen_y = screen_pos_from_board_pos(move[0], move[1], self.node.board.boardsize)
+            screen_x, screen_y = screen_pos_from_board_pos(move[0], move[1], boardsize)
             self.create_image(screen_x, screen_y, image = spriteMove)
 
         # Draw a mark at variations, if there are any...
 
         for sib_move in self.node.sibling_moves():
-            screen_x, screen_y = screen_pos_from_board_pos(sib_move[0], sib_move[1], self.node.board.boardsize)
+            screen_x, screen_y = screen_pos_from_board_pos(sib_move[0], sib_move[1], boardsize)
             self.create_image(screen_x, screen_y, image = spriteVar)
 
         # Draw the commonly used marks...
@@ -388,9 +390,9 @@ class GTP_GUI(tkinter.Canvas):
             if mark in self.node.properties:
                 points = set()
                 for value in self.node.properties[mark]:
-                    points |= gofish.points_from_points_string(value, self.node.board.boardsize)
+                    points |= gofish.points_from_points_string(value, boardsize)
                 for point in points:
-                    screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], self.node.board.boardsize)
+                    screen_x, screen_y = screen_pos_from_board_pos(point[0], point[1], boardsize)
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
 
 
