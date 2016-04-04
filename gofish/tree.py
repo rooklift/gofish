@@ -93,6 +93,38 @@ class Board():                          # Internally the arrays are 1 too big, w
             if self.state[i][j] == colour:
                 self.destroy_group(i, j)
 
+    def update_from_node(self, node):
+
+        # Use the node's properties to modify the board.
+
+        # A node "should" have only 1 of "B" or "W", and only 1 value in the list.
+        # The result will be wrong if the specs are violated. Whatever.
+
+        movers = {"B": BLACK, "W": WHITE}
+
+        for mover in movers:
+            if mover in node.properties:
+                movestring = node.properties[mover][0]
+                try:
+                    x = ord(movestring[0]) - 96
+                    y = ord(movestring[1]) - 96
+                    self.play_move(movers[mover], x, y)
+                except (IndexError, OffBoard):
+                    pass
+
+        # A node can have all of "AB", "AW" and "AE" (but should not also have "B" or "W").
+        # Note that adding a stone doesn't count as "playing" it and can
+        # result in illegal positions (the specs allow this explicitly)
+
+        adders = {"AB": BLACK, "AW": WHITE, "AE": EMPTY}
+
+        for adder in adders:
+            if adder in node.properties:
+                for value in node.properties[adder]:
+                    for point in points_from_points_string(value, self.boardsize):    # only returns points inside the board boundaries
+                        x, y = point[0], point[1]
+                        self.state[x][y] = adders[adder]
+
 
 class Node():
     def __init__(self, parent):
@@ -106,37 +138,16 @@ class Node():
         if parent:
             parent.children.append(self)
 
-    def update(self):             # Use the properties to modify the board...
-
-        # A node "should" have only 1 of "B" or "W", and only 1 value in the list.
-        # The result will be wrong if the specs are violated. Whatever.
-
-        movers = {"B": BLACK, "W": WHITE}
-
-        for mover in movers:
+    def moves_in_this_node(self):
+        ret = 0
+        for mover in ["B", "W"]:
             if mover in self.properties:
-                movestring = self.properties[mover][0]
-                try:
-                    x = ord(movestring[0]) - 96
-                    y = ord(movestring[1]) - 96
-                    self.board.play_move(movers[mover], x, y)
-                except (IndexError, OffBoard):
-                    pass
-                self.moves_made += 1        # Consider off-board / passing moves as moves for counting purposes
-                                            # (incidentally, old SGF sometimes uses an off-board move to mean pass)
+                ret += 1
+        return ret
 
-        # A node can have all of "AB", "AW" and "AE"
-        # Note that adding a stone doesn't count as "playing" it and can
-        # result in illegal positions (the specs allow this explicitly)
-
-        adders = {"AB": BLACK, "AW": WHITE, "AE": EMPTY}
-
-        for adder in adders:
-            if adder in self.properties:
-                for value in self.properties[adder]:
-                    for point in points_from_points_string(value, self.board.boardsize):    # only returns points inside the board boundaries
-                        x, y = point[0], point[1]
-                        self.board.state[x][y] = adders[adder]
+    def update(self):                               # Use the properties to modify the board
+        self.board.update_from_node(self)
+        self.moves_made += self.moves_in_this_node()
 
     def update_recursive(self):                     # Only goes recursive if 2 or more children
         node = self
@@ -470,6 +481,42 @@ class Node():
                     child.unlink_recursive()
                 node.children = []
                 return
+
+    # The following 2 functions are experimental. Basically, it's possible to
+    # generate a board when needed and not cache it in each node.
+
+    def node_path(self):            # Return the path of nodes that leads to this node
+
+        path = []
+        node = self
+
+        while 1:
+            path.append(node)
+            if node.parent:
+                node = node.parent
+            else:
+                break
+
+        return list(reversed(path))
+
+    def board_from_scratch(self):   # Create a board by iterating through the node path starting at root
+
+        path = self.node_path()
+
+        if "SZ" not in path[0].properties:
+            raise NoBoardSize
+
+        size = int(path[0].properties["SZ"][0])
+
+        if size < 1 or size > 19:
+            raise BadBoardSize
+
+        board = Board(size)
+
+        for node in path:
+            board.update(node.properties)
+
+        return board
 
 def new_tree(size):             # Returns a ready-to-use tree with board
     if size > 19 or size < 1:
