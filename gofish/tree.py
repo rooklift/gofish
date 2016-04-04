@@ -167,12 +167,12 @@ class Node():
             if len(node.children) == 0:
                 return
             elif len(node.children) == 1:               # i.e. just iterate where possible
-                node.copy_state_to_child(node.children[0])
+                node.copy_state_to_child(node.children[0], copy_board = update_board)
                 node = node.children[0]
                 continue
             else:
                 for child in node.children:
-                    node.copy_state_to_child(child)
+                    node.copy_state_to_child(child, copy_board = update_board)
                     child.update_recursive(update_board)
                 return
 
@@ -196,14 +196,14 @@ class Node():
                     child.fix_main_line_status_recursive()
                 return
 
-    def copy_state_to_child(self, child, copyboard = False):
+    def copy_state_to_child(self, child, copy_board = True):
         if len(self.children) > 0:                  # there's no guarantee the child has actually been appended, hence this test
             if child is self.children[0]:
                 if self.is_main_line:
                     child.is_main_line = True
 
-        if copyboard:
-            child.board = copy.deepcopy(self.board)     # usually not needed; the board is generated the first time it's needed
+        if copy_board:
+            child.board = copy.deepcopy(self.board)     # not needed when loading a file; the board is generated the first time it's needed
 
         child.moves_made = self.moves_made
 
@@ -387,7 +387,7 @@ class Node():
         else:
             child = Node(parent = None)
 
-        self.copy_state_to_child(child, copyboard = True)
+        self.copy_state_to_child(child)
 
         key = "W" if colour == WHITE else "B"
         child.set_value(key, string_from_point(x, y))
