@@ -141,7 +141,7 @@ class Node():
     @property
     def board(self):
         if not self.__board:
-            self.__board = self.board_from_scratch()
+            self.__board = self.build_board()
         return self.__board
 
     @board.setter
@@ -512,8 +512,8 @@ class Node():
 
         return list(reversed(path))
 
-    def board_from_scratch(self):   # Create a board by iterating through the node path starting at root.
-                                    # Incidentally, this also caches the board in every node traversed
+    def build_board(self):   # Create a board by iterating from a known board, possibly the root
+
         path = self.node_path()
 
         if "SZ" not in path[0].properties:
@@ -524,13 +524,24 @@ class Node():
         if size < 1 or size > 19:
             raise BadBoardSize
 
-        board = Board(size)
+        # Find the latest node with a board:
 
-        for node in path:
+        board = None
+        for n in range(len(path) - 1, -1, -1):
+            node = path[n]
+            if node.__board is not None:
+                board = copy.deepcopy(node.__board)
+                break
+        if not board:
+            board = Board(size)
+            n = 0
+
+        for i in range(n, len(path)):
+            node = path[i]
             board.update_from_node(node)
             if node is not self:
                 if node.__board is None:
-                    node.board = copy.deepcopy(board)
+                    node.board = copy.deepcopy(board)   # Cache the nodes while we're at it
 
         return board
 
