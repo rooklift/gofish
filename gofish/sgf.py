@@ -64,7 +64,7 @@ def load_sgf_tree(sgf, parent_of_local_root):   # The caller should ensure there
                     newnode = Node(parent = node)
                     node = newnode
             else:
-                if not c.isspace():
+                if c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":   # Other chars are skipped, e.g. AddWhite becomes AW (saw this once)
                     if keycomplete:
                         key = ""
                         keycomplete = False
