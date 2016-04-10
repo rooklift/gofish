@@ -26,9 +26,9 @@ def parse_gib(gib):
 
         if line.startswith("\\[GAMERESULT="):
             if "white" in line.lower() and "black" not in line.lower():
-                root.safe_commit("RE", "W+")
+                root.set_value("RE", "W+")
             if "black" in line.lower() and "white" not in line.lower():
-                root.safe_commit("RE", "B+")
+                root.set_value("RE", "B+")
 
         if line[0:3] == "INI":
 
