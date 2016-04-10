@@ -24,6 +24,12 @@ def parse_gib(gib):
             s = line[16:-2]
             root.safe_commit("PW", s)
 
+        if line.startswith("\\[GAMERESULT="):
+            if "white" in line.lower() and "black" not in line.lower():
+                root.safe_commit("RE", "W+")
+            if "black" in line.lower() and "white" not in line.lower():
+                root.safe_commit("RE", "B+")
+
         if line[0:3] == "INI":
 
             if node is not root:

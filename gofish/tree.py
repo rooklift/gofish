@@ -95,7 +95,9 @@ class Board():                          # Internally the arrays are 1 too big, w
 
     def update_from_node(self, node):
 
-        # Use the node's properties to modify the board.
+        # Use the node's properties to modify the board. For various reasons, this
+        # might actually be used on a board that's already been so modified, but
+        # that should be completely harmless.
 
         # A node "should" have only 1 of "B" or "W", and only 1 value in the list.
         # The result will be wrong if the specs are violated. Whatever.
