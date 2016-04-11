@@ -528,7 +528,9 @@ class InfoWindow(tkinter.Toplevel):
         if newroot is self.root:
             return
 
-        # If the identity of the root has changed, save the info into the old root:
+        # If the identity of the root has changed, save the info into the old root...
+        # This is actually pointless. When the game is saved, .commit_info() is called
+        # by the saver.
 
         self.commit_info()
 
