@@ -405,6 +405,16 @@ class SGF_Board(tkinter.Canvas):
 
             self.node_changed()
 
+    def clear_markup(self):
+        self.node.clear_markup()
+        commentwindow.text_widget.delete(1.0, tkinter.END)  # Clear the comment window so it doesn't rewrite its text
+        self.node_changed()
+
+    def clear_markup_all(self):
+        commentwindow.text_widget.delete(1.0, tkinter.END)  # Clear the comment window so it doesn't rewrite its text
+        root = self.node.get_root_node()
+        root.clear_markup_recursive()
+        self.node_changed()
 
 # ---------------------------------------------------------------------------------------
 
@@ -518,7 +528,10 @@ class InfoWindow(tkinter.Toplevel):
         if newroot is self.root:
             return
 
+        # If the identity of the root has changed, save the info into the old root:
+
         self.commit_info()
+
         self.root = newroot
 
         for key in self.widgets:                            # e.g. key is "RE" or "KM" etc...
@@ -605,6 +618,9 @@ class Root(tkinter.Tk):
         options_menu = tkinter.Menu(menubar, tearoff = 0)
         options_menu.add_checkbutton(label = "Show siblings", variable = board.show_siblings, command = board.show_siblings_was_toggled)
         options_menu.add_checkbutton(label = "Show children", variable = board.show_children, command = board.show_children_was_toggled)
+        options_menu.add_separator()
+        options_menu.add_command(label="Clear markup (this node)", command = board.clear_markup)
+        options_menu.add_command(label="Clear markup (all)", command = board.clear_markup_all)
 
         menubar.add_cascade(label = "File", menu = file_menu)
         menubar.add_cascade(label = "New", menu = new_board_menu)

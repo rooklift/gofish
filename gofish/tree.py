@@ -497,9 +497,6 @@ class Node():
                 node.children = []
                 return
 
-    # The following 2 functions are experimental. Basically, it's possible to
-    # generate a board when needed and not cache it in each node.
-
     def node_path(self):            # Return the path of nodes that leads to this node
 
         path = []
@@ -546,6 +543,29 @@ class Node():
                     node.__board = copy.deepcopy(board)   # Cache the nodes while we're at it
 
         return board
+
+    def clear_markup(self):
+        allkeys = []
+        for key in self.properties:
+            allkeys.append(key)     # We do this so the dict doesn't change size during the following:
+        for key in allkeys:
+            if key not in ["AB", "AW", "B", "W", "FF", "GM", "CA", "SZ", "KM", "RE", "EV", "GN", "PC", "DT", "PB", "PW"]:
+                self.properties.pop(key)
+
+    def clear_markup_recursive(self):
+        node = self
+        while 1:
+            node.clear_markup()
+            if len(node.children) == 0:
+                return
+            elif len(node.children) == 1:           # i.e. just iterate where possible
+                node = node.children[0]
+                continue
+            else:
+                for child in node.children:
+                    child.clear_markup_recursive()
+                return
+
 
 def new_tree(size):             # Returns a ready-to-use tree with board
     if size > 19 or size < 1:
