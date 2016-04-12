@@ -256,7 +256,7 @@ class Node():
             except KeyError:
                 pass
 
-    def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on.
+    def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on. A pass causes None to be returned.
         for key in ["B", "W"]:
             if key in self.properties:
                 movestring = self.properties[key][0]
@@ -378,6 +378,15 @@ class Node():
         else:
             return None
 
+    def make_empty_child(self, append = True):
+        if append:
+            child = Node(parent = self)             # This automatically appends the child to this node
+        else:
+            child = Node(parent = None)
+
+        self.copy_state_to_child(child)
+        return child
+
     def make_child_from_move(self, colour, x, y, append = True):
         assert(colour in [BLACK, WHITE])
 
@@ -456,9 +465,7 @@ class Node():
 
         # This is intended to be used on the root node to add handicap stones or setup
         # for a problem. Otherwise it will generally raise an exception (e.g. if a move
-        # is present in the node, which it usually will be).
-
-        assert(colour in [BLACK, WHITE])
+        # is present in the node, or if the node has any children).
 
         if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
             raise OffBoard
@@ -469,10 +476,36 @@ class Node():
         if "B" in self.properties or "W" in self.properties:
             raise WrongNode
 
-        key = "AW" if colour == WHITE else "AB"
-        s = string_from_point(x, y)
+        # AB, AW and AE are all mutually exclusive, so we go through some rigmarol to ensure this...
 
-        self.add_value(key, s)
+        ab_set = set()
+        aw_set = set()
+        ae_set = set()
+
+        all_point_sets = {"AB": ab_set, "AW": aw_set, "AE": ae_set}
+
+        for key, point_set in all_point_sets.items():
+
+            if key in self.properties:
+                for value in self.properties[key]:
+                    point_set |= points_from_points_string(value, self.board.boardsize)
+
+            point_set.discard((x,y))                # This implements the mutual exclusion mentioned above
+
+            if colour == WHITE and key == "AW":
+                point_set.add((x,y))
+            if colour == BLACK and key == "AB":
+                point_set.add((x,y))
+            if colour == EMPTY and key == "AE":
+                point_set.add((x,y))
+
+            self.properties.pop(key, None)          # Delete property from the Node; will maybe be recreated later...
+
+        for key, point_set in all_point_sets.items():
+            for point in point_set:
+                s = string_from_point(point[0], point[1])
+                self.add_value(key, s)
+
         self.update()
 
     def unlink_recursive(self):

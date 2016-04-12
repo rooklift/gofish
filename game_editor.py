@@ -110,18 +110,55 @@ class SGF_Board(tkinter.Canvas):
         self.show_siblings = tkinter.IntVar()
         self.show_children = tkinter.IntVar()
 
+        self.mode_normal = tkinter.IntVar()
+        self.mode_normal.set(1)
+        self.mode_ab = tkinter.IntVar()
+        self.mode_aw = tkinter.IntVar()
+        self.mode_ae = tkinter.IntVar()
+
         if filename is not None:
             self.open_file(filename)        # Can fail, leaving us with the tree we created above
 
         self.node_changed()
 
-    def show_siblings_was_toggled(self):    # regardless of whether this button is on or off, the other will be off
+    # The show siblings / show children variables can both be off, or one of them can be on, but not both.
+    # Tkinter is allowed to toggle them on/off when selected, but the other one must be off in either case...
+
+    def show_siblings_was_toggled(self):
         self.show_children.set(0)
         self.draw_node()
 
-    def show_children_was_toggled(self):    # likewise
+    def show_children_was_toggled(self):
         self.show_siblings.set(0)
         self.draw_node()
+
+    # The various modes don't actually toggle, one just selects between them. Since Tkinter will
+    # try to toggle them when clicked, we need to set the appropriate IntVar to 1. Perhaps there
+    # is a better way to do all this...
+
+    def mode_normal_was_toggled(self):
+        self.mode_normal.set(1)
+        self.mode_ab.set(0)
+        self.mode_aw.set(0)
+        self.mode_ae.set(0)
+
+    def mode_ab_was_toggled(self):
+        self.mode_normal.set(0)
+        self.mode_ab.set(1)
+        self.mode_aw.set(0)
+        self.mode_ae.set(0)
+
+    def mode_aw_was_toggled(self):
+        self.mode_normal.set(0)
+        self.mode_ab.set(0)
+        self.mode_aw.set(1)
+        self.mode_ae.set(0)
+
+    def mode_ae_was_toggled(self):
+        self.mode_normal.set(0)
+        self.mode_ab.set(0)
+        self.mode_aw.set(0)
+        self.mode_ae.set(1)
 
     def open_file(self, infilename):        # expects that there is already a valid self.node
         try:
@@ -376,10 +413,34 @@ class SGF_Board(tkinter.Canvas):
 
     def mouseclick_handler(self, event):
         x, y = board_pos_from_screen_pos(event.x, event.y, self.node.board.boardsize)
+
+        if not self.mode_normal.get():
+            self.ab_aw_ae(x, y)
+            return
+
         result = self.node.try_move(x, y)
         if result:
             self.node = result
             self.node_changed()
+
+    def ab_aw_ae(self, x, y):
+        if x < 1 or y < 1 or x > self.node.board.boardsize or y > self.node.board.boardsize:
+            return
+
+        if self.mode_ab.get():
+            colour = BLACK
+        elif self.mode_aw.get():
+            colour = WHITE
+        else:
+            colour = EMPTY
+
+        try:
+            self.node.add_stone(colour, x, y)
+        except gofish.WrongNode:
+            self.node = self.node.make_empty_child()
+            self.node.add_stone(colour, x, y)
+
+        self.node_changed()
 
     def new_board(self, size):      # assumes there already is a board; will crash if this is not so
         unlink_target = self.node.get_root_node()
@@ -623,6 +684,11 @@ class Root(tkinter.Tk):
         options_menu.add_separator()
         options_menu.add_command(label="Clear markup (this node)", command = board.clear_markup)
         options_menu.add_command(label="Clear markup (all)", command = board.clear_markup_all)
+        options_menu.add_separator()
+        options_menu.add_checkbutton(label = "Alternate", variable = board.mode_normal, command = board.mode_normal_was_toggled)
+        options_menu.add_checkbutton(label = "Add Black", variable = board.mode_ab, command = board.mode_ab_was_toggled)
+        options_menu.add_checkbutton(label = "Add White", variable = board.mode_aw, command = board.mode_aw_was_toggled)
+        options_menu.add_checkbutton(label = "Add Empty", variable = board.mode_ae, command = board.mode_ae_was_toggled)
 
         menubar.add_cascade(label = "File", menu = file_menu)
         menubar.add_cascade(label = "New", menu = new_board_menu)
