@@ -459,10 +459,8 @@ class SGF_Board(tkinter.Canvas):
 
             points = gofish.handicap_points(self.node.board.boardsize, h)
             self.node.set_value("HA", h)
-            for point in points:
-                s = gofish.string_from_point(point[0], point[1])
-                self.node.add_value("AB", s)
-                self.node.update()
+            for x, y in points:
+                self.node.add_stone(BLACK, x, y)
 
             self.node_changed()
 
