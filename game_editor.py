@@ -663,10 +663,10 @@ class Root(tkinter.Tk):
         options_menu.add_command(label="Set next player: Black", command = lambda : board.set_pl(BLACK))
         options_menu.add_command(label="Set next player: White", command = lambda : board.set_pl(WHITE))
         options_menu.add_separator()
-        options_menu.add_radiobutton(label = "Alternate", variable = board.click_mode, value = 0)
-        options_menu.add_radiobutton(label = "Add Black", variable = board.click_mode, value = 1)
-        options_menu.add_radiobutton(label = "Add White", variable = board.click_mode, value = 2)
-        options_menu.add_radiobutton(label = "Add Empty", variable = board.click_mode, value = 3)
+        options_menu.add_radiobutton(label = "Alternate", variable = board.click_mode, value = NORMAL)
+        options_menu.add_radiobutton(label = "Add Black", variable = board.click_mode, value = AB)
+        options_menu.add_radiobutton(label = "Add White", variable = board.click_mode, value = AW)
+        options_menu.add_radiobutton(label = "Add Empty", variable = board.click_mode, value = AE)
 
 
         menubar.add_cascade(label = "File", menu = file_menu)
