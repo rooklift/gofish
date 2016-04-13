@@ -133,34 +133,18 @@ class SGF_Board(tkinter.Canvas):
         self.draw_node()
 
     # The various modes don't actually toggle, one just selects between them. Since Tkinter will
-    # try to toggle them when clicked, we need to set the appropriate IntVar to 1. Perhaps there
-    # is a better way to do all this...
+    # try to toggle them when clicked, we need to set the appropriate IntVar to 1 and the others
+    # to 0. Perhaps there's a better way to do this... some equivalent of radiobutton for menus?
 
-    def mode_normal_was_toggled(self):
-        self.mode_normal.set(1)
-        self.mode_ab.set(0)
-        self.mode_aw.set(0)
-        self.mode_ae.set(0)
-
-    def mode_ab_was_toggled(self):
-        self.mode_normal.set(0)
-        self.mode_ab.set(1)
-        self.mode_aw.set(0)
-        self.mode_ae.set(0)
-
-    def mode_aw_was_toggled(self):
-        self.mode_normal.set(0)
-        self.mode_ab.set(0)
-        self.mode_aw.set(1)
-        self.mode_ae.set(0)
-
-    def mode_ae_was_toggled(self):
-        self.mode_normal.set(0)
-        self.mode_ab.set(0)
-        self.mode_aw.set(0)
-        self.mode_ae.set(1)
+    def set_click_mode(self, normal = 0, ab = 0, aw = 0, ae = 0):
+        assert(normal + ab + aw + ae == 1)
+        self.mode_normal.set(normal)
+        self.mode_ab.set(ab)
+        self.mode_aw.set(aw)
+        self.mode_ae.set(ae)
 
     def set_pl(self, colour):
+        self.set_click_mode(normal = 1)     # As a GUI intuition, a person setting PL probably wants to go back to normal stone placing
         if colour == BLACK:
             self.node.set_value("PL", "B")
         elif colour == WHITE:
@@ -692,10 +676,10 @@ class Root(tkinter.Tk):
         options_menu.add_command(label="Set next player: Black", command = lambda : board.set_pl(BLACK))
         options_menu.add_command(label="Set next player: White", command = lambda : board.set_pl(WHITE))
         options_menu.add_separator()
-        options_menu.add_checkbutton(label = "Alternate", variable = board.mode_normal, command = board.mode_normal_was_toggled)
-        options_menu.add_checkbutton(label = "Add Black", variable = board.mode_ab, command = board.mode_ab_was_toggled)
-        options_menu.add_checkbutton(label = "Add White", variable = board.mode_aw, command = board.mode_aw_was_toggled)
-        options_menu.add_checkbutton(label = "Add Empty", variable = board.mode_ae, command = board.mode_ae_was_toggled)
+        options_menu.add_checkbutton(label = "Alternate", variable = board.mode_normal, command = lambda : board.set_click_mode(normal = 1))
+        options_menu.add_checkbutton(label = "Add Black", variable = board.mode_ab, command = lambda : board.set_click_mode(ab = 1))
+        options_menu.add_checkbutton(label = "Add White", variable = board.mode_aw, command = lambda : board.set_click_mode(aw = 1))
+        options_menu.add_checkbutton(label = "Add Empty", variable = board.mode_ae, command = lambda : board.set_click_mode(ae = 1))
 
 
         menubar.add_cascade(label = "File", menu = file_menu)
