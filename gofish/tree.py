@@ -413,18 +413,19 @@ class Node():
         if self.board.state[x][y] != EMPTY:
             return None
 
-        # if the move already exists, just return the (first) relevant child...
-
-        for child in self.children:
-            if child.what_was_the_move() == (x, y):
-                return child
-
         # Colour can generally be auto-determined by what colour the last move was...
 
         if colour == None:
             colour = WHITE if self.last_colour_played() == BLACK else BLACK      # If it was None we get BLACK
         else:
             assert(colour in [BLACK, WHITE])
+
+        # if the move already exists, just return the (first) relevant child...
+
+        for child in self.children:
+            if child.what_was_the_move() == (x, y):
+                if child.move_colour() == colour:
+                    return child
 
         # Check for legality...
 

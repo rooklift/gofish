@@ -160,6 +160,12 @@ class SGF_Board(tkinter.Canvas):
         self.mode_aw.set(0)
         self.mode_ae.set(1)
 
+    def set_pl(self, colour):
+        if colour == BLACK:
+            self.node.set_value("PL", "B")
+        elif colour == WHITE:
+            self.node.set_value("PL", "W")
+
     def open_file(self, infilename):        # expects that there is already a valid self.node
         try:
             unlink_target = self.node.get_root_node()
@@ -379,7 +385,7 @@ class SGF_Board(tkinter.Canvas):
                 self.node = parent
                 self.node.fix_main_line_status_recursive()
             else:
-                self.node = gofish.new_tree(19)
+                self.node = gofish.new_tree(self.node.board.boardsize)
 
             self.node_changed()
             unlink_target.unlink_recursive()      # the old node gets its circular references recursively removed to allow GC to work
@@ -683,10 +689,14 @@ class Root(tkinter.Tk):
         options_menu.add_command(label="Clear markup (this node)", command = board.clear_markup)
         options_menu.add_command(label="Clear markup (all)", command = board.clear_markup_all)
         options_menu.add_separator()
+        options_menu.add_command(label="Set player: Black", command = lambda : board.set_pl(BLACK))
+        options_menu.add_command(label="Set player: White", command = lambda : board.set_pl(WHITE))
+        options_menu.add_separator()
         options_menu.add_checkbutton(label = "Alternate", variable = board.mode_normal, command = board.mode_normal_was_toggled)
         options_menu.add_checkbutton(label = "Add Black", variable = board.mode_ab, command = board.mode_ab_was_toggled)
         options_menu.add_checkbutton(label = "Add White", variable = board.mode_aw, command = board.mode_aw_was_toggled)
         options_menu.add_checkbutton(label = "Add Empty", variable = board.mode_ae, command = board.mode_ae_was_toggled)
+
 
         menubar.add_cascade(label = "File", menu = file_menu)
         menubar.add_cascade(label = "New", menu = new_board_menu)
