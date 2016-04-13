@@ -109,10 +109,9 @@ class SGF_Board(tkinter.Canvas):
 
         self.directory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
-        self.show_siblings = tkinter.IntVar()
-        self.show_children = tkinter.IntVar()
-
-        self.click_mode = tkinter.IntVar()  # Uses values 0 to 3
+        self.show_siblings = tkinter.IntVar(value = 0)
+        self.show_children = tkinter.IntVar(value = 0)
+        self.click_mode = tkinter.IntVar(value = NORMAL)
 
         if filename is not None:
             self.open_file(filename)        # Can fail, leaving us with the tree we created above
