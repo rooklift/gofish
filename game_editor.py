@@ -7,6 +7,8 @@ from gofish import BLACK, WHITE, EMPTY
 WIDTH, HEIGHT = 621, 621
 GAP = 31
 
+NORMAL, AB, AW, AE = 0, 1, 2, 3     # Click modes
+
 MOTD = """
   NAVIGATE:
   -- Arrows, Home, End, PageUp, PageDown
@@ -110,11 +112,7 @@ class SGF_Board(tkinter.Canvas):
         self.show_siblings = tkinter.IntVar()
         self.show_children = tkinter.IntVar()
 
-        self.mode_normal = tkinter.IntVar()
-        self.mode_normal.set(1)
-        self.mode_ab = tkinter.IntVar()
-        self.mode_aw = tkinter.IntVar()
-        self.mode_ae = tkinter.IntVar()
+        self.click_mode = tkinter.IntVar()  # Uses values 0 to 3
 
         if filename is not None:
             self.open_file(filename)        # Can fail, leaving us with the tree we created above
@@ -132,19 +130,8 @@ class SGF_Board(tkinter.Canvas):
         self.show_siblings.set(0)
         self.draw_node()
 
-    # The various modes don't actually toggle, one just selects between them. Since Tkinter will
-    # try to toggle them when clicked, we need to set the appropriate IntVar to 1 and the others
-    # to 0. Perhaps there's a better way to do this... some equivalent of radiobutton for menus?
-
-    def set_click_mode(self, normal = 0, ab = 0, aw = 0, ae = 0):
-        assert(normal + ab + aw + ae == 1)
-        self.mode_normal.set(normal)
-        self.mode_ab.set(ab)
-        self.mode_aw.set(aw)
-        self.mode_ae.set(ae)
-
     def set_pl(self, colour):
-        self.set_click_mode(normal = 1)     # As a GUI intuition, a person setting PL probably wants to go back to normal stone placing
+        self.click_mode.set(NORMAL)     # As a GUI intuition, a person setting PL probably wants to go back to normal stone placing
         if colour == BLACK:
             self.node.set_value("PL", "B")
         elif colour == WHITE:
@@ -404,7 +391,7 @@ class SGF_Board(tkinter.Canvas):
     def mouseclick_handler(self, event):
         x, y = board_pos_from_screen_pos(event.x, event.y, self.node.board.boardsize)
 
-        if not self.mode_normal.get():
+        if self.click_mode.get() != NORMAL:
             self.ab_aw_ae(x, y)
             return
 
@@ -417,9 +404,9 @@ class SGF_Board(tkinter.Canvas):
         if x < 1 or y < 1 or x > self.node.board.boardsize or y > self.node.board.boardsize:
             return
 
-        if self.mode_ab.get():
+        if self.click_mode.get() == AB:
             colour = BLACK
-        elif self.mode_aw.get():
+        elif self.click_mode.get() == AW:
             colour = WHITE
         else:
             colour = EMPTY
@@ -676,10 +663,10 @@ class Root(tkinter.Tk):
         options_menu.add_command(label="Set next player: Black", command = lambda : board.set_pl(BLACK))
         options_menu.add_command(label="Set next player: White", command = lambda : board.set_pl(WHITE))
         options_menu.add_separator()
-        options_menu.add_checkbutton(label = "Alternate", variable = board.mode_normal, command = lambda : board.set_click_mode(normal = 1))
-        options_menu.add_checkbutton(label = "Add Black", variable = board.mode_ab, command = lambda : board.set_click_mode(ab = 1))
-        options_menu.add_checkbutton(label = "Add White", variable = board.mode_aw, command = lambda : board.set_click_mode(aw = 1))
-        options_menu.add_checkbutton(label = "Add Empty", variable = board.mode_ae, command = lambda : board.set_click_mode(ae = 1))
+        options_menu.add_radiobutton(label = "Alternate", variable = board.click_mode, value = 0)
+        options_menu.add_radiobutton(label = "Add Black", variable = board.click_mode, value = 1)
+        options_menu.add_radiobutton(label = "Add White", variable = board.click_mode, value = 2)
+        options_menu.add_radiobutton(label = "Add Empty", variable = board.click_mode, value = 3)
 
 
         menubar.add_cascade(label = "File", menu = file_menu)
