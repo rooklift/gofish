@@ -631,7 +631,7 @@ class Root(tkinter.Tk):
 
         file_menu = tkinter.Menu(menubar, tearoff = 0)
         file_menu.add_command(label = "Open", command = board.opener)
-        file_menu.add_command(label = "Save", command = board.saver)
+        file_menu.add_command(label = "Save As", command = board.saver)
 
         new_board_menu = tkinter.Menu(menubar, tearoff = 0)
         new_board_menu.add_command(label = "19x19", command = lambda : board.new_board(19))

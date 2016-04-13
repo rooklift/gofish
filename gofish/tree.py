@@ -583,7 +583,7 @@ class Node():
         for key in self.properties:
             allkeys.append(key)     # We do this so the dict doesn't change size during the following:
         for key in allkeys:
-            if key not in ["AB", "AW", "B", "W", "FF", "GM", "CA", "SZ", "KM", "RE", "EV", "GN", "PC", "DT", "PB", "PW"]:
+            if key not in ["AB", "AW", "B", "W", "FF", "GM", "CA", "SZ", "KM", "HA", "RE", "EV", "GN", "PC", "DT", "PB", "PW"]:
                 self.properties.pop(key)
 
     def clear_markup_recursive(self):
