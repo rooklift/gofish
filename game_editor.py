@@ -666,7 +666,8 @@ class Root(tkinter.Tk):
         options_menu.add_radiobutton(label = "Add Black", variable = board.click_mode, value = AB)
         options_menu.add_radiobutton(label = "Add White", variable = board.click_mode, value = AW)
         options_menu.add_radiobutton(label = "Add Empty", variable = board.click_mode, value = AE)
-
+        options_menu.add_separator()
+        options_menu.add_command(label="Pass", command = lambda : board.handle_key_P())
 
         menubar.add_cascade(label = "File", menu = file_menu)
         menubar.add_cascade(label = "New", menu = new_board_menu)
