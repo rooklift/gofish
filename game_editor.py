@@ -387,6 +387,12 @@ class SGF_Board(tkinter.Canvas):
                 print("---> Saved: --- Exception when trying to print filename ---")
             self.directory = os.path.dirname(os.path.realpath(outfilename))
 
+    def mousewheel_handler(self, event):
+        if event.delta < 0:
+            self.handle_key_DOWN()
+        else:
+            self.handle_key_UP()
+
     def mouseclick_handler(self, event):
         x, y = board_pos_from_screen_pos(event.x, event.y, self.node.board.boardsize)
 
@@ -684,6 +690,7 @@ class Root(tkinter.Tk):
         self.focus_set()
         self.bind("<Key>", board.call_keypress_handler)
         self.bind("<Button-1>", board.mouseclick_handler)
+        self.bind("<MouseWheel>", board.mousewheel_handler)
         self.bind("<Control-o>", board.opener)
         self.bind("<Control-s>", board.saver)
 
