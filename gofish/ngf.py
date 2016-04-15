@@ -1,4 +1,4 @@
-# Another poorly documented file format
+# Another poorly documented file format. Wbaduk uses this.
 
 from gofish.constants import *
 from gofish.tree import *
@@ -40,7 +40,7 @@ def parse_ngf(ngf):
 
     if handicap >= 2:
         root.set_value("HA", handicap)
-        stones = handicap_points(boardsize, handicap)
+        stones = handicap_points(boardsize, handicap, tygem = True)     # While this isn't Tygem, uses same layout I think
         for point in stones:
             root.add_value("AB", string_from_point(point[0], point[1]))
 
@@ -72,9 +72,7 @@ def parse_ngf(ngf):
 
                     key = line[4]
 
-                    # Not at all sure, but assuming coordinates from top left.
-
-                    # Also, coordinates are from 1-19, but with "B" representing
+                    # Coordinates are from 1-19, but with "B" representing
                     # the digit 1. (Presumably "A" would represent 0.)
 
                     x = ord(line[5]) - 65       # Therefore 65 is correct
