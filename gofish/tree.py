@@ -99,6 +99,20 @@ class Board():                          # Internally the arrays are 1 too big, w
         # might actually be used on a board that's already been so modified, but
         # that should be completely harmless.
 
+        # A node can have all of "AB", "AW" and "AE" (but should not also have "B" or "W",
+        # although that might occur in earlier (pre-4) format files. Note that adding a
+        # stone doesn't count as "playing" it and can result in illegal positions (the
+        # specs allow this explicitly).
+
+        adders = {"AB": BLACK, "AW": WHITE, "AE": EMPTY}
+
+        for adder in adders:
+            if adder in node.properties:
+                for value in node.properties[adder]:
+                    for point in points_from_points_string(value, self.boardsize):    # only returns points inside the board boundaries
+                        x, y = point[0], point[1]
+                        self.state[x][y] = adders[adder]
+
         # A node "should" have only 1 of "B" or "W", and only 1 value in the list.
         # The result will be wrong if the specs are violated. Whatever.
 
@@ -113,19 +127,6 @@ class Board():                          # Internally the arrays are 1 too big, w
                     self.play_move(movers[mover], x, y)
                 except (IndexError, OffBoard):
                     pass
-
-        # A node can have all of "AB", "AW" and "AE" (but should not also have "B" or "W").
-        # Note that adding a stone doesn't count as "playing" it and can
-        # result in illegal positions (the specs allow this explicitly)
-
-        adders = {"AB": BLACK, "AW": WHITE, "AE": EMPTY}
-
-        for adder in adders:
-            if adder in node.properties:
-                for value in node.properties[adder]:
-                    for point in points_from_points_string(value, self.boardsize):    # only returns points inside the board boundaries
-                        x, y = point[0], point[1]
-                        self.state[x][y] = adders[adder]
 
 
 class Node():
