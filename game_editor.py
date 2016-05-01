@@ -142,9 +142,10 @@ class SGF_Board(tkinter.Canvas):
             self.node = gofish.load(infilename)
             unlink_target.unlink_recursive()        # remove the old tree's circular references, so GC can work
             try:
-                print("<--- Loaded: {}\n".format(infilename))
+                print("<--- Loaded: {}".format(infilename))
             except:
                 print("<--- Loaded: --- Exception when trying to print filename ---")
+            print("     Dyer: {}\n".format(self.node.dyer()))
             self.node.dump(include_comments = False)
             print()
             self.directory = os.path.dirname(os.path.realpath(infilename))

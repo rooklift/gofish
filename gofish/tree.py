@@ -602,6 +602,27 @@ class Node():
                     child.clear_markup_recursive()
                 return
 
+    def dyer(self):
+        node = self.get_root_node()
+        dyer = {20: "??", 40: "??", 60: "??", 31: "??", 51: "??", 71: "??"}
+
+        while 1:
+            moves_made = node.moves_made
+            if moves_made in [20,40,60,31,51,71]:
+                mv = node.what_was_the_move()
+                if mv:
+                    dyer[moves_made] = string_from_point(mv[0], mv[1])
+            if moves_made > 71:
+                break
+
+            try:
+                node = node.children[0]
+            except:
+                break
+
+        dyer_string = dyer[20] + dyer[40] + dyer[60] + dyer[31] + dyer[51] + dyer[71]
+        return dyer_string
+
 
 def new_tree(size):             # Returns a ready-to-use tree with board
     if size > 19 or size < 1:
