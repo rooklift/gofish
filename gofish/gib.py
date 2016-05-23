@@ -25,10 +25,35 @@ def parse_gib(gib):
             root.safe_commit("PW", s)
 
         if line.startswith("\\[GAMERESULT="):
+            score = None
+            strings = line.split()
+            for s in strings:           # This is very crude
+                try:
+                    score = float(s)
+                except:
+                    pass
             if "white" in line.lower() and "black" not in line.lower():
-                root.set_value("RE", "W+")
+                if "resignation" in line.lower():
+                    root.set_value("RE", "W+R")
+                elif score:
+                    root.set_value("RE", "W+{}".format(score))
+                else:
+                    root.set_value("RE", "W+")
             if "black" in line.lower() and "white" not in line.lower():
-                root.set_value("RE", "B+")
+                if "resignation" in line.lower():
+                    root.set_value("RE", "B+R")
+                elif score:
+                    root.set_value("RE", "B+{}".format(score))
+                else:
+                    root.set_value("RE", "B+")
+
+        if line.startswith("\\[GAMECONDITION="):
+            if "black 6.5 dum" in line.lower():     # Just hard-coding the typical case; we should maybe extract komi by regex
+                root.set_value("KM", 6.5)
+            elif "black 7.5 dum" in line.lower():   # Perhaps komi becomes 7.5 in the future...
+                root.set_value("KM", 7.5)
+            elif "black 0.5 dum" in line.lower():   # Do these exist on Tygem?
+                root.set_value("KM", 0.5)
 
         if line[0:3] == "INI":
 
