@@ -301,6 +301,7 @@ class GTP_GUI(tkinter.Canvas):
         menubar.entryconfig("Handicap", state = "disabled")
         menubar.entryconfig("Pass", state = "disabled")
         menubar.entryconfig("Swap colours", state = "disabled")
+        menubar.entryconfig("Save SGF", state = "disabled")
         statusbar.config(text = "Awaiting move from engine")
         self.awaiting_move = True
 
@@ -310,6 +311,7 @@ class GTP_GUI(tkinter.Canvas):
         menubar.entryconfig("Handicap", state = "normal")
         menubar.entryconfig("Pass", state = "normal")
         menubar.entryconfig("Swap colours", state = "normal")
+        menubar.entryconfig("Save SGF", state = "normal")
         statusbar.config(text = "Your move ({})".format(colour_lookup[self.human_colour]))
         self.awaiting_move = False
 
@@ -396,7 +398,7 @@ class GTP_GUI(tkinter.Canvas):
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
 
 
-    def saver(self, event):
+    def saver(self, event = None):
         outfilename = tkinter.filedialog.asksaveasfilename(defaultextension=".sgf")
         if outfilename:
             gofish.save_file(outfilename, self.node)
@@ -476,6 +478,7 @@ class Root(tkinter.Tk):
         menubar.add_cascade(label = "Handicap", menu = handicap_menu)
         menubar.add_command(label = "Pass", command = board.handle_key_P)
         menubar.add_command(label = "Swap colours", command = board.swap_colours)
+        menubar.add_command(label = "Save SGF", command = board.saver)
 
         self.config(menu = menubar)
 
