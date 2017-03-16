@@ -2,9 +2,38 @@
 # I know nothing about how it specifies board size or variations.
 # I've inferred from other source code how it does handicaps.
 
+import re
+
 from gofish.constants import *
 from gofish.tree import *
 from gofish.utils import *
+
+def gib_make_result(grlt, zipsu):
+
+    easycases = {3: "B+R", 4: "W+R", 7: "B+T", 8: "W+T"}
+
+    if grlt in easycases:
+        return easycases[grlt]
+
+    if grlt in [0, 1]:
+        if grlt == 0:
+            winner = "B"
+        else:
+            winner = "W"
+        margin = (zipsu / 10)
+        return "{}+{}".format(winner, margin)
+
+    return ""
+
+
+def gib_get_result(line, grlt_regex, zipsu_regex):
+    try:
+        grlt = int(re.search(grlt_regex, line).group(1))
+        zipsu = int(re.search(zipsu_regex, line).group(1))
+    except:
+        return ""
+    return gib_make_result(grlt, zipsu)
+
 
 def parse_gib(gib):
 
@@ -17,43 +46,52 @@ def parse_gib(gib):
         line = line.strip()
 
         if line.startswith("\\[GAMEBLACKNAME=") and line.endswith("\\]"):
+
             s = line[16:-2]
             root.safe_commit("PB", s)
 
         if line.startswith("\\[GAMEWHITENAME=") and line.endswith("\\]"):
+
             s = line[16:-2]
             root.safe_commit("PW", s)
 
-        if line.startswith("\\[GAMERESULT="):
-            score = None
-            strings = line.split()
-            for s in strings:           # This is very crude
+        if line.startswith("\\[GAMEINFOMAIN="):
+
+            if "RE" not in root.properties:
+                result = gib_get_result(line, r"GRLT:(\d+),", r"ZIPSU:(\d+),")
+                if result:
+                    root.set_value("RE", result)
+
+            if "KM" not in root.properties:
                 try:
-                    score = float(s)
+                    komi = int(re.search(r"GONGJE:(\d+),", line).group(1)) / 10
+                    if komi:
+                        root.set_value("KM", komi)
                 except:
                     pass
-            if "white" in line.lower() and "black" not in line.lower():
-                if "resignation" in line.lower():
-                    root.set_value("RE", "W+R")
-                elif score:
-                    root.set_value("RE", "W+{}".format(score))
-                else:
-                    root.set_value("RE", "W+")
-            if "black" in line.lower() and "white" not in line.lower():
-                if "resignation" in line.lower():
-                    root.set_value("RE", "B+R")
-                elif score:
-                    root.set_value("RE", "B+{}".format(score))
-                else:
-                    root.set_value("RE", "B+")
 
-        if line.startswith("\\[GAMECONDITION="):
-            if "black 6.5 dum" in line.lower():     # Just hard-coding the typical case; we should maybe extract komi by regex
-                root.set_value("KM", 6.5)
-            elif "black 7.5 dum" in line.lower():   # Perhaps komi becomes 7.5 in the future...
-                root.set_value("KM", 7.5)
-            elif "black 0.5 dum" in line.lower():   # Do these exist on Tygem?
-                root.set_value("KM", 0.5)
+        if line.startswith("\\[GAMETAG="):
+
+            if "DT" not in root.properties:
+                try:
+                    match = re.search(r"C(\d\d\d\d):(\d\d):(\d\d)", line)
+                    date = "{}-{}-{}".format(match.group(1), match.group(2), match.group(3))
+                    root.set_value("DT", date)
+                except:
+                    pass
+
+            if "RE" not in root.properties:
+                result = gib_get_result(line, r",W(\d+),", r",Z(\d+),")
+                if result:
+                    root.set_value("RE", result)
+
+            if "KM" not in root.properties:
+                try:
+                    komi = int(re.search(r",G(\d+),", line).group(1)) / 10
+                    if komi:
+                        root.set_value("KM", komi)
+                except:
+                    pass
 
         if line[0:3] == "INI":
 
