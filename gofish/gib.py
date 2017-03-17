@@ -16,12 +16,7 @@ def gib_make_result(grlt, zipsu):
         return easycases[grlt]
 
     if grlt in [0, 1]:
-        if grlt == 0:
-            winner = "B"
-        else:
-            winner = "W"
-        margin = (zipsu / 10)
-        return "{}+{}".format(winner, margin)
+        return "{}+{}".format("B" if grlt == 0 else "W", zipsu / 10)
 
     return ""
 
@@ -33,6 +28,23 @@ def gib_get_result(line, grlt_regex, zipsu_regex):
     except:
         return ""
     return gib_make_result(grlt, zipsu)
+
+
+def parse_player_name(raw):
+
+    name = ""
+    rank = ""
+
+    foo = raw.split("(")
+    if len(foo) == 2:
+        if foo[1][-1] == ")":
+            name = foo[0].strip()
+            rank = foo[1][0:-1]
+
+    if name:
+        return name, rank
+    else:
+        return raw, ""
 
 
 def parse_gib(gib):
@@ -48,12 +60,20 @@ def parse_gib(gib):
         if line.startswith("\\[GAMEBLACKNAME=") and line.endswith("\\]"):
 
             s = line[16:-2]
-            root.safe_commit("PB", s)
+            name, rank = parse_player_name(s)
+            if name:
+                root.safe_commit("PB", name)
+            if rank:
+                root.safe_commit("BR", rank)
 
         if line.startswith("\\[GAMEWHITENAME=") and line.endswith("\\]"):
 
             s = line[16:-2]
-            root.safe_commit("PW", s)
+            name, rank = parse_player_name(s)
+            if name:
+                root.safe_commit("PW", name)
+            if rank:
+                root.safe_commit("WR", rank)
 
         if line.startswith("\\[GAMEINFOMAIN="):
 
