@@ -32,7 +32,7 @@ def gib_get_result(line, grlt_regex, zipsu_regex):
 
 def parse_player_name(raw):
 
-    name = ""
+    name = raw
     rank = ""
 
     foo = raw.split("(")
@@ -41,10 +41,7 @@ def parse_player_name(raw):
             name = foo[0].strip()
             rank = foo[1][0:-1]
 
-    if name:
-        return name, rank
-    else:
-        return raw, ""
+    return name, rank
 
 
 def parse_gib(gib):
