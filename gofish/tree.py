@@ -463,6 +463,9 @@ class Node():
         child.update()
         return child
 
+    def delete_property(self, key):
+        self.properties.pop(key, None)
+
     def add_stone(self, colour, x, y):
 
         # This is intended to be used on the root node to add handicap stones or setup
@@ -501,7 +504,7 @@ class Node():
             if colour == EMPTY and key == "AE":
                 point_set.add((x,y))
 
-            self.properties.pop(key, None)          # Delete property from the Node; will maybe be recreated later...
+            self.delete_property(key)               # We delete AB, AW and AE from the Node; some/all may be recreated next...
 
         for key, point_set in all_point_sets.items():
             for point in point_set:
