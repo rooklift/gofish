@@ -338,6 +338,12 @@ class Node():
     def set_value(self, key, value):        # Like the above, but only allows the node to have 1 value for this key
         self.properties[key] = [str(value)]
 
+    def get_value(self, key):				# Get the value, on the assumption there's just 1
+    	try:
+    		return self.properties[key][0]
+    	except:
+    		return None
+
     def debug(self):
         self.board.dump()
         print()
