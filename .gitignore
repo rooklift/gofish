@@ -6,3 +6,4 @@ gfx/textback_override.gif
 *.exe
 *.dll
 *.bat
+*.lnk
