@@ -632,6 +632,9 @@ class Node():
         dyer_string = dyer[20] + dyer[40] + dyer[60] + dyer[31] + dyer[51] + dyer[71]
         return dyer_string
 
+    def save(self, filename):
+        save_file(filename, self)
+
 
 def new_tree(size):             # Returns a ready-to-use tree with board
     if size > 19 or size < 1:
