@@ -55,6 +55,15 @@ if move is not None:
 new_node_1 = node.try_move(16, 4)
 new_node_2 = node.try_move(10, 10)
 
+# We can find a node's children...
+
+for n in node.children:
+	n.safe_commit("C", "Iterating through the children works.")
+
+# We can find a node's parent...
+
+node == new_node_1.parent		# True
+
 # We can save...
 
 node.save("example.sgf")        # Saves the whole tree; can call this on any node.
