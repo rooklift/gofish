@@ -55,8 +55,6 @@ if move is not None:
 new_node_1 = node.try_move(16, 4)
 new_node_2 = node.try_move(10, 10)
 
-# We can find siblings or parents
-
 # We can save...
 
 node.save("example.sgf")        # Saves the whole tree; can call this on any node.
