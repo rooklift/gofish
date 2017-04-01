@@ -247,17 +247,7 @@ class Node():
                     s += ch
         return s
 
-    def safe_commit(self, key, value):      # Note: destroys the key if value is ""
-        safe_s = safe_string(value)
-        if safe_s:
-            self.properties[key] = [safe_s]
-        else:
-            try:
-                self.properties.pop(key)
-            except KeyError:
-                pass
-
-    def what_was_the_move(self):        # Assumes one move at most, which the specs also insist on. A pass causes None to be returned.
+    def what_was_the_move(self):            # Assumes one move at most, which the specs also insist on. A pass causes None to be returned.
         for key in ["B", "W"]:
             if key in self.properties:
                 movestring = self.properties[key][0]
@@ -282,6 +272,17 @@ class Node():
                     return True
         return False
 
+    def siblings(self):
+        if self.parent is None:
+            return []
+        return [self.parent.children[n] for n in range(len(self.parent.children)) if self.parent.children[n] is not self]
+
+    def sibling_count(self):
+        if self.parent is None:
+            return 0
+        else:
+            return len(self.parent.children) - 1
+
     def sibling_moves(self):        # Don't use this to check for variations - a node might not have any moves
         p = self.parent
         if p is None:
@@ -305,12 +306,6 @@ class Node():
                 moves.add(move)
         return moves
 
-    def sibling_count(self):
-        if self.parent is None:
-            return 0
-        else:
-            return len(self.parent.children) - 1
-
     def get_end_node(self):         # Iterate down the (local) main line and return the end node
         node = self
         while 1:
@@ -330,19 +325,29 @@ class Node():
         return node
 
     def add_value(self, key, value):        # Note that, if improperly used, could lead to odd nodes like ;B[ab][cd]
+        safe_s = safe_string(value)
+        if safe_s == "":
+            return
         if key not in self.properties:
             self.properties[key] = []
-        if str(value) not in self.properties[key]:
-            self.properties[key].append(str(value))
+        if safe_s not in self.properties[key]:
+            self.properties[key].append(safe_s)
 
     def set_value(self, key, value):        # Like the above, but only allows the node to have 1 value for this key
-        self.properties[key] = [str(value)]
+        safe_s = safe_string(value)
+        if safe_s == "":
+            self.properties.pop(key, None)  # Also, destroy the key if the value is empty string
+        else:
+            self.properties[key] = [safe_s]
 
-    def get_value(self, key):				# Get the value, on the assumption there's just 1
-    	try:
-    		return self.properties[key][0]
-    	except:
-    		return None
+    def safe_commit(self, key, value):      # This used to be different but now is just an alias
+        self.set_value(key, value)
+
+    def get_value(self, key):               # Get the value, on the assumption there's just 1
+        try:
+            return self.properties[key][0]
+        except:
+            return None
 
     def debug(self):
         self.board.dump()
@@ -357,7 +362,7 @@ class Node():
         print("  -- moves made:   {}".format(self.moves_made))
         print()
 
-    def last_colour_played(self):   # Return the most recent colour played in this node or any ancestor
+    def last_colour_played(self):           # Return the most recent colour played in this node or any ancestor
         node = self
         while 1:
             if "PL" in node.properties:
