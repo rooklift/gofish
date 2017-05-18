@@ -247,7 +247,7 @@ class Node():
                     s += ch
         return s
 
-    def what_was_the_move(self):            # Assumes one move at most, which the specs also insist on. A pass causes None to be returned.
+    def move_coords(self):            # Assumes one move at most, which the specs also insist on. A pass causes None to be returned.
         for key in ["B", "W"]:
             if key in self.properties:
                 movestring = self.properties[key][0]
@@ -259,6 +259,9 @@ class Node():
                 except IndexError:
                     pass
         return None
+
+    def what_was_the_move(self):    # Rather lame name I chose at the start
+        return self.move_coords()
 
     def move_was_pass(self):
         for key in ["B", "W"]:
@@ -293,7 +296,7 @@ class Node():
         index = p.children.index(self)
         for n, node in enumerate(p.children):
             if n != index:
-                move = node.what_was_the_move()
+                move = node.move_coords()
                 if move is not None:
                     moves.add(move)
         return moves
@@ -301,7 +304,7 @@ class Node():
     def children_moves(self):
         moves = set()
         for node in self.children:
-            move = node.what_was_the_move()
+            move = node.move_coords()
             if move is not None:
                 moves.add(move)
         return moves
@@ -432,10 +435,10 @@ class Node():
         else:
             assert(colour in [BLACK, WHITE])
 
-        # if the move already exists, just return the (first) relevant child...
+        # If the move already exists, just return the (first) relevant child...
 
         for child in self.children:
-            if child.what_was_the_move() == (x, y):
+            if child.move_coords() == (x, y):
                 if child.move_colour() == colour:
                     return child
 
@@ -623,7 +626,7 @@ class Node():
         while 1:
             moves_made = node.moves_made
             if moves_made in [20,40,60,31,51,71]:
-                mv = node.what_was_the_move()
+                mv = node.move_coords()
                 if mv:
                     dyer[moves_made] = string_from_point(mv[0], mv[1])
             if moves_made > 71:
