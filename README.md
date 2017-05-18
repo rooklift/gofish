@@ -40,7 +40,7 @@ if new_node:
 
 # We can find the move of a node...
 
-move = node.what_was_the_move()
+move = node.move_coords()
 colour = node.move_colour()
 
 # We can set properties such as comments...
