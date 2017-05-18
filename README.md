@@ -29,7 +29,7 @@ node = gofish.new_tree(19)
 # We can get and set values...
 
 if node.get_value("PB") is None:
-    node.safe_commit("PB", "Jimmy")
+    node.set_value("PB", "Jimmy")
 
 # We can make moves, checking for legality as we go...
 
@@ -48,7 +48,7 @@ colour = node.move_colour()
 colour_text = {WHITE: "W", BLACK: "B", None: "?"}[colour]
 
 if move is not None:
-    node.safe_commit("C", "Move at {}, {} by {}".format(move[0], move[1], colour_text))
+    node.set_value("C", "Move at {}, {} by {}".format(move[0], move[1], colour_text))
 
 # We can create variations...
 
@@ -58,7 +58,7 @@ new_node_2 = node.try_move(10, 10)
 # We can find a node's children...
 
 for n in node.children:
-	n.safe_commit("C", "Iterating through the children works.")
+	n.set_value("C", "Iterating through the children works.")
 
 # We can find a node's parent...
 
