@@ -247,7 +247,7 @@ class Node():
                     s += ch
         return s
 
-    def move_coords(self):            # Assumes one move at most, which the specs also insist on. A pass causes None to be returned.
+    def move_coords(self):          # Assumes one move at most, which the specs also insist on. A pass causes None to be returned.
         for key in ["B", "W"]:
             if key in self.properties:
                 movestring = self.properties[key][0]
