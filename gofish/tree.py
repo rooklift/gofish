@@ -301,6 +301,16 @@ class Node():
                     moves.add(move)
         return moves
 
+    def main_child(self):
+        if len(self.children) == 0:
+            return None
+        return self.children[0]
+
+    def main_child_move(self):
+        if len(self.children) == 0:
+            return None
+        return self.children[0].move_coords()
+
     def children_moves(self):
         moves = set()
         for node in self.children:
