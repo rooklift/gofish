@@ -362,6 +362,12 @@ class Node():
         except:
             return None
 
+    def get_all_values(self, key):
+        try:
+            return self.properties[key]
+        except:
+            return []
+
     def debug(self):
         self.board.dump()
         print()

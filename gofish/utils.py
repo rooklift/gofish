@@ -48,7 +48,18 @@ def points_from_points_string(s, boardsize):        # convert SGF "aa" or "cd:jf
     return ret
 
 
-def string_from_point(x, y):                        # convert x, y into SGF coordinate e.g. "pd"
+def point_from_string(s, boardsize):                # "pd"      --->    16, 4
+    x = ord(s[0]) - 96
+    y = ord(s[1]) - 96
+    return [x,y]
+
+
+def english_string_from_string(s, boardsize):		# "pd"      --->    "Q16"
+    point = point_from_string(s, boardsize)
+    return english_string_from_point(*point, boardsize)
+
+
+def string_from_point(x, y):                        # 16, 4     --->    "pd"
     if x < 1 or x > 26 or y < 1 or y > 26:
         raise ValueError
     s = ""
@@ -57,7 +68,7 @@ def string_from_point(x, y):                        # convert x, y into SGF coor
     return s
 
 
-def english_string_from_point(x, y, boardsize):     # 16, 4     --->    Q16  (skips I, numbers from bottom)
+def english_string_from_point(x, y, boardsize):     # 16, 4     --->    "Q16"  (skips I, numbers from bottom)
     xlookup = " ABCDEFGHJKLMNOPQRSTUVWXYZ"
     s = ""
     s += xlookup[x]
@@ -65,7 +76,7 @@ def english_string_from_point(x, y, boardsize):     # 16, 4     --->    Q16  (sk
     return s
 
 
-def point_from_english_string(s, boardsize):        # Q16       --->    16, 4
+def point_from_english_string(s, boardsize):        # "Q16"     --->    16, 4
     if len(s) not in [2,3]:
         return None
 
