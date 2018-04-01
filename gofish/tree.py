@@ -233,6 +233,22 @@ class Node():
                     print("?", end="")
             print("\n")
 
+    def add_to_comment_top(self, s):
+        safe_s = safe_string(s)
+        try:
+            comment = safe_s + "\n" + self.properties["C"][0]
+            self.set_value("C", comment)
+        except:
+            self.set_value("C", safe_s)
+
+    def add_to_comment_bottom(self, s):
+        safe_s = safe_string(s)
+        try:
+            comment = self.properties["C"][0] + "\n" + safe_s
+            self.set_value("C", comment)
+        except:
+            self.set_value("C", safe_s)
+
     def get_unescaped_concat(self, key):
         s = ""
         if key in self.properties:
