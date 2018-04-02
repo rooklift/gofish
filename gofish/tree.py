@@ -21,7 +21,7 @@ class Board():                          # Internally the arrays are 1 too big, w
         else:
             highlightx, highlighty = highlight[0], highlight[1]
 
-        pieces = {EMPTY: ".", BLACK: "*", WHITE: "O"}
+        pieces = {EMPTY: ".", BLACK: "X", WHITE: "O"}
 
         for row in range(1, self.boardsize + 1):
             for col in range(0, self.boardsize + 1):        # Start from 0 so we have space to print the highlight if it's at col 1
@@ -29,9 +29,9 @@ class Board():                          # Internally the arrays are 1 too big, w
                 end = " "
                 if row == highlighty:
                     if col + 1 == highlightx:
-                        end = "["
+                        end = "("
                     elif col == highlightx:
-                        end = "]"
+                        end = ")"
 
                 if col == 0:                # Remember that the real board starts at 1
                     print(" ", end=end)
@@ -396,6 +396,9 @@ class Node():
         print("  -- is main line: {}".format(self.is_main_line))
         print("  -- moves made:   {}".format(self.moves_made))
         print()
+
+    def showboard(self):
+        self.board.dump(self.move_coords())
 
     def last_colour_played(self):           # Return the most recent colour played in this node or any ancestor
         node = self
