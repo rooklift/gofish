@@ -370,8 +370,8 @@ class Node():
 
     def set_value(self, key, value):        # Like the above, but only allows the node to have 1 value for this key
         safe_s = safe_string(value)
-        if safe_s == "":
-            self.properties.pop(key, None)  # Also, destroy the key if the value is empty string
+        if safe_s == "" and key not in ["B", "W"]:
+            self.properties.pop(key, None)  # Destroy the key if the value is empty string, except passes
         else:
             self.properties[key] = [safe_s]
 
