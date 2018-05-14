@@ -210,20 +210,21 @@ class GTP_GUI(tkinter.Canvas):
         if not self.awaiting_move:
 
             x, y = board_pos_from_screen_pos(event.x, event.y, self.node.board.boardsize)
-            result = self.node.try_move(x, y, colour = self.human_colour)
 
-            if result:
-                self.node = result
+            try:
+                self.node = self.node.make_move(x, y, colour = self.human_colour)
+            except gofish.IllegalMove:
+                return
 
-                command = "play {} {}".format(colour_lookup[self.human_colour], gofish.english_string_from_point(x, y, self.node.board.boardsize))
-                send_and_get(command)
+            command = "play {} {}".format(colour_lookup[self.human_colour], gofish.english_string_from_point(x, y, self.node.board.boardsize))
+            send_and_get(command)
 
-                command = "genmove {}".format(colour_lookup[self.engine_colour])
-                engine_in_queue.put(command)
+            command = "genmove {}".format(colour_lookup[self.engine_colour])
+            engine_in_queue.put(command)
 
-                self.need_to_wait()
+            self.need_to_wait()
 
-                self.draw_node()
+            self.draw_node()
 
 
     def engine_msg_poller(self):
@@ -258,8 +259,9 @@ class GTP_GUI(tkinter.Canvas):
                 return
             else:
                 x, y = point
-            result = self.node.try_move(x, y, colour = self.engine_colour)
-            if result is None:
+            try:
+                result = self.node.make_move(x, y, colour = self.engine_colour)
+            except gofish.IllegalMove:
                 print("ERROR: got illegal move {}".format(message))
                 return
         elif message.upper() == "PASS":

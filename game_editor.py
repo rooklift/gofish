@@ -401,10 +401,12 @@ class SGF_Board(tkinter.Canvas):
             self.ab_aw_ae(x, y)
             return
 
-        result = self.node.try_move(x, y)
-        if result:
-            self.node = result
-            self.node_changed()
+        try:
+            self.node = self.node.make_move(x, y)
+        except gofish.IllegalMove:
+            return
+
+        self.node_changed()
 
     def ab_aw_ae(self, x, y):
         if x < 1 or y < 1 or x > self.node.board.boardsize or y > self.node.board.boardsize:

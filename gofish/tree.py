@@ -443,7 +443,7 @@ class Node():
         self.copy_state_to_child(child)
         return child
 
-    def make_child_from_move(self, colour, x, y, append = True):
+    def __make_child_from_move(self, colour, x, y, append = True):
         assert(colour in [BLACK, WHITE])
 
         if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
@@ -461,13 +461,13 @@ class Node():
         child.update()
         return child
 
-    def try_move(self, x, y, colour = None):        # Try the move... if it's legal, create and return the child; else return None
+    def make_move(self, x, y, colour = None):       # Try the move... if it's legal, create and return the child; else return None
                                                     # Don't use this while reading SGF, as even illegal moves should be allowed there
 
         if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
-            return None
+            raise IllegalMove
         if self.board.state[x][y] != EMPTY:
-            return None
+            raise IllegalMove
 
         # Colour can generally be auto-determined by what colour the last move was...
 
@@ -485,23 +485,32 @@ class Node():
 
         # Check for legality...
 
-        testchild = self.make_child_from_move(colour, x, y, append = False)  # Won't get appended to this node as a real child
+        testchild = self.__make_child_from_move(colour, x, y, append = False)  # Won't get appended to this node as a real child
         if self.parent:
             if testchild.board.state == self.parent.board.state:     # Ko
-                return None
+                raise IllegalMove
         if testchild.board.state[x][y] == EMPTY:     # Suicide
-            return None
+            raise IllegalMove
 
         # Make real child and return...
 
-        child = self.make_child_from_move(colour, x, y)
+        child = self.__make_child_from_move(colour, x, y)
         return child
 
-    def make_pass(self):
+    def try_move(self, x, y, colour = None):    # Deprecated
+        try:
+            return make_move(x, y, colour)
+        except gofish.IllegalMove:
+            return None
 
-        # Colour is auto-determined by what colour the last move was...
+    def make_pass(self, colour = None):
 
-        colour = WHITE if self.last_colour_played() == BLACK else BLACK      # If it was None we get BLACK
+        # Colour can generally be auto-determined by what colour the last move was...
+
+        if colour == None:
+            colour = WHITE if self.last_colour_played() == BLACK else BLACK      # If it was None we get BLACK
+        else:
+            assert(colour in [BLACK, WHITE])
 
         # if the pass already exists, just return the (first) relevant child...
 
