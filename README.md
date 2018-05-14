@@ -36,12 +36,12 @@ if node.get_value("PB") is None:
 node = node.make_move(4, 4, BLACK)  # Intelligently determines colour
                                     # if colour argument missing
 
-# An exception is raised for illegal moves (e.g. because the point is not empty)
+# An exception is raised for illegal moves...
 
 try:
     node = node.make_move(4, 4)
 except gofish.IllegalMove:
-    print("Move was illegal")
+    print("Move was illegal")       # In this case, because the point is not empty
 
 # We can find the move of a node...
 
