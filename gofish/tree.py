@@ -361,8 +361,8 @@ class Node():
 
     def add_value(self, key, value):        # Note that, if improperly used, could lead to odd nodes like ;B[ab][cd]
         safe_s = safe_string(value)
-        if safe_s == "":
-            return
+        if safe_s == "" and key not in ["B", "W"]:
+            return                          # Ignore empty strings, except for passes
         if key not in self.properties:
             self.properties[key] = []
         if safe_s not in self.properties[key]:
@@ -371,7 +371,7 @@ class Node():
     def set_value(self, key, value):        # Like the above, but only allows the node to have 1 value for this key
         safe_s = safe_string(value)
         if safe_s == "" and key not in ["B", "W"]:
-            self.properties.pop(key, None)  # Destroy the key if the value is empty string, except passes
+            self.properties.pop(key, None)  # Destroy the key if the value is empty string (except passes)
         else:
             self.properties[key] = [safe_s]
 
