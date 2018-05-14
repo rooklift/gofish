@@ -3,6 +3,8 @@ import copy
 from gofish.constants import *
 from gofish.utils import *
 
+# ---------------------------------------------------------------------------
+
 class Board():                          # Internally the arrays are 1 too big, with 0 indexes being ignored (so we can use indexes 1 to 19)
     def __init__(self, boardsize):
         self.boardsize = boardsize
@@ -128,6 +130,7 @@ class Board():                          # Internally the arrays are 1 too big, w
                 except (IndexError, OffBoard):
                     pass
 
+# ---------------------------------------------------------------------------
 
 class Node():
     def __init__(self, parent):
@@ -161,7 +164,10 @@ class Node():
     def update(self, update_board = True):              # Use the properties to modify the node
         if update_board:
             self.board.update_from_node(self)
-        self.moves_made += self.moves_in_this_node()
+        if self.parent:
+            self.moves_made = self.parent.moves_made + self.moves_in_this_node()
+        else:
+            self.moves_made = self.moves_in_this_node()
 
     def update_recursive(self, update_board = True):    # Only goes recursive if 2 or more children
         node = self
@@ -428,7 +434,7 @@ class Node():
         else:
             return None
 
-    def make_empty_child(self, append = True):
+    def make_empty_child(self, append = True):      # Make child with no properties. Still gets the board though.
         if append:
             child = Node(parent = self)             # This automatically appends the child to this node
         else:
@@ -678,6 +684,7 @@ class Node():
     def save(self, filename):
         save_file(filename, self)
 
+# ---------------------------------------------------------------------------
 
 def new_tree(size):             # Returns a ready-to-use tree with board
     if size > 19 or size < 1:
