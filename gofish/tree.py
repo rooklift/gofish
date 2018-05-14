@@ -500,7 +500,7 @@ class Node():
     def try_move(self, x, y, colour = None):    # Deprecated
         try:
             return make_move(x, y, colour)
-        except gofish.IllegalMove:
+        except IllegalMove:
             return None
 
     def make_pass(self, colour = None):
