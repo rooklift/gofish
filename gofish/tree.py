@@ -499,7 +499,7 @@ class Node():
 
     def try_move(self, x, y, colour = None):    # Deprecated
         try:
-            return make_move(x, y, colour)
+            return self.make_move(x, y, colour)
         except IllegalMove:
             return None
 
