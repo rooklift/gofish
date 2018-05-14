@@ -33,10 +33,11 @@ if node.get_value("PB") is None:
 
 # We can make moves, checking for legality as we go...
 
-new_node = node.try_move(4, 4, BLACK)  # Intelligently determines colour
-                                       # if colour argument missing
-if new_node:
-    node = new_node
+try:
+    node = node.make_move(4, 4, BLACK)  # Intelligently determines colour
+                                        # if colour argument missing
+except gofish.IllegalMove:
+    print("Move was illegal")
 
 # We can find the move of a node...
 
@@ -52,17 +53,17 @@ if move is not None:
 
 # We can create variations...
 
-new_node_1 = node.try_move(16, 4)
-new_node_2 = node.try_move(10, 10)
+new_node_1 = node.make_move(16, 4)
+new_node_2 = node.make_move(10, 10)
 
 # We can find a node's children...
 
 for n in node.children:
-	n.set_value("C", "Iterating through the children works.")
+    n.set_value("C", "Iterating through the children works.")
 
 # We can find a node's parent...
 
-node == new_node_1.parent		# True
+node == new_node_1.parent       # True
 
 # We can save...
 
