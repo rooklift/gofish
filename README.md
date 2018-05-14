@@ -31,11 +31,15 @@ node = gofish.new_tree(19)
 if node.get_value("PB") is None:
     node.set_value("PB", "Jimmy")
 
-# We can make moves, checking for legality as we go...
+# We can make moves, getting the new node as we go...
+
+node = node.make_move(4, 4, BLACK)  # Intelligently determines colour
+                                    # if colour argument missing
+
+# An exception is raised for illegal moves (e.g. because the point is not empty)
 
 try:
-    node = node.make_move(4, 4, BLACK)  # Intelligently determines colour
-                                        # if colour argument missing
+    node = node.make_move(4, 4)
 except gofish.IllegalMove:
     print("Move was illegal")
 
