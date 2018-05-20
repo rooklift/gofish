@@ -158,10 +158,10 @@ class Node():
         ret = 0
         for mover in ["B", "W"]:
             if mover in self.properties:
-                ret += 1
+                ret += len(self.properties[mover])
         return ret
 
-    def update(self, update_board = True):              # Use the properties to modify the node
+    def update(self, update_board = True):              # Use the properties to modify the board and move count
         if update_board:
             self.board.update_from_node(self)
         if self.parent:
@@ -206,7 +206,10 @@ class Node():
                 return
 
     def copy_state_to_child(self, child, copy_board = True):
-        if len(self.children) > 0:                  # there's no guarantee the child has actually been appended, hence this test
+
+        # "state" meaning main line status, move count, and (optionally) board
+
+        if len(self.children) > 0:                      # there's no guarantee the child has actually been appended, hence this test
             if child is self.children[0]:
                 if self.is_main_line:
                     child.is_main_line = True
