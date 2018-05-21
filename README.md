@@ -16,6 +16,10 @@ For programmers looking to do their own Go stuff, the most interesting part of a
 
 A standalone (single file) script that converts these things to SGF [is available](https://github.com/fohristiwhirl/xyz2sgf).
 
+## Warning
+
+This whole project grew fairly organically. While I do use it for my own projects, it remains a fairly disorganised and confusing mess, not *really* suitable for general use...
+
 ## Example library usage
 
 ```python
