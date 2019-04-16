@@ -45,8 +45,26 @@ def load(filename):
                 contents = infile.read()
 
             root = parse_ugf(contents)
+
         else:
             raise
+
+    cleanup(root)
+    return root
+
+
+def load_sgf_mainline(filename):
+
+    with open(filename, encoding="utf8", errors="replace") as infile:
+        contents = infile.read()
+
+    root = parse_sgf(contents, main_line_only = True)
+
+    cleanup(root)
+    return root
+
+
+def cleanup(root):
 
     root.set_value("FF", 4)
     root.set_value("GM", 1)

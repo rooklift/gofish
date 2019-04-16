@@ -363,6 +363,9 @@ class Node():
         return node
 
     def add_value(self, key, value):        # Note that, if improperly used, could lead to odd nodes like ;B[ab][cd]
+        key = key.strip()
+        if key == "":
+            raise KeyError
         safe_s = safe_string(value)
         if safe_s == "" and key not in ["B", "W"]:
             return                          # Ignore empty strings, except for passes
@@ -372,6 +375,9 @@ class Node():
             self.properties[key].append(safe_s)
 
     def set_value(self, key, value):        # Like the above, but only allows the node to have 1 value for this key
+        key = key.strip()
+        if key == "":
+            raise KeyError
         safe_s = safe_string(value)
         if safe_s == "" and key not in ["B", "W"]:
             self.properties.pop(key, None)  # Destroy the key if the value is empty string (except passes)
