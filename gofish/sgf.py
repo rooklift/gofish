@@ -32,8 +32,8 @@ def load_sgf_tree(sgf, parent_of_local_root):   # The caller should ensure there
             continue
 
         if inside:
-            if c == "\\":               # Escape characters are saved
-                value += "\\"
+            if c == "\\":
+                # value += "\\"        # Do not do this. Discard the escape slash.
                 try:
                     value += sgf[i + 1]
                 except IndexError:
@@ -43,7 +43,7 @@ def load_sgf_tree(sgf, parent_of_local_root):   # The caller should ensure there
                 inside = False
                 if node is None:
                     raise ParserFail
-                node.add_value(key, value)
+                node.add_value(key, value)      # This adds any escape slashes.
             else:
                 value += c
         else:
@@ -98,8 +98,8 @@ def load_sgf_tree_mainline_only(sgf):   # The caller should ensure there is no l
             continue
 
         if inside:
-            if c == "\\":               # Escape characters are saved
-                value += "\\"
+            if c == "\\":
+                # value += "\\"        # Do not do this. Discard the escape slash.
                 try:
                     value += sgf[i + 1]
                 except IndexError:
@@ -109,7 +109,7 @@ def load_sgf_tree_mainline_only(sgf):   # The caller should ensure there is no l
                 inside = False
                 if node is None:
                     raise ParserFail
-                node.add_value(key, value)
+                node.add_value(key, value)      # This adds any escape slashes.
             else:
                 value += c
         else:
