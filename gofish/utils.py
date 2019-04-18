@@ -125,6 +125,19 @@ def safe_string(s):     # "safe" meaning safely escaped \ and ] characters
     return safe_s
 
 
+def unescape_string(s):
+    ret = ""
+    escape_mode = False
+    for ch in s:
+        if escape_mode:
+            escape_mode = False
+        elif ch == "\\":
+            escape_mode = True
+            continue
+        ret += ch
+    return ret
+
+
 def handicap_points(boardsize, handicap, tygem = False):
 
     points = set()

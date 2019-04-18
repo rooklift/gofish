@@ -262,14 +262,7 @@ class Node():
         s = ""
         if key in self.properties:
             for value in self.properties[key]:
-                escape_mode = False
-                for ch in value:
-                    if escape_mode:
-                        escape_mode = False
-                    elif ch == "\\":
-                        escape_mode = True
-                        continue
-                    s += ch
+                s += unescape_string(value)
         return s
 
     def move_coords(self):          # Assumes one move at most, which the specs also insist on. A pass causes None to be returned.
@@ -389,15 +382,19 @@ class Node():
 
     def get_value(self, key):               # Get the value, on the assumption there's just 1
         try:
-            return self.properties[key][0]
+            return unescape_string(self.properties[key][0])
         except:
             return None
 
     def get_all_values(self, key):
         try:
-            return self.properties[key]
+            all_values = self.properties[key]
         except:
             return []
+        ret = []
+        for value in all_values:
+            ret.append(unescape_string(value))
+        return ret
 
     def debug(self):
         self.board.dump()

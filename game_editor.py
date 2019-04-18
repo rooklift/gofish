@@ -227,10 +227,9 @@ class SGF_Board(tkinter.Canvas):
                     self.create_image(screen_x, screen_y, image = markup_dict[mark])
 
         # Draw text labels (at most 3 characters of them).
-        # This doesn't bother checking for escape \ characters.
 
         if "LB" in self.node.properties:
-            for value in self.node.properties["LB"]:
+            for value in self.node.get_all_values("LB"):
                 if len(value) >= 4:
                     text = value[3:6]           # causes no problems if len is lower
                     if value[2] == ":":
