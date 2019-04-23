@@ -18,7 +18,7 @@ A standalone (single file) script that converts these things to SGF [is availabl
 
 ## Warning
 
-This whole project grew fairly organically. While I do use it for my own projects, it remains a fairly disorganised and confusing mess, not *really* suitable for general use...
+This whole project grew fairly organically. While I do use it for my own projects, it remains a fairly disorganised and confusing mess, not *really* suitable for general use. Also, I made a number of design mistakes at the time, which became obvious later. As a result, my later [sgf library](https://github.com/fohristiwhirl/sgf) in Golang is much better than it would have been.
 
 ## Example library usage
 
