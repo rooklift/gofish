@@ -742,5 +742,5 @@ def write_tree(outfile, node):      # Relies on values already being correctly b
             continue
         else:
             break
-    outfile.write(")\n")
+    outfile.write(")")
     return
