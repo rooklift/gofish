@@ -232,7 +232,7 @@ class Node():
                 print()
 
     def print_comments(self):
-        s = self.get_unescaped_concat("C")
+        s = self.get_concat("C")
         if s:
             print("[{}] ".format(self.moves_made), end="")
             for ch in s:
@@ -243,26 +243,26 @@ class Node():
             print("\n")
 
     def add_to_comment_top(self, s):
-        safe_s = safe_string(s)
+        s = str(s)
         try:
-            comment = safe_s + "\n" + self.properties["C"][0]
+            comment = s + "\n" + self.properties["C"][0]
             self.set_value("C", comment)
         except:
-            self.set_value("C", safe_s)
+            self.set_value("C", s)
 
     def add_to_comment_bottom(self, s):
-        safe_s = safe_string(s)
+        s = str(s)
         try:
-            comment = self.properties["C"][0] + "\n" + safe_s
+            comment = self.properties["C"][0] + "\n" + s
             self.set_value("C", comment)
         except:
-            self.set_value("C", safe_s)
+            self.set_value("C", s)
 
-    def get_unescaped_concat(self, key):
+    def get_concat(self, key):
         s = ""
         if key in self.properties:
             for value in self.properties[key]:
-                s += unescape_string(value)
+                s += value
         return s
 
     def move_coords(self):          # Assumes one move at most, which the specs also insist on. A pass causes None to be returned.
@@ -356,33 +356,33 @@ class Node():
         return node
 
     def add_value(self, key, value):        # Note that, if improperly used, could lead to odd nodes like ;B[ab][cd]
+        value = str(value)
         key = key.strip()
         if key == "":
             raise KeyError
-        safe_s = safe_string(value)
-        if safe_s == "" and key not in ["B", "W"]:
+        if value == "" and key not in ["B", "W"]:
             return                          # Ignore empty strings, except for passes
         if key not in self.properties:
             self.properties[key] = []
-        if safe_s not in self.properties[key]:
-            self.properties[key].append(safe_s)
+        if value not in self.properties[key]:
+            self.properties[key].append(value)
 
     def set_value(self, key, value):        # Like the above, but only allows the node to have 1 value for this key
+        value = str(value)
         key = key.strip()
         if key == "":
             raise KeyError
-        safe_s = safe_string(value)
-        if safe_s == "" and key not in ["B", "W"]:
+        if value == "" and key not in ["B", "W"]:
             self.properties.pop(key, None)  # Destroy the key if the value is empty string (except passes)
         else:
-            self.properties[key] = [safe_s]
+            self.properties[key] = [value]
 
     def safe_commit(self, key, value):      # This used to be different but now is just an alias
         self.set_value(key, value)
 
     def get_value(self, key):               # Get the value, on the assumption there's just 1
         try:
-            return unescape_string(self.properties[key][0])
+            return self.properties[key][0]
         except:
             return None
 
@@ -393,7 +393,7 @@ class Node():
             return []
         ret = []
         for value in all_values:
-            ret.append(unescape_string(value))
+            ret.append(value)
         return ret
 
     def debug(self):
@@ -732,7 +732,7 @@ def write_tree(outfile, node):      # Relies on values already being correctly b
         for key in node.properties:
             outfile.write(key)
             for value in node.properties[key]:
-                outfile.write("[{}]".format(value))
+                outfile.write("[{}]".format(safe_string(value)))
         if len(node.children) > 1:
             for child in node.children:
                 write_tree(outfile, child)

@@ -43,7 +43,7 @@ def load_sgf_tree(sgf, parent_of_local_root):   # The caller should ensure there
                 inside = False
                 if node is None:
                     raise ParserFail
-                node.add_value(key, value)      # This adds any escape slashes.
+                node.add_value(key, value)
             else:
                 value += c
         else:
@@ -109,7 +109,7 @@ def load_sgf_tree_mainline_only(sgf):   # The caller should ensure there is no l
                 inside = False
                 if node is None:
                     raise ParserFail
-                node.add_value(key, value)      # This adds any escape slashes.
+                node.add_value(key, value)
             else:
                 value += c
         else:

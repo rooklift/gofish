@@ -490,14 +490,14 @@ class CommentWindow(tkinter.Toplevel):
         self.commit_text()
         self.node = newnode
 
-        s = self.node.get_unescaped_concat("C")
+        s = self.node.get_concat("C")
 
         self.text_widget.delete(1.0, tkinter.END)
         self.text_widget.insert(tkinter.END, s)
 
     def commit_text(self):
         s = self.text_widget.get(1.0, tkinter.END).strip()
-        self.node.safe_commit("C", s)
+        self.node.set_value("C", s)
 
 
 class InfoWindow(tkinter.Toplevel):
@@ -580,7 +580,7 @@ class InfoWindow(tkinter.Toplevel):
         self.root = newroot
 
         for key in self.widgets:                            # e.g. key is "RE" or "KM" etc...
-            text = self.root.get_unescaped_concat(key)      # pull the value from the root node
+            text = self.root.get_concat(key)      # pull the value from the root node
             self.widgets[key].delete(0, tkinter.END)
             self.widgets[key].insert(tkinter.END, text)     # and set the widget to it
 
@@ -588,7 +588,7 @@ class InfoWindow(tkinter.Toplevel):
 
         for key in self.widgets:                            # e.g. key is "RE" or "KM" etc...
             text = self.widgets[key].get().strip()          # pull the value from the widget
-            self.root.safe_commit(key, text)                # and set the root node accordingly
+            self.root.set_value(key, text)                  # and set the root node accordingly
 
 
 class HelpWindow(tkinter.Toplevel):
