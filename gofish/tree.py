@@ -725,7 +725,7 @@ def save(filename, node):           # This should have been the name in the firs
     save_file(filename, node)
 
 
-def write_tree(outfile, node):      # Relies on values already being correctly backslash-escaped
+def write_tree(outfile, node):
     outfile.write("(")
     while 1:
         outfile.write(";")
