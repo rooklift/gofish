@@ -27,6 +27,8 @@ def is_star_point(x, y, boardsize):
 def points_from_points_string(s, boardsize):        # convert SGF "aa" or "cd:jf" into set of points
     ret = set()
 
+    s = s.strip()
+
     if len(s) < 2:
         return ret
 
