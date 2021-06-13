@@ -156,8 +156,8 @@ class Node():
 
     @property
     def boardsize(self):
-        if this.__board:
-            return this.__board.boardsize
+        if self.__board:
+            return self.__board.boardsize
         root = self.get_root_node()
         sz = root.get_value("SZ")
         if sz == None:
@@ -633,7 +633,7 @@ class Node():
 
         path = self.node_path()
 
-        if this.boardsize < 1 or this.boardsize > 19:
+        if self.boardsize < 1 or self.boardsize > 19:
             raise BadBoardSize
 
         # Find the latest node with a board:
@@ -645,7 +645,7 @@ class Node():
                 board = copy.deepcopy(node.__board)
                 break
         if not board:
-            board = Board(this.boardsize)
+            board = Board(self.boardsize)
             n = 0
 
         for i in range(n, len(path)):
