@@ -154,6 +154,16 @@ class Node():
     def board(self, board):
         self.__board = board
 
+    @property
+    def boardsize(self):
+        if this.__board:
+            return this.__board.boardsize
+        root = self.get_root_node()
+        sz = root.get_value("SZ")
+        if sz == None:
+            return 19
+        return int(sz)
+
     def moves_in_this_node(self):
         ret = 0
         for mover in ["B", "W"]:
@@ -272,7 +282,7 @@ class Node():
                 try:
                     x = ord(movestring[0]) - 96
                     y = ord(movestring[1]) - 96
-                    if 1 <= x <= self.board.boardsize and 1 <= y <= self.board.boardsize:
+                    if 1 <= x <= self.boardsize and 1 <= y <= self.boardsize:
                         return (x, y)
                 except IndexError:
                     pass
@@ -289,7 +299,7 @@ class Node():
                     return True
                 x = ord(movestring[0]) - 96
                 y = ord(movestring[1]) - 96
-                if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:      # e.g. W[tt]
+                if x < 1 or x > self.boardsize or y < 1 or y > self.boardsize:      # e.g. W[tt]
                     return True
         return False
 
@@ -452,7 +462,7 @@ class Node():
     def __make_child_from_move(self, colour, x, y, append = True):
         assert(colour in [BLACK, WHITE])
 
-        if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
+        if x < 1 or x > self.boardsize or y < 1 or y > self.boardsize:
             raise OffBoard
 
         if append:
@@ -470,7 +480,7 @@ class Node():
     def make_move(self, x, y, colour = None):       # Try the move... if it's legal, create and return the child; else return None
                                                     # Don't use this while reading SGF, as even illegal moves should be allowed there
 
-        if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
+        if x < 1 or x > self.boardsize or y < 1 or y > self.boardsize:
             raise IllegalMove
         if self.board.state[x][y] != EMPTY:
             raise IllegalMove
@@ -542,7 +552,7 @@ class Node():
         # for a problem. Otherwise it will generally raise an exception (e.g. if a move
         # is present in the node, or if the node has any children).
 
-        if x < 1 or x > self.board.boardsize or y < 1 or y > self.board.boardsize:
+        if x < 1 or x > self.boardsize or y < 1 or y > self.boardsize:
             raise OffBoard
 
         if len(self.children) > 0:      # Can't add stones this way when the node has children (should we be able to?)
@@ -563,7 +573,7 @@ class Node():
 
             if key in self.properties:
                 for value in self.properties[key]:
-                    point_set |= points_from_points_string(value, self.board.boardsize)
+                    point_set |= points_from_points_string(value, self.boardsize)
 
             point_set.discard((x,y))                # This implements the mutual exclusion mentioned above
 
@@ -623,12 +633,7 @@ class Node():
 
         path = self.node_path()
 
-        if "SZ" not in path[0].properties:
-            raise NoBoardSize
-
-        size = int(path[0].properties["SZ"][0])
-
-        if size < 1 or size > 19:
+        if this.boardsize < 1 or this.boardsize > 19:
             raise BadBoardSize
 
         # Find the latest node with a board:
@@ -640,7 +645,7 @@ class Node():
                 board = copy.deepcopy(node.__board)
                 break
         if not board:
-            board = Board(size)
+            board = Board(this.boardsize)
             n = 0
 
         for i in range(n, len(path)):
