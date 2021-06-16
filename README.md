@@ -1,6 +1,6 @@
-# gofish: an SGF-based library
-
 **Note**: I'm not very happy with the state of the original Gofish, and have started a new version, [Gofish2](https://github.com/rooklift/gofish2).
+
+# gofish: an SGF-based library
 
 Tools for the game of Go:
 
