@@ -1,5 +1,7 @@
 # gofish: an SGF-based library
 
+**Note**: I'm not very happy with the state of the original Gofish, and have started a new version, [Gofish2](https://github.com/rooklift/gofish2).
+
 Tools for the game of Go:
 
 * `gofish/` - the basic library, can read SGF, UGF, GIB, and NGF; can write SGF ([Smart Game Format](http://www.red-bean.com/sgf/))
@@ -20,7 +22,7 @@ A standalone (single file) script that converts these things to SGF [is availabl
 
 This whole project grew fairly organically. While I do use it for my own projects, it remains a fairly disorganised and confusing mess, not *really* suitable for general use. Also, I made a number of design mistakes at the time, which became obvious later. As a result, my later [sgf library](https://github.com/rooklift/sgf) in Golang is much better than it would have been.
 
-I'm not very happy with the state of the original Gofish, and have started a new version, [Gofish2](https://github.com/rooklift/gofish2). No promises that it will ever be finished.
+But I'm not very happy with the state of the original Gofish, and have started a new version, [Gofish2](https://github.com/rooklift/gofish2).
 
 ## Example library usage
 
